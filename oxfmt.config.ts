@@ -13,6 +13,7 @@ export default defineConfig({
     '**/migrations/**',
     '**/routeTree.gen.ts',
     '**/next-env.d.ts',
+    '**/auth-schema.generated.ts',
     'pnpm-lock.yaml',
   ],
 })

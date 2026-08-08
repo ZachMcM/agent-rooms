@@ -1,5 +1,7 @@
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 
+import { AuthProvider } from '../lib/auth-context'
+
 import '../styles.css'
 
 export const Route = createRootRoute({
@@ -8,8 +10,10 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <div className="bg-background text-foreground min-h-dvh font-sans antialiased">
-      <Outlet />
-    </div>
+    <AuthProvider>
+      <div className="bg-background text-foreground min-h-dvh font-sans antialiased">
+        <Outlet />
+      </div>
+    </AuthProvider>
   )
 }

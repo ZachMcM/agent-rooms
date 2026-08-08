@@ -8,8 +8,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "auth:generate": "pnpm dlx auth@latest generate --config auth.config.ts --output auth-schema.generated.ts --yes",
     "build": "tsup && node ./scripts/copy-web-build.mjs",
-    "dev": "tsx watch src/server.ts",
+    "dev": "AGENT_ROOMS_MODE=cloud AGENT_ROOMS_AUTH_SECRET=dev-only-secret-never-set-this-in-a-deploy tsx watch src/server.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -18,6 +19,7 @@
     "@agent-rooms/db": "workspace:*",
     "@agent-rooms/protocol": "workspace:*",
     "@hono/node-server": "catalog:",
+    "better-auth": "catalog:",
     "hono": "catalog:"
   },
   "devDependencies": {

@@ -1,6 +1,11 @@
 {
   "extends": ["./packages/oxlint-config/base.json"],
-  "ignorePatterns": ["**/next-env.d.ts", "**/routeTree.gen.ts", "**/migrations/**"],
+  "ignorePatterns": [
+    "**/next-env.d.ts",
+    "**/routeTree.gen.ts",
+    "**/migrations/**",
+    "**/auth-schema.generated.ts"
+  ],
   "overrides": [
     {
       "files": ["apps/**/*.ts", "apps/**/*.tsx"],
@@ -20,6 +25,12 @@
     },
     {
       "files": ["apps/api/src/server.ts", "apps/cli/src/runtime.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["apps/**/*.test.ts", "apps/**/*.test.tsx"],
       "rules": {
         "no-restricted-imports": "off"
       }

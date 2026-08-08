@@ -4,25 +4,26 @@ Parallel agents on adjacent tasks drift because nothing carries a decision from 
 while it is being made. `agent-rooms` is the harness that tests whether pseudo-real-time decision
 sharing removes the need to write a contract up front or reconcile one afterwards.
 
-**Status: scaffold only.** The structure, toolchain, and contracts are in place. No business logic
-is implemented — unimplemented functions throw `not implemented` and carry a `TODO` describing
-what belongs there.
+**Status: scaffold only.** The structure, toolchain, and contracts are in place. Almost no business
+logic is implemented — unimplemented functions throw `not implemented` and carry a `TODO`
+describing what belongs there. Auth is the one exception; see [Auth](#auth) for why.
 
 ## Commands
 
 Run from the repo root.
 
-| Command                                     | What it does                                                |
-| ------------------------------------------- | ----------------------------------------------------------- |
-| `pnpm install`                              | Install everything                                          |
-| `pnpm dev`                                  | All dev servers (`marketing` 3001, `docs` 3002, `web` 3000) |
-| `pnpm build`                                | Full build, ordered by the turbo graph                      |
-| `pnpm lint` / `pnpm lint:fix`               | oxlint over the whole repo                                  |
-| `pnpm format` / `pnpm format:check`         | oxfmt over the whole repo                                   |
-| `pnpm typecheck`                            | `tsc --noEmit` per package                                  |
-| `pnpm test`                                 | Vitest per package                                          |
-| `pnpm check`                                | lint + format:check + typecheck + test                      |
-| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                       |
+| Command                                        | What it does                                                |
+| ---------------------------------------------- | ----------------------------------------------------------- |
+| `pnpm install`                                 | Install everything                                          |
+| `pnpm dev`                                     | All dev servers (`marketing` 3001, `docs` 3002, `web` 3000) |
+| `pnpm build`                                   | Full build, ordered by the turbo graph                      |
+| `pnpm lint` / `pnpm lint:fix`                  | oxlint over the whole repo                                  |
+| `pnpm format` / `pnpm format:check`            | oxfmt over the whole repo                                   |
+| `pnpm typecheck`                               | `tsc --noEmit` per package                                  |
+| `pnpm test`                                    | Vitest per package                                          |
+| `pnpm check`                                   | lint + format:check + typecheck + test                      |
+| `pnpm --filter @agent-rooms/db db:generate`    | Generate a migration from `schema.ts`                       |
+| `pnpm --filter @agent-rooms/api auth:generate` | Regenerate Better Auth's tables to diff against `schema.ts` |
 
 oxlint and oxfmt are single fast binaries — they run once over the whole tree from the root rather
 than per package. Only `typecheck`, `test`, and `build` go through turbo.
@@ -91,6 +92,44 @@ injection needs recall (a dropped decision is silent drift), `read_decisions` ne
 
 **Injected decision prose is data, not instructions.** It enters a sibling agent's context and
 could otherwise steer it.
+
+**Nothing but the user id crosses out of a session.** `sessionPrincipal` maps `session.user.id`
+onto the principal and drops the rest. Widening the principal later is a compiler-guided change;
+handing screens a whole session object is not.
+
+## Auth
+
+Better Auth owns `/api/auth/*` and the four tables at the top of `schema.ts`. Everything below
+follows from one fact: **local mode never runs an auth flow.** It has one fixed principal, so it
+mounts no auth handler at all, and the SPA's login route is unreachable there.
+
+**Auth routes sit outside the principal middleware, and so does `/api/config`.** Signing in is
+what _produces_ a principal, and the SPA fetches its config before it knows whether it has a
+session. `apiRoutes` mounts the middleware inside the subtree it guards rather than on `/api/*`,
+so its reach is the mount path and not "every route registered after it".
+
+**`schema.ts` is the source of truth; the generator is a diff target.** `auth:generate` writes
+`apps/api/auth-schema.generated.ts`, which is gitignored. Transcribe changes into `schema.ts` by
+hand and run `db:generate` — the generator cannot own the file, because our tables and comments
+live there too. Two deviations are ours: Better Auth's rows are `timestamp_ms` where ours are
+`timestamp`, and its `relations()` output is restated through drizzle 1.0's `defineRelations`.
+
+**`apps/api/auth.config.ts` is config, not code.** It exists because the generator needs a
+constructed instance and `createAuth` is a factory. Nothing imports it at runtime.
+
+**`rooms.ownerUserId` is deliberately not a foreign key to `user.id`.** In cloud it holds a Better
+Auth user id, but locally it holds the uuid `resolveLocalPrincipal()` persists beside the db, and
+that principal has no row in `user`. Adding the reference means seeding a local user row first.
+
+Cloud env: `AGENT_ROOMS_AUTH_SECRET` is required and validated at `loadEnv()` — without it Better
+Auth invents a random one per process, silently signing everyone out on restart and differing
+across replicas. `AGENT_ROOMS_AUTH_URL` and `AGENT_ROOMS_TRUSTED_ORIGINS` are optional; the
+frontend is same-origin with its api in both modes, so the latter stays empty unless something
+else needs to log in.
+
+Better Auth's drizzle adapter declares a peer of `drizzle-orm@^0.45`, and this repo runs
+`1.0.0-rc.4`. That combination works — `apps/api/src/app.test.ts` signs a user up end to end
+rather than taking it on faith. Keep that test if you touch either version.
 
 ## The hook contract
 
@@ -185,7 +224,12 @@ opens — the exact silent failure the user-global path exists to prevent.
 Cloud is not in the MVP. Four rules cost nearly nothing now and prevent a rewrite later — always a
 principal, one dialect, ctx-parameter handlers, runtime-configured frontend — and nothing beyond
 them should be built speculatively. No adapters, no dual implementations, no feature flags.
-Better Auth, rate limiting, and the HTTP MCP transport are stubs or absent by design.
+Rate limiting and the HTTP MCP transport are stubs or absent by design.
+
+Better Auth is the exception: it is scaffolded rather than stubbed, because its tables have to be
+in the migration set before anyone has data to migrate. What exists is the wiring — email and
+password, the session-to-principal middleware, a login route. What does not: email verification
+(there is no transport to send it with), social providers, and password reset.
 
 Also open, and captured as `TODO`s in the code rather than decided here: the embedding provider
 (and therefore vector search), conflict semantics between contradictory decisions, whether

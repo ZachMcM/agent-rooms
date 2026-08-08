@@ -1,6 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/')({ component: RoomsPage })
+import { RequireAuth } from '../lib/require-auth'
+
+export const Route = createFileRoute('/')({ component: RoomsRoute })
+
+function RoomsRoute() {
+  return (
+    <RequireAuth>
+      <RoomsPage />
+    </RequireAuth>
+  )
+}
 
 function RoomsPage() {
   // TODO: list rooms from GET /api/rooms
