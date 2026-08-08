@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run format:check
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - run: pnpm run build
+
+  # The only check that catches "worked in the monorepo, broken on npm". Packs the cli and
+  # installs the tarball in a temp directory outside the workspace, so nothing resolves through
+  # the pnpm workspace links.
+  cold-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - name: Pack the cli
+        working-directory: apps/cli
+        run: pnpm pack --pack-destination "$RUNNER_TEMP"
+      - name: Install and run the tarball outside the workspace
+        run: |
+          set -euo pipefail
+          cd "$(mktemp -d)"
+          npm init -y > /dev/null
+          npm install "$RUNNER_TEMP"/agent-comms-*.tgz
+          ./node_modules/.bin/agent-comms --version
+          ./node_modules/.bin/agent-comms --help
+          test -d node_modules/agent-comms/migrations
+          test -f node_modules/agent-comms/assets/claude-code/skills/agent-comms/SKILL.md
+          test -f node_modules/agent-comms/dist/public/index.html

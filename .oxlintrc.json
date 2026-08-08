@@ -1,0 +1,28 @@
+{
+  "extends": ["./packages/oxlint-config/base.json"],
+  "ignorePatterns": ["**/next-env.d.ts", "**/routeTree.gen.ts", "**/migrations/**"],
+  "overrides": [
+    {
+      "files": ["apps/**/*.ts", "apps/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@agent-comms/db/client",
+                "message": "Import a domain function from @agent-comms/db instead. Every query must be scoped by a Principal."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["apps/api/src/server.ts", "apps/cli/src/runtime.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

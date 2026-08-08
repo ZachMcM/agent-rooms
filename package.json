@@ -1,0 +1,30 @@
+{
+  "name": "agent-comms-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run test"
+  },
+  "devDependencies": {
+    "@agent-comms/oxfmt-config": "workspace:*",
+    "@agent-comms/oxlint-config": "workspace:*",
+    "@agent-comms/typescript-config": "workspace:*",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@11.13.1"
+}

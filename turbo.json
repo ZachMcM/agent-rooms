@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "globalDependencies": [".oxlintrc.json", ".oxfmtrc.json", "pnpm-workspace.yaml"],
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "@agent-comms/api#build": {
+      "dependsOn": ["^build", "@agent-comms/web#build"],
+      "outputs": ["dist/**"]
+    },
+    "agent-comms#build": {
+      "dependsOn": ["^build", "@agent-comms/api#build"],
+      "outputs": ["dist/**", "migrations/**"]
+    }
+  }
+}

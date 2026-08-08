@@ -1,0 +1,5 @@
+{
+  "extends": "@agent-comms/typescript-config/node.json",
+  "include": ["src", "tsup.config.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "assets"]
+}

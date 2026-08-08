@@ -1,0 +1,19 @@
+---
+title: Introduction
+---
+
+# agent-comms
+
+Parallel agents working adjacent halves of one feature drift apart because nothing carries a
+decision from one to the other while it is being made. `agent-comms` is the harness that tests
+whether pseudo-real-time decision sharing removes the need to write a contract up front or
+reconcile one afterwards.
+
+## How it fits together
+
+- An **MCP server** exposes `join_room`, `write_decision`, and `read_decisions`.
+- **Command hooks** inject new decisions into an agent's context on `UserPromptSubmit` and before
+  edit tools fire.
+- A **local web UI** shows what each room has accumulated.
+- A **libSQL database** at `~/.agent-comms/db.sqlite` holds it all — user-global, so agents in
+  separate worktrees share one room.

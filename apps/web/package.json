@@ -1,0 +1,40 @@
+{
+  "name": "@agent-comms/web",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev --port 3000",
+    "generate-routes": "tsr generate",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsr generate && tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-comms/protocol": "workspace:*",
+    "@agent-comms/ui-library": "workspace:*",
+    "@tanstack/react-router": "1.170.23",
+    "lucide-react": "1.30.0",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@agent-comms/typescript-config": "workspace:*",
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/router-cli": "1.167.25",
+    "@tanstack/router-plugin": "1.168.27",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

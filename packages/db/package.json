@@ -1,0 +1,38 @@
+{
+  "name": "@agent-comms/db",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "files": [
+    "migrations",
+    "src"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema.ts",
+    "./relations": "./src/relations.ts",
+    "./migrator": "./src/migrator.ts"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-comms/core": "workspace:*",
+    "@agent-comms/protocol": "workspace:*",
+    "@libsql/client": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@agent-comms/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "drizzle-kit": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

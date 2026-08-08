@@ -1,0 +1,31 @@
+{
+  "name": "@agent-comms/api",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsup && node ./scripts/copy-web-build.mjs",
+    "dev": "tsx watch src/server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agent-comms/core": "workspace:*",
+    "@agent-comms/db": "workspace:*",
+    "@agent-comms/protocol": "workspace:*",
+    "@hono/node-server": "catalog:",
+    "hono": "catalog:"
+  },
+  "devDependencies": {
+    "@agent-comms/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "4.21.1",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

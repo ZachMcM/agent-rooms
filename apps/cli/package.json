@@ -1,0 +1,45 @@
+{
+  "name": "agent-comms",
+  "version": "0.0.0",
+  "description": "Pseudo-real-time decision sharing between parallel coding agents.",
+  "license": "MIT",
+  "bin": {
+    "agent-comms": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "migrations"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && node ./scripts/copy-assets.mjs",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "catalog:",
+    "@libsql/client": "catalog:",
+    "commander": "15.0.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@agent-comms/api": "workspace:*",
+    "@agent-comms/core": "workspace:*",
+    "@agent-comms/db": "workspace:*",
+    "@agent-comms/mcp": "workspace:*",
+    "@agent-comms/protocol": "workspace:*",
+    "@agent-comms/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

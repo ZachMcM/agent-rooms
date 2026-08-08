@@ -1,0 +1,29 @@
+{
+  "name": "@agent-comms/docs",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --turbopack --port 3002",
+    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "start": "next start --port 3002",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "catalog:",
+    "nextra": "catalog:",
+    "nextra-theme-docs": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@agent-comms/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "pagefind": "catalog:",
+    "typescript": "5.9.3"
+  }
+}
