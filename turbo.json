@@ -29,12 +29,12 @@
     "db:migrate": {
       "cache": false
     },
-    "@agent-comms/api#build": {
-      "dependsOn": ["^build", "@agent-comms/web#build"],
+    "@agent-rooms/api#build": {
+      "dependsOn": ["^build", "@agent-rooms/web#build"],
       "outputs": ["dist/**"]
     },
-    "agent-comms#build": {
-      "dependsOn": ["^build", "@agent-comms/api#build"],
+    "agent-rooms#build": {
+      "dependsOn": ["^build", "@agent-rooms/api#build"],
       "outputs": ["dist/**", "migrations/**"]
     }
   }

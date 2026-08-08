@@ -1,1 +1,1 @@
-export { default } from '@agent-comms/ui-library/postcss.config'
+export { default } from '@agent-rooms/ui-library/postcss.config'

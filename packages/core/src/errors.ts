@@ -6,51 +6,51 @@ export type ErrorCode =
   | 'conflict'
   | 'internal'
 
-export class AgentCommsError extends Error {
+export class AgentRoomsError extends Error {
   readonly code: ErrorCode
 
   constructor(code: ErrorCode, message: string, options?: ErrorOptions) {
     super(message, options)
-    this.name = 'AgentCommsError'
+    this.name = 'AgentRoomsError'
     this.code = code
   }
 }
 
-export class NotFoundError extends AgentCommsError {
+export class NotFoundError extends AgentRoomsError {
   constructor(message: string, options?: ErrorOptions) {
     super('not_found', message, options)
     this.name = 'NotFoundError'
   }
 }
 
-export class UnauthenticatedError extends AgentCommsError {
+export class UnauthenticatedError extends AgentRoomsError {
   constructor(message: string, options?: ErrorOptions) {
     super('unauthenticated', message, options)
     this.name = 'UnauthenticatedError'
   }
 }
 
-export class ForbiddenError extends AgentCommsError {
+export class ForbiddenError extends AgentRoomsError {
   constructor(message: string, options?: ErrorOptions) {
     super('forbidden', message, options)
     this.name = 'ForbiddenError'
   }
 }
 
-export class InvalidInputError extends AgentCommsError {
+export class InvalidInputError extends AgentRoomsError {
   constructor(message: string, options?: ErrorOptions) {
     super('invalid_input', message, options)
     this.name = 'InvalidInputError'
   }
 }
 
-export class ConflictError extends AgentCommsError {
+export class ConflictError extends AgentRoomsError {
   constructor(message: string, options?: ErrorOptions) {
     super('conflict', message, options)
     this.name = 'ConflictError'
   }
 }
 
-export function isAgentCommsError(error: unknown): error is AgentCommsError {
-  return error instanceof AgentCommsError
+export function isAgentRoomsError(error: unknown): error is AgentRoomsError {
+  return error instanceof AgentRoomsError
 }

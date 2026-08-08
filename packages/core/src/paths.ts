@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-export const DATA_DIR_NAME = '.agent-comms'
+export const DATA_DIR_NAME = '.agent-rooms'
 export const DB_FILE_NAME = 'db.sqlite'
 
 // The data dir is deliberately user-global rather than project-local: parallel agents commonly

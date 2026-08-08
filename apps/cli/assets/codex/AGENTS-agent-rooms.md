@@ -1,7 +1,7 @@
 <!-- TODO: verify Codex's lifecycle events are close enough to Claude Code's to share one
      implementation. If they are not, this is where the adapter divergence shows up first. -->
 
-# agent-comms
+# agent-rooms
 
 You are in a room with other agents working on adjacent parts of the same feature. They cannot see
 your context and you cannot see theirs. The only channel is this one.

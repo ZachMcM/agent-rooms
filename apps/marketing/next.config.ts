@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@agent-comms/ui-library'],
+  transpilePackages: ['@agent-rooms/ui-library'],
 }
 
 export default nextConfig

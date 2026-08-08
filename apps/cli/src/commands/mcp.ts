@@ -1,4 +1,4 @@
-import { connectStdio, createMcpServer } from '@agent-comms/mcp'
+import { connectStdio, createMcpServer } from '@agent-rooms/mcp'
 import { Command } from 'commander'
 
 import { packageVersion } from '../paths'

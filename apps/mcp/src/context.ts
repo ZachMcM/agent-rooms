@@ -1,5 +1,5 @@
-import type { Database } from '@agent-comms/db'
-import type { Principal } from '@agent-comms/protocol'
+import type { Database } from '@agent-rooms/db'
+import type { Principal } from '@agent-rooms/protocol'
 
 // Never module-level session state. Under stdio one process is one session, which makes stashing
 // session_id in a module variable tempting — under HTTP one process holds many sessions and that

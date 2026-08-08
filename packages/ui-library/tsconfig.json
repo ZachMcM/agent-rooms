@@ -1,8 +1,8 @@
 {
-  "extends": "@agent-comms/typescript-config/react-library.json",
+  "extends": "@agent-rooms/typescript-config/react-library.json",
   "compilerOptions": {
     "paths": {
-      "@agent-comms/ui-library/*": ["./src/*"]
+      "@agent-rooms/ui-library/*": ["./src/*"]
     }
   },
   "include": ["src"],

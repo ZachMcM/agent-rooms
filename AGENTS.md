@@ -1,7 +1,7 @@
-# agent-comms
+# agent-rooms
 
 Parallel agents on adjacent tasks drift because nothing carries a decision from one to the other
-while it is being made. `agent-comms` is the harness that tests whether pseudo-real-time decision
+while it is being made. `agent-rooms` is the harness that tests whether pseudo-real-time decision
 sharing removes the need to write a contract up front or reconcile one afterwards.
 
 **Status: scaffold only.** The structure, toolchain, and contracts are in place. No business logic
@@ -22,7 +22,7 @@ Run from the repo root.
 | `pnpm typecheck`                            | `tsc --noEmit` per package                                  |
 | `pnpm test`                                 | Vitest per package                                          |
 | `pnpm check`                                | lint + format:check + typecheck + test                      |
-| `pnpm --filter @agent-comms/db db:generate` | Generate a migration from `schema.ts`                       |
+| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                       |
 
 oxlint and oxfmt are single fast binaries — they run once over the whole tree from the root rather
 than per package. Only `typecheck`, `test`, and `build` go through turbo.
@@ -47,7 +47,7 @@ packages/
   typescript-config shared tsconfigs
 ```
 
-Import alias is `@agent-comms`. Internal packages are **just-in-time**: their `exports` point at
+Import alias is `@agent-rooms`. Internal packages are **just-in-time**: their `exports` point at
 TypeScript source and consumers compile them, so `packages/*` need no build step.
 
 ## Invariants
@@ -55,7 +55,7 @@ TypeScript source and consumers compile them, so `packages/*` need no build step
 These come from the design doc. Breaking one is a design change, not a refactor.
 
 **Every query is scoped by a `Principal`.** Local mode is not "no user", it is one fixed principal.
-Routes and MCP handlers never import `@agent-comms/db/client` — an oxlint rule enforces this for
+Routes and MCP handlers never import `@agent-rooms/db/client` — an oxlint rule enforces this for
 everything under `apps/`, with an explicit exemption for the two composition roots
 (`apps/api/src/server.ts`, `apps/cli/src/runtime.ts`) that build the client. Everything else calls
 a domain function in `packages/db` that takes a principal as its first argument.
@@ -78,7 +78,7 @@ monotonic high-water mark and cannot tolerate that. Never key the cursor on a ti
 **Read-and-advance must be atomic.** A single `UPDATE ... RETURNING` or an immediate transaction.
 A separate read then update lets concurrent hook processes on the same membership double-inject.
 
-**The db path is user-global** (`~/.agent-comms/db.sqlite`). Parallel agents commonly run in
+**The db path is user-global** (`~/.agent-rooms/db.sqlite`). Parallel agents commonly run in
 separate git worktrees, and a project-local db would give each its own file and silently do
 nothing.
 
@@ -101,7 +101,7 @@ Three separate JSON shapes, all declared as Zod schemas in `apps/cli/src/hooks/`
   we may write to stdout. The input schemas are deliberately non-strict: Claude Code adds fields
   between releases, and a strict object would turn each new field into a hook crash on every edit
   tool call. `session_id` is required, since it is the durable identity everything keys on.
-- **`settings.ts`** — the config `agent-comms install` merges into the user's `settings.json`,
+- **`settings.ts`** — the config `agent-rooms install` merges into the user's `settings.json`,
   built by `buildHookSettings(binaryPath)`. It throws on a relative path: the command must be the
   absolute path of the installed binary, resolved at install time, never `npx`.
 
@@ -150,7 +150,7 @@ Three deviations are deliberate and worth knowing before you upgrade anything:
 
 ## Build graph
 
-`@agent-comms/web#build` → `@agent-comms/api#build` → `agent-comms#build`, declared explicitly in
+`@agent-rooms/web#build` → `@agent-rooms/api#build` → `agent-rooms#build`, declared explicitly in
 `turbo.json` because these are asset dependencies rather than package dependencies.
 
 - `api#build` copies `apps/web/dist` into `apps/api/dist/public` for cloud deploys.
@@ -159,7 +159,7 @@ Three deviations are deliberate and worth knowing before you upgrade anything:
 
 Workspace deps of `cli` live in **devDependencies**. In `dependencies` they get rewritten to a
 public range at pack time and fail to resolve on the registry; tsup inlines them with
-`noExternal: [/^@agent-comms\//]`. `@libsql/client` has native bindings, so it stays a real
+`noExternal: [/^@agent-rooms\//]`. `@libsql/client` has native bindings, so it stays a real
 dependency and is marked `external`.
 
 The `cold-install` CI job packs the tarball and installs it in a temp directory outside the
@@ -173,10 +173,10 @@ Two halves, deliberately:
 - `drizzle-kit generate` authors SQL from `schema.ts`; `drizzle-kit migrate` applies it to a
   developer's database. Both are dev-time — drizzle-kit is a devDependency.
 - `runMigrations()` in `packages/db/src/migrator.ts` applies the shipped `migrations/` folder
-  in-process. An end user has no drizzle-kit, so the cli has to bring `~/.agent-comms/db.sqlite`
+  in-process. An end user has no drizzle-kit, so the cli has to bring `~/.agent-rooms/db.sqlite`
   up to date itself on first boot. This is not yet called; see the TODO in `apps/cli/src/runtime.ts`.
 
-`drizzle.config.ts` resolves its url through `@agent-comms/core`, not `process.env` directly. A
+`drizzle.config.ts` resolves its url through `@agent-rooms/core`, not `process.env` directly. A
 second default there would let drizzle-kit migrate a different database than the one the app
 opens — the exact silent failure the user-global path exists to prevent.
 

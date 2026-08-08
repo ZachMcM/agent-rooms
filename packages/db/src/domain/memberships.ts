@@ -1,4 +1,4 @@
-import type { Principal } from '@agent-comms/protocol'
+import type { Principal } from '@agent-rooms/protocol'
 
 import type { Database } from '../client'
 import type { MembershipRow } from '../schema'

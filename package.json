@@ -1,5 +1,5 @@
 {
-  "name": "agent-comms-monorepo",
+  "name": "agent-rooms-monorepo",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,9 +15,9 @@
     "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run test"
   },
   "devDependencies": {
-    "@agent-comms/oxfmt-config": "workspace:*",
-    "@agent-comms/oxlint-config": "workspace:*",
-    "@agent-comms/typescript-config": "workspace:*",
+    "@agent-rooms/oxfmt-config": "workspace:*",
+    "@agent-rooms/oxlint-config": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "turbo": "catalog:",

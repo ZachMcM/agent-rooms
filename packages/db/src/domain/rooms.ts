@@ -1,10 +1,10 @@
-import type { Principal } from '@agent-comms/protocol'
+import type { Principal } from '@agent-rooms/protocol'
 
 import type { Database } from '../client'
 import type { MembershipRow, RoomRow } from '../schema'
 
 // Every domain function takes a principal first. Routes and mcp handlers never import the db
-// client directly — an oxlint rule bans `@agent-comms/db/client` outside this package — so
+// client directly — an oxlint rule bans `@agent-rooms/db/client` outside this package — so
 // scoping is structural rather than remembered.
 
 export function listRooms(_db: Database, _principal: Principal): Promise<RoomRow[]> {

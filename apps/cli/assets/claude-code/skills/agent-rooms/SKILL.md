@@ -1,12 +1,12 @@
 ---
-name: agent-comms
+name: agent-rooms
 description: Share decisions with other agents working in parallel on adjacent parts of the same feature. Use after joining a room with /room, whenever you make a decision a sibling agent could contradict, and when you need to know what siblings have already decided.
 ---
 
 <!-- TODO: this file is the product. The whole bet is hard prompting, so iterate on it against
      real drift cases rather than treating it as boilerplate. -->
 
-# agent-comms
+# agent-rooms
 
 You are in a room with other agents working on adjacent parts of the same feature. They cannot see
 your context and you cannot see theirs. The only channel is this one.

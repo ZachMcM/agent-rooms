@@ -1,8 +1,8 @@
 {
-  "name": "@agent-comms/docs",
+  "name": "@agent-rooms/docs",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
     "build": "next build",
@@ -19,7 +19,7 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@agent-comms/typescript-config": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

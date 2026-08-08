@@ -1,5 +1,5 @@
-import '@agent-comms/ui-library/globals.css'
-import { cn } from '@agent-comms/ui-library/lib/utils'
+import '@agent-rooms/ui-library/globals.css'
+import { cn } from '@agent-rooms/ui-library/lib/utils'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
@@ -9,7 +9,7 @@ const fontSans = Geist({ subsets: ['latin'], variable: '--font-sans' })
 const fontMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
-  title: 'agent-comms',
+  title: 'agent-rooms',
   description: 'Pseudo-real-time decision sharing between parallel coding agents.',
 }
 

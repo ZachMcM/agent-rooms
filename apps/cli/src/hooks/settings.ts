@@ -3,7 +3,7 @@ import { z } from 'zod'
 // Hook config is not a shipped asset — it is generated at install time with the absolute path of
 // the installed binary baked in, then merged into the user's settings.json.
 
-export const MCP_SERVER_NAME = 'agent-comms'
+export const MCP_SERVER_NAME = 'agent-rooms'
 
 // Our own MCP tools, so the hook can inject session_id into their params.
 export const MCP_TOOL_MATCHER = `mcp__${MCP_SERVER_NAME}__.*`

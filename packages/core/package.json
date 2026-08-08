@@ -1,8 +1,8 @@
 {
-  "name": "@agent-comms/core",
+  "name": "@agent-rooms/core",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -15,7 +15,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@agent-comms/typescript-config": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -1,4 +1,4 @@
-import { baseConfig } from '@agent-comms/oxfmt-config'
+import { baseConfig } from '@agent-rooms/oxfmt-config'
 import { defineConfig } from 'oxfmt'
 
 export default defineConfig({

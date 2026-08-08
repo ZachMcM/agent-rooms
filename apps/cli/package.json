@@ -1,10 +1,10 @@
 {
-  "name": "agent-comms",
+  "name": "agent-rooms",
   "version": "0.0.0",
   "description": "Pseudo-real-time decision sharing between parallel coding agents.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bin": {
-    "agent-comms": "./dist/index.js"
+    "agent-rooms": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -28,12 +28,12 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@agent-comms/api": "workspace:*",
-    "@agent-comms/core": "workspace:*",
-    "@agent-comms/db": "workspace:*",
-    "@agent-comms/mcp": "workspace:*",
-    "@agent-comms/protocol": "workspace:*",
-    "@agent-comms/typescript-config": "workspace:*",
+    "@agent-rooms/api": "workspace:*",
+    "@agent-rooms/core": "workspace:*",
+    "@agent-rooms/db": "workspace:*",
+    "@agent-rooms/mcp": "workspace:*",
+    "@agent-rooms/protocol": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

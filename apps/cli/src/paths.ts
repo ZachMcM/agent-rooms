@@ -19,5 +19,5 @@ export function packageVersion(): string {
 // Hook config points at this, never `npx` — cold resolution would add hundreds of milliseconds
 // to every edit tool call.
 export function binaryPath(): string {
-  return process.argv[1] ?? 'agent-comms'
+  return process.argv[1] ?? 'agent-rooms'
 }

@@ -1,4 +1,4 @@
-import type { WriteDecisionInput, WriteDecisionOutput } from '@agent-comms/protocol'
+import type { WriteDecisionInput, WriteDecisionOutput } from '@agent-rooms/protocol'
 
 import type { ToolHandler } from '../context'
 

@@ -1,4 +1,4 @@
-import { createApp } from '@agent-comms/api'
+import { createApp } from '@agent-rooms/api'
 import { serve } from '@hono/node-server'
 import { Command } from 'commander'
 
@@ -12,9 +12,9 @@ export function webCommand(): Command {
     const app = createApp({ mode: 'local', db, principal, version })
 
     serve(
-      { fetch: app.fetch, hostname: env.AGENT_COMMS_HOST, port: env.AGENT_COMMS_PORT },
+      { fetch: app.fetch, hostname: env.AGENT_ROOMS_HOST, port: env.AGENT_ROOMS_PORT },
       (info) => {
-        console.log(`agent-comms web on http://${env.AGENT_COMMS_HOST}:${info.port}`)
+        console.log(`agent-rooms web on http://${env.AGENT_ROOMS_HOST}:${info.port}`)
       },
     )
   })

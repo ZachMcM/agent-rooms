@@ -1,4 +1,4 @@
-import type { Principal } from '@agent-comms/protocol'
+import type { Principal } from '@agent-rooms/protocol'
 import { createContext, use } from 'react'
 
 // The auth context always exists. Locally its provider resolves immediately to the fixed

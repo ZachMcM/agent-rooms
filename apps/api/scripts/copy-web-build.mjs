@@ -8,7 +8,7 @@ const destination = resolve(here, '../dist/public')
 
 if (!existsSync(source)) {
   console.error(
-    `web build not found at ${source} — run \`turbo run build --filter=@agent-comms/web\``,
+    `web build not found at ${source} — run \`turbo run build --filter=@agent-rooms/web\``,
   )
   process.exit(1)
 }

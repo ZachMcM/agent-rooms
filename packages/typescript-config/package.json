@@ -1,8 +1,8 @@
 {
-  "name": "@agent-comms/typescript-config",
+  "name": "@agent-rooms/typescript-config",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "files": [
     "base.json",
     "node.json",

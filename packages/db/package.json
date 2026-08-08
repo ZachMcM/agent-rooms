@@ -1,8 +1,8 @@
 {
-  "name": "@agent-comms/db",
+  "name": "@agent-rooms/db",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "files": [
     "migrations",
     "src"
@@ -23,13 +23,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-comms/core": "workspace:*",
-    "@agent-comms/protocol": "workspace:*",
+    "@agent-rooms/core": "workspace:*",
+    "@agent-rooms/protocol": "workspace:*",
     "@libsql/client": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
-    "@agent-comms/typescript-config": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "drizzle-kit": "catalog:",
     "typescript": "catalog:",

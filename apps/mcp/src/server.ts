@@ -2,7 +2,7 @@ import {
   joinRoomInputSchema,
   readDecisionsInputSchema,
   writeDecisionInputSchema,
-} from '@agent-comms/protocol'
+} from '@agent-rooms/protocol'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 import type { McpContext } from './context'
@@ -14,14 +14,14 @@ export type CreateMcpServerOptions = {
 }
 
 const SESSION_ID_NOTE =
-  'Supplied by the agent-comms PreToolUse hook, not by the model. Leave it out.'
+  'Supplied by the agent-rooms PreToolUse hook, not by the model. Leave it out.'
 
 function jsonResult(value: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }] }
 }
 
 export function createMcpServer({ ctx, version }: CreateMcpServerOptions) {
-  const server = new McpServer({ name: 'agent-comms', version })
+  const server = new McpServer({ name: 'agent-rooms', version })
 
   server.registerTool(
     'join_room',
@@ -56,4 +56,4 @@ export function createMcpServer({ ctx, version }: CreateMcpServerOptions) {
   return server
 }
 
-export type AgentCommsMcpServer = ReturnType<typeof createMcpServer>
+export type AgentRoomsMcpServer = ReturnType<typeof createMcpServer>

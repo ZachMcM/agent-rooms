@@ -1,4 +1,4 @@
-import type { Principal } from '@agent-comms/protocol'
+import type { Principal } from '@agent-rooms/protocol'
 import { createMiddleware } from 'hono/factory'
 
 import type { AppBindings } from '../types'

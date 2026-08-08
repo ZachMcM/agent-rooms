@@ -48,9 +48,9 @@ jobs:
           set -euo pipefail
           cd "$(mktemp -d)"
           npm init -y > /dev/null
-          npm install "$RUNNER_TEMP"/agent-comms-*.tgz
-          ./node_modules/.bin/agent-comms --version
-          ./node_modules/.bin/agent-comms --help
-          test -d node_modules/agent-comms/migrations
-          test -f node_modules/agent-comms/assets/claude-code/skills/agent-comms/SKILL.md
-          test -f node_modules/agent-comms/dist/public/index.html
+          npm install "$RUNNER_TEMP"/agent-rooms-*.tgz
+          ./node_modules/.bin/agent-rooms --version
+          ./node_modules/.bin/agent-rooms --help
+          test -d node_modules/agent-rooms/migrations
+          test -f node_modules/agent-rooms/assets/claude-code/skills/agent-rooms/SKILL.md
+          test -f node_modules/agent-rooms/dist/public/index.html

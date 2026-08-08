@@ -1,5 +1,5 @@
-import type { Database } from '@agent-comms/db'
-import type { Principal } from '@agent-comms/protocol'
+import type { Database } from '@agent-rooms/db'
+import type { Principal } from '@agent-rooms/protocol'
 
 export type AppBindings = {
   Variables: {

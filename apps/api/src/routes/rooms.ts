@@ -1,4 +1,4 @@
-import type { Database } from '@agent-comms/db'
+import type { Database } from '@agent-rooms/db'
 import { Hono } from 'hono'
 
 import type { AppBindings } from '../types'

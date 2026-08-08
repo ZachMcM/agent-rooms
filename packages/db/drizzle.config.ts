@@ -1,4 +1,4 @@
-import { loadEnv, resolveDbUrl } from '@agent-comms/core'
+import { loadEnv, resolveDbUrl } from '@agent-rooms/core'
 import { defineConfig } from 'drizzle-kit'
 
 // `turso` is drizzle-kit's libSQL dialect. It covers both modes: local is a `file:` url under the
@@ -15,6 +15,6 @@ export default defineConfig({
   out: './migrations',
   dbCredentials: {
     url: resolveDbUrl(env),
-    authToken: env.AGENT_COMMS_DB_AUTH_TOKEN,
+    authToken: env.AGENT_ROOMS_DB_AUTH_TOKEN,
   },
 })

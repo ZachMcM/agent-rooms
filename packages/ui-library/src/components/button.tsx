@@ -1,4 +1,4 @@
-import { cn } from '@agent-comms/ui-library/lib/utils'
+import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 

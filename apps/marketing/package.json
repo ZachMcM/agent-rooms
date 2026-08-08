@@ -1,8 +1,8 @@
 {
-  "name": "@agent-comms/marketing",
+  "name": "@agent-rooms/marketing",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
     "build": "next build",
@@ -11,7 +11,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@agent-comms/ui-library": "workspace:*",
+    "@agent-rooms/ui-library": "workspace:*",
     "lucide-react": "1.30.0",
     "next": "catalog:",
     "next-themes": "0.4.6",
@@ -19,7 +19,7 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@agent-comms/typescript-config": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

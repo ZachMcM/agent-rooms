@@ -14,8 +14,8 @@
     "components": "@/components",
     "hooks": "@/hooks",
     "lib": "@/lib",
-    "utils": "@agent-comms/ui-library/lib/utils",
-    "ui": "@agent-comms/ui-library/components"
+    "utils": "@agent-rooms/ui-library/lib/utils",
+    "ui": "@agent-rooms/ui-library/components"
   },
   "rtl": false,
   "menuColor": "default",

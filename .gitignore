@@ -148,8 +148,8 @@ _pagefind/
 # TanStack Router generated route tree
 routeTree.gen.ts
 
-# Local agent-comms data
-.agent-comms/
+# Local agent-rooms data
+.agent-rooms/
 
 # Copied into apps/cli at build time from packages/db
 apps/cli/migrations/

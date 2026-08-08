@@ -10,8 +10,8 @@
           {
             "paths": [
               {
-                "name": "@agent-comms/db/client",
-                "message": "Import a domain function from @agent-comms/db instead. Every query must be scoped by a Principal."
+                "name": "@agent-rooms/db/client",
+                "message": "Import a domain function from @agent-rooms/db instead. Every query must be scoped by a Principal."
               }
             ]
           }

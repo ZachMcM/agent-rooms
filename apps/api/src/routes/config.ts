@@ -1,5 +1,5 @@
-import type { Mode } from '@agent-comms/core'
-import type { RuntimeConfig } from '@agent-comms/protocol'
+import type { Mode } from '@agent-rooms/core'
+import type { RuntimeConfig } from '@agent-rooms/protocol'
 import { Hono } from 'hono'
 
 import type { AppBindings } from '../types'

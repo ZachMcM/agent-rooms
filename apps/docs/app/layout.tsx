@@ -8,14 +8,14 @@ import 'nextra-theme-docs/style.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'agent-comms',
-    template: '%s — agent-comms',
+    default: 'agent-rooms',
+    template: '%s — agent-rooms',
   },
   description: 'Pseudo-real-time decision sharing between parallel coding agents.',
 }
 
-const navbar = <Navbar logo={<b>agent-comms</b>} />
-const footer = <Footer>MIT {new Date().getFullYear()} © agent-comms.</Footer>
+const navbar = <Navbar logo={<b>agent-rooms</b>} />
+const footer = <Footer>MIT {new Date().getFullYear()} © agent-rooms.</Footer>
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Layout
           navbar={navbar}
           pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/zachmcmullen/agent-comms/tree/main/apps/docs"
+          docsRepositoryBase="https://github.com/ZachMcM/agent-rooms/tree/main/apps/docs"
           footer={footer}
         >
           {children}

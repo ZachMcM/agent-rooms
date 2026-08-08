@@ -1,6 +1,6 @@
-import { type Env, loadEnv, resolveDbUrl } from '@agent-comms/core'
-import { type Database, createDatabase } from '@agent-comms/db/client'
-import type { Principal } from '@agent-comms/protocol'
+import { type Env, loadEnv, resolveDbUrl } from '@agent-rooms/core'
+import { type Database, createDatabase } from '@agent-rooms/db/client'
+import type { Principal } from '@agent-rooms/protocol'
 
 export type LocalRuntime = {
   env: Env
@@ -15,14 +15,14 @@ export function resolveLocalPrincipal(): Principal {
   throw new Error('not implemented')
 }
 
-// TODO: await runMigrations(db) from @agent-comms/db before returning. drizzle-kit is a
+// TODO: await runMigrations(db) from @agent-rooms/db before returning. drizzle-kit is a
 // devDependency and never reaches a user's machine, so the shipped migrations/ folder has to be
 // applied here on boot. That makes this async.
 export function createLocalRuntime(version: string): LocalRuntime {
   const env = loadEnv()
   return {
     env,
-    db: createDatabase({ url: resolveDbUrl(env), authToken: env.AGENT_COMMS_DB_AUTH_TOKEN }),
+    db: createDatabase({ url: resolveDbUrl(env), authToken: env.AGENT_ROOMS_DB_AUTH_TOKEN }),
     principal: resolveLocalPrincipal(),
     version,
   }

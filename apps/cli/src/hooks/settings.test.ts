@@ -7,7 +7,7 @@ import {
   hookSettingsSchema,
 } from './settings'
 
-const BIN = '/usr/local/bin/agent-comms'
+const BIN = '/usr/local/bin/agent-rooms'
 
 describe('buildHookSettings', () => {
   it('produces config matching the settings.json schema', () => {
@@ -24,7 +24,7 @@ describe('buildHookSettings', () => {
   })
 
   it('rejects a relative command path', () => {
-    expect(() => buildHookSettings('agent-comms')).toThrow(/absolute path/)
+    expect(() => buildHookSettings('agent-rooms')).toThrow(/absolute path/)
   })
 
   it('registers PreToolUse against our mcp tools and edit tools only', () => {
