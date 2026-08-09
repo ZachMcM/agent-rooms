@@ -5,14 +5,16 @@ import { serve } from '@hono/node-server'
 import { createApp } from './app'
 import { createAuth } from './auth'
 
-// Cloud entry point only. Local runs createApp({ mode: 'local' }) in-process from the cli.
+// The cloud process entry. Its local counterpart is not in this package at all: `agent-rooms web`
+// (apps/cli/src/commands/web.ts) builds a local runtime and boots the same createApp in-process,
+// because the cli is the only thing that ships to a user's machine.
 const env = loadEnv()
 
 // This file hardcodes mode: 'cloud', so the environment has to say the same thing. Asserting it
 // is what makes the auth secret mandatory: loadEnv only demands one when the mode is cloud, and
 // without this a deploy that forgot the variable would boot the cloud app past that check.
 if (env.AGENT_ROOMS_MODE !== 'cloud') {
-  throw new Error('server.ts is the cloud entry point — set AGENT_ROOMS_MODE=cloud')
+  throw new Error('cloud.ts is the cloud entry point — set AGENT_ROOMS_MODE=cloud')
 }
 
 // Guaranteed by loadEnv given the assertion above; repeated here so the type narrows to string.

@@ -58,11 +58,17 @@ These come from the design doc. Breaking one is a design change, not a refactor.
 **Every query is scoped by a `Principal`.** Local mode is not "no user", it is one fixed principal.
 Routes and MCP handlers never import `@agent-rooms/db/client` — an oxlint rule enforces this for
 everything under `apps/`, with an explicit exemption for the two composition roots
-(`apps/api/src/server.ts`, `apps/cli/src/runtime.ts`) that build the client. Everything else calls
+(`apps/api/src/cloud.ts`, `apps/cli/src/runtime.ts`) that build the client. Everything else calls
 a domain function in `packages/db` that takes a principal as its first argument.
 
 **Mode is resolved once at startup.** `createApp({ mode })` decides which middleware gets mounted.
 Routes never branch on mode and there is no per-request environment check.
+
+The two process entries deliberately live in different packages. Cloud is `apps/api/src/cloud.ts`,
+which asserts `AGENT_ROOMS_MODE=cloud` and refuses to boot otherwise. Local is `agent-rooms web`
+(`apps/cli/src/commands/web.ts`), which builds a local runtime and boots the same `createApp`
+in-process. `apps/api` has no local entry because the cli is the only package that ships to a
+user's machine — so don't add one; add a cli command.
 
 **MCP handlers take context as a parameter.** `(ctx, params) => ...`, never module-level session
 state. Under stdio one process is one session; under HTTP one process holds many, and a module

@@ -24,7 +24,7 @@
       }
     },
     {
-      "files": ["apps/api/src/server.ts", "apps/cli/src/runtime.ts"],
+      "files": ["apps/api/src/cloud.ts", "apps/cli/src/runtime.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }

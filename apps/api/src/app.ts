@@ -8,7 +8,7 @@ import { staticRoutes } from './static'
 import type { AppBindings, CreateAppOptions } from './types'
 
 // Exports a factory rather than self-starting on import: the cli boots this in-process, cloud
-// serves the same app from src/server.ts.
+// serves the same app from src/cloud.ts.
 export function createApp(options: CreateAppOptions) {
   const app = new Hono<AppBindings>()
 
