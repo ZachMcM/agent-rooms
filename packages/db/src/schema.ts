@@ -160,8 +160,7 @@ export const decisions = sqliteTable(
     // Denormalised so a decision stays readable after its author's membership is gone.
     agentLabel: text('agent_label').notNull(),
     body: text('body').notNull(),
-    // TODO: add an F32_BLOB(n) embedding column once an embedding provider is chosen. The
-    // dimension is fixed at schema time, so changing models later is a migration.
+    // TODO: add an embedding column
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()
       .default(sql`(unixepoch())`),

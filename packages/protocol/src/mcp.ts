@@ -26,7 +26,6 @@ export const writeDecisionOutputSchema = z.object({
 
 export const readDecisionsInputSchema = z.object({
   sessionId: sessionIdSchema,
-  // Omitted means a full dump of the room. Semantic search over decision prose is deferred
   // past MVP; injection is never semantic.
   query: z.string().min(1).optional(),
 })

@@ -23,8 +23,7 @@ export function readDecisions(
   _roomId: string,
 ): Promise<DecisionRow[]> {
   // TODO: full dump of the room, owner-scoped through a join on rooms
-  // TODO (deferred past MVP): optional semantic search over decision prose via libSQL
-  // F32_BLOB + vector_distance_cos. Ranking composes with the same WHERE clauses.
+  // TODO optional semantic search over decision prose via libSQL
   throw new Error('not implemented')
 }
 
