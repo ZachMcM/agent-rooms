@@ -36,4 +36,4 @@ toolchain notes.
 
 ## License
 
-[AGPL-3.0-only](./LICENSE)
+[MIT](./LICENSE)

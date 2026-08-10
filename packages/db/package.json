@@ -2,7 +2,7 @@
   "name": "@agent-rooms/db",
   "version": "0.0.0",
   "private": true,
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "files": [
     "migrations",
     "src"

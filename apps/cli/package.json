@@ -2,7 +2,7 @@
   "name": "agent-rooms",
   "version": "0.0.0",
   "description": "Pseudo-real-time decision sharing between parallel coding agents.",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "bin": {
     "agent-rooms": "./dist/index.js"
   },

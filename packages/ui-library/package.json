@@ -2,7 +2,7 @@
   "name": "@agent-rooms/ui-library",
   "version": "0.0.0",
   "private": true,
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "type": "module",
   "exports": {
     "./globals.css": "./src/styles/globals.css",
