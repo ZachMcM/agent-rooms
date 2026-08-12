@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { decisionSchema, membershipSchema, roomSchema } from './entities'
+import { membershipSchema, messageSchema, roomSchema } from './entities'
 import { principalSchema } from './principal'
 
 // Better Auth owns every path below this prefix. It lives in the protocol rather than in the api
@@ -28,8 +28,8 @@ export const getRoomResponseSchema = z.object({
   memberships: z.array(membershipSchema),
 })
 
-export const listDecisionsResponseSchema = z.object({
-  decisions: z.array(decisionSchema),
+export const listMessagesResponseSchema = z.object({
+  messages: z.array(messageSchema),
 })
 
 export const errorResponseSchema = z.object({
@@ -42,5 +42,5 @@ export const errorResponseSchema = z.object({
 export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>
 export type ListRoomsResponse = z.infer<typeof listRoomsResponseSchema>
 export type GetRoomResponse = z.infer<typeof getRoomResponseSchema>
-export type ListDecisionsResponse = z.infer<typeof listDecisionsResponseSchema>
+export type ListMessagesResponse = z.infer<typeof listMessagesResponseSchema>
 export type ErrorResponse = z.infer<typeof errorResponseSchema>

@@ -1,3 +1,4 @@
+import type { MessageKind } from '@agent-rooms/protocol'
 import { sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
@@ -131,8 +132,7 @@ export const memberships = sqliteTable(
       .references(() => rooms.id, { onDelete: 'cascade' }),
     // Durable identity, supplied by the PreToolUse hook. Survives /resume; /clear starts a new one.
     sessionId: text('session_id').notNull(),
-    agentLabel: text('agent_label').notNull(),
-    // Monotonic high-water mark over decisions.id. Read-and-advance must be atomic or concurrent
+    // Monotonic high-water mark over messages.id. Read-and-advance must be atomic or concurrent
     // hook processes on the same membership double-inject.
     cursor: integer('cursor').notNull().default(0),
     createdAt: integer('created_at', { mode: 'timestamp' })
@@ -145,8 +145,12 @@ export const memberships = sqliteTable(
   ],
 )
 
-export const decisions = sqliteTable(
-  'decisions',
+// Broad schema, narrow policy. The machinery here is a generic append-only log, so the table is
+// not named after the one kind the skill currently writes — that name would be a migration later.
+// Policy lives above it: injection defaults to `decision` and `warning`, everything else is
+// pull-only, and widening is a prompt edit.
+export const messages = sqliteTable(
+  'messages',
   {
     // AUTOINCREMENT, not plain rowid: the cursor depends on ids being monotonic and never reused.
     // SQLite assigns the id inside the write lock, so id order equals commit order.
@@ -157,15 +161,19 @@ export const decisions = sqliteTable(
     membershipId: text('membership_id')
       .notNull()
       .references(() => memberships.id, { onDelete: 'cascade' }),
-    // Denormalised so a decision stays readable after its author's membership is gone.
-    agentLabel: text('agent_label').notNull(),
+    // Enumerated at the protocol layer, plain text with no check constraint here: a client reading
+    // a kind added after it shipped should degrade, not throw on a constraint it cannot know about.
+    kind: text('kind').$type<MessageKind>().notNull(),
     body: text('body').notNull(),
     // TODO: add an embedding column
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()
       .default(sql`(unixepoch())`),
   },
-  (table) => [index('decisions_room_id_idx').on(table.roomId, table.id)],
+  (table) => [
+    index('messages_room_id_idx').on(table.roomId, table.id),
+    index('messages_room_kind_idx').on(table.roomId, table.kind, table.id),
+  ],
 )
 
 export type UserRow = typeof user.$inferSelect
@@ -180,5 +188,5 @@ export type RoomRow = typeof rooms.$inferSelect
 export type NewRoomRow = typeof rooms.$inferInsert
 export type MembershipRow = typeof memberships.$inferSelect
 export type NewMembershipRow = typeof memberships.$inferInsert
-export type DecisionRow = typeof decisions.$inferSelect
-export type NewDecisionRow = typeof decisions.$inferInsert
+export type MessageRow = typeof messages.$inferSelect
+export type NewMessageRow = typeof messages.$inferInsert

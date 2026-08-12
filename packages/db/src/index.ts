@@ -1,16 +1,16 @@
 export { authTables } from './auth-tables'
 export type { DatabaseConnection, Database } from './client'
-export * from './domain/decisions'
 export * from './domain/memberships'
+export * from './domain/messages'
 export * from './domain/rooms'
 export * from './migrator'
 export type {
   AccountRow,
-  DecisionRow,
   MembershipRow,
+  MessageRow,
   NewAccountRow,
-  NewDecisionRow,
   NewMembershipRow,
+  NewMessageRow,
   NewRoomRow,
   NewSessionRow,
   NewUserRow,

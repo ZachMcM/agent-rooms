@@ -6,7 +6,6 @@ import type { MembershipRow } from '../schema'
 export type JoinRoomArgs = {
   roomName: string
   sessionId: string
-  agentLabel: string
 }
 
 export function joinRoom(

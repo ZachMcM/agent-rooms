@@ -26,7 +26,7 @@ export const relations = defineRelations(schema, (r) => ({
   },
   rooms: {
     memberships: r.many.memberships(),
-    decisions: r.many.decisions(),
+    messages: r.many.messages(),
   },
   memberships: {
     room: r.one.rooms({
@@ -34,16 +34,16 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.rooms.id,
       optional: false,
     }),
-    decisions: r.many.decisions(),
+    messages: r.many.messages(),
   },
-  decisions: {
+  messages: {
     room: r.one.rooms({
-      from: r.decisions.roomId,
+      from: r.messages.roomId,
       to: r.rooms.id,
       optional: false,
     }),
     membership: r.one.memberships({
-      from: r.decisions.membershipId,
+      from: r.messages.membershipId,
       to: r.memberships.id,
       optional: false,
     }),

@@ -17,9 +17,9 @@ export function roomRoutes(_db: Database) {
       // TODO: return the room plus its memberships
       return c.json({ error: { code: 'not_found', message: 'not implemented' } }, 404)
     })
-    .get('/:roomId/decisions', (c) => {
+    .get('/:roomId/messages', (c) => {
       const _principal = c.get('principal')
-      // TODO: return readDecisions(db, principal, roomId)
-      return c.json({ decisions: [] })
+      // TODO: return readMessages(db, principal, { roomId, kind, query })
+      return c.json({ messages: [] })
     })
 }

@@ -1,21 +1,27 @@
 import { describe, expect, it } from 'vitest'
 
-import { joinRoomInputSchema, readDecisionsInputSchema, writeDecisionInputSchema } from './cli'
+import { joinRoomInputSchema, readMessagesInputSchema, writeMessageInputSchema } from './cli'
 
 describe('cli command contracts', () => {
   it('requires a session id on join_room', () => {
+    expect(joinRoomInputSchema.safeParse({ roomName: 'feature' }).success).toBe(false)
+  })
+
+  it('requires a session id on write_message', () => {
     expect(
-      joinRoomInputSchema.safeParse({ roomName: 'feature', agentLabel: 'backend' }).success,
+      writeMessageInputSchema.safeParse({ kind: 'decision', body: 'snake_case at the boundary' })
+        .success,
     ).toBe(false)
   })
 
-  it('requires a session id on write_decision', () => {
-    expect(writeDecisionInputSchema.safeParse({ body: 'snake_case at the boundary' }).success).toBe(
-      false,
-    )
+  it('rejects a kind outside the enum', () => {
+    expect(
+      writeMessageInputSchema.safeParse({ sessionId: 'sess_1', kind: 'note', body: 'anything' })
+        .success,
+    ).toBe(false)
   })
 
-  it('treats the read_decisions query as optional', () => {
-    expect(readDecisionsInputSchema.safeParse({ sessionId: 'sess_1' }).success).toBe(true)
+  it('treats the read_messages query and kind as optional', () => {
+    expect(readMessagesInputSchema.safeParse({ sessionId: 'sess_1' }).success).toBe(true)
   })
 })
