@@ -44,6 +44,6 @@ export function drainMessages(
   _membershipId: string,
 ): Promise<MessageRow[]> {
   // TODO: single UPDATE ... RETURNING (or immediate transaction) advancing memberships.cursor
-  // to the max messages.id in the room, returning the INJECTED_MESSAGE_KINDS rows in between.
+  // to the max messages.id in the room, returning the 'decision' and 'warning' rows in between.
   throw new Error('not implemented')
 }

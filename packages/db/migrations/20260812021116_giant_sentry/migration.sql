@@ -11,6 +11,5 @@ CREATE TABLE `messages` (
 --> statement-breakpoint
 DROP INDEX IF EXISTS `decisions_room_id_idx`;--> statement-breakpoint
 CREATE INDEX `messages_room_id_idx` ON `messages` (`room_id`,`id`);--> statement-breakpoint
-CREATE INDEX `messages_room_kind_idx` ON `messages` (`room_id`,`kind`,`id`);--> statement-breakpoint
 DROP TABLE `decisions`;--> statement-breakpoint
 ALTER TABLE `memberships` DROP COLUMN `agent_label`;

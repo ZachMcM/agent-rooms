@@ -1,13 +1,8 @@
 import { z } from 'zod'
 
 // Enumerated rather than left a free string: a free label fragments across agents (`api`, `API`,
-// `api-contract`) and then cannot be filtered on, which defeats having the column at all. It is
-// stored as plain text in SQLite, so this list is the only thing that narrows it.
+// `api-contract`) and then cannot be filtered on, which defeats having the column.
 export const MESSAGE_KINDS = ['decision', 'warning', 'question', 'answer', 'status'] as const
-
-// Narrow policy over the broad schema: only these are pushed into a sibling's context by the drain
-// hooks. Every other kind is pull-only, through `read`.
-export const INJECTED_MESSAGE_KINDS = ['decision', 'warning'] as const
 
 export const messageKindSchema = z.enum(MESSAGE_KINDS)
 

@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "4bef49dd-4155-4407-8878-b26400747827",
+  "id": "42be80f3-ab2a-49b5-b10d-c4a4913599fb",
   "prevIds": [
     "dcce9825-cbd1-4609-b28c-1c9ecaa08d3b"
   ],
@@ -723,28 +723,6 @@
       "where": null,
       "origin": "manual",
       "name": "messages_room_id_idx",
-      "entityType": "indexes",
-      "table": "messages"
-    },
-    {
-      "columns": [
-        {
-          "value": "room_id",
-          "isExpression": false
-        },
-        {
-          "value": "kind",
-          "isExpression": false
-        },
-        {
-          "value": "id",
-          "isExpression": false
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "origin": "manual",
-      "name": "messages_room_kind_idx",
       "entityType": "indexes",
       "table": "messages"
     },
