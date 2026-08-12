@@ -3,11 +3,6 @@ import { z } from 'zod'
 // Hook config is not a shipped asset — it is generated at install time with the absolute path of
 // the installed binary baked in, then merged into the user's settings.json.
 
-export const MCP_SERVER_NAME = 'agent-rooms'
-
-// Our own MCP tools, so the hook can inject session_id into their params.
-export const MCP_TOOL_MATCHER = `mcp__${MCP_SERVER_NAME}__.*`
-
 // Edit tools only. Matching all tools would fire dozens of times per read-heavy turn.
 export const EDIT_TOOL_MATCHER = 'Write|Edit'
 
@@ -48,10 +43,7 @@ export function buildHookSettings(binaryPath: string): HookSettings {
 
   return {
     hooks: {
-      PreToolUse: [
-        { matcher: MCP_TOOL_MATCHER, hooks: [preToolUse] },
-        { matcher: EDIT_TOOL_MATCHER, hooks: [preToolUse] },
-      ],
+      PreToolUse: [{ matcher: EDIT_TOOL_MATCHER, hooks: [preToolUse] }],
       UserPromptSubmit: [{ matcher: '*', hooks: [userPromptSubmit] }],
     },
   }

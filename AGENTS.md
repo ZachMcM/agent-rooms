@@ -11,7 +11,8 @@ Read it before changing behaviour. It is a design doc, not a spec — if the cod
 somewhere else during the MVP, say so and go there.
 
 **Status: scaffold.** Most business logic is unimplemented and throws `not implemented` with a
-`TODO`. `apps/mcp` is left over from a design that has since been dropped; don't build on it.
+`TODO`. The agent assets under `apps/cli/assets/` still describe the removed MCP tools; they get
+rewritten when the CLI commands they should describe actually exist.
 
 ## Commands
 

@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  EDIT_TOOL_MATCHER,
-  MCP_TOOL_MATCHER,
-  buildHookSettings,
-  hookSettingsSchema,
-} from './settings'
+import { EDIT_TOOL_MATCHER, buildHookSettings, hookSettingsSchema } from './settings'
 
 const BIN = '/usr/local/bin/agent-rooms'
 
@@ -27,9 +22,9 @@ describe('buildHookSettings', () => {
     expect(() => buildHookSettings('agent-rooms')).toThrow(/absolute path/)
   })
 
-  it('registers PreToolUse against our mcp tools and edit tools only', () => {
+  it('registers PreToolUse against edit tools only', () => {
     const matchers = buildHookSettings(BIN).hooks.PreToolUse.map((entry) => entry.matcher)
-    expect(matchers).toEqual([MCP_TOOL_MATCHER, EDIT_TOOL_MATCHER])
+    expect(matchers).toEqual([EDIT_TOOL_MATCHER])
     expect(matchers).not.toContain('*')
   })
 

@@ -2,7 +2,9 @@ import { z } from 'zod'
 
 import { decisionSchema, membershipSchema } from './entities'
 
-// session_id is injected into every tool call by the PreToolUse hook, not supplied by the model.
+// The session is resolved by walking the process tree into the registry the session-start hook
+// writes, so the model never supplies it. `--session` stays available as an override for harnesses
+// that can substitute it into a command file.
 export const sessionIdSchema = z.string().min(1)
 
 export const joinRoomInputSchema = z.object({
@@ -26,7 +28,7 @@ export const writeDecisionOutputSchema = z.object({
 
 export const readDecisionsInputSchema = z.object({
   sessionId: sessionIdSchema,
-  // past MVP; injection is never semantic.
+  // Full-text, not semantic. Injection is cursor-based and never ranked.
   query: z.string().min(1).optional(),
 })
 
@@ -40,7 +42,3 @@ export type WriteDecisionInput = z.infer<typeof writeDecisionInputSchema>
 export type WriteDecisionOutput = z.infer<typeof writeDecisionOutputSchema>
 export type ReadDecisionsInput = z.infer<typeof readDecisionsInputSchema>
 export type ReadDecisionsOutput = z.infer<typeof readDecisionsOutputSchema>
-
-export const MCP_TOOL_NAMES = ['join_room', 'write_decision', 'read_decisions'] as const
-
-export type McpToolName = (typeof MCP_TOOL_NAMES)[number]

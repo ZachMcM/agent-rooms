@@ -31,9 +31,8 @@ export const hookInputSchema = z.discriminatedUnion('hook_event_name', [
 ])
 
 // `additionalContext` is what makes the injection design work at all — the hook can add context,
-// not just allow/deny/ask. `updatedInput` is the other half: it rewrites the tool call params,
-// which is how session_id reaches our MCP tools without the model supplying it. Both may be
-// returned together.
+// not just allow/deny/ask. `updatedInput` rewrites tool call params; nothing uses it now that the
+// session is resolved from the process tree rather than injected into a tool call.
 export const preToolUseOutputSchema = z.object({
   hookSpecificOutput: z.object({
     hookEventName: z.literal('PreToolUse'),

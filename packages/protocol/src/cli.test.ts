@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { joinRoomInputSchema, readDecisionsInputSchema, writeDecisionInputSchema } from './mcp'
+import { joinRoomInputSchema, readDecisionsInputSchema, writeDecisionInputSchema } from './cli'
 
-describe('mcp tool contracts', () => {
+describe('cli command contracts', () => {
   it('requires a session id on join_room', () => {
     expect(
       joinRoomInputSchema.safeParse({ roomName: 'feature', agentLabel: 'backend' }).success,

@@ -3,16 +3,14 @@ import { Command } from 'commander'
 import { preToolUseInputSchema } from '../../hooks/events'
 import { readHookPayload } from './stdin'
 
-// Two jobs, one hook. Matched to our own MCP tools it injects session_id into the tool call
-// params via `updatedInput`; matched to the edit tools it drains decisions that landed mid-turn
-// via `additionalContext`, so the agent can reconcile immediately after the write.
 export function preToolUseCommand(): Command {
   return new Command('pre-tool-use')
-    .description('PreToolUse hook: inject session_id, and drain mid-turn decisions before edits')
+    .description('PreToolUse hook: drain decisions that landed mid-turn, before an edit')
     .action(async () => {
       const _payload = await readHookPayload(preToolUseInputSchema)
-      // TODO: branch on _payload.tool_name — MCP tools get updatedInput carrying session_id,
-      // edit tools get additionalContext from an atomic read-and-advance of the cursor.
+      // TODO: drain via an atomic read-and-advance of the cursor, emitted as additionalContext.
+      // TODO: this hook is superseded by PostToolBatch, which fires once per assistant step rather
+      // than per edit. Drop it once that one lands, unless it earns its keep as a deny-gate.
       throw new Error('not implemented')
     })
 }

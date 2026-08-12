@@ -1,4 +1,4 @@
 export * from './entities'
 export * from './http'
-export * from './mcp'
+export * from './cli'
 export * from './principal'

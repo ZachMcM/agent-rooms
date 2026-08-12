@@ -3,7 +3,7 @@ import type { Principal } from '@agent-rooms/protocol'
 import type { Database } from '../client'
 import type { MembershipRow, RoomRow } from '../schema'
 
-// Every domain function takes a principal first. Routes and mcp handlers never import the db
+// Every domain function takes a principal first. Routes and cli commands never import the db
 // client directly — an oxlint rule bans `@agent-rooms/db/client` outside this package — so
 // scoping is structural rather than remembered.
 

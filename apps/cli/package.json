@@ -31,7 +31,6 @@
     "@agent-rooms/api": "workspace:*",
     "@agent-rooms/core": "workspace:*",
     "@agent-rooms/db": "workspace:*",
-    "@agent-rooms/mcp": "workspace:*",
     "@agent-rooms/protocol": "workspace:*",
     "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
