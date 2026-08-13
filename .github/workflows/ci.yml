@@ -52,5 +52,3 @@ jobs:
           ./node_modules/.bin/agent-rooms --version
           ./node_modules/.bin/agent-rooms --help
           test -d node_modules/agent-rooms/migrations
-          test -f node_modules/agent-rooms/assets/claude-code/skills/agent-rooms/SKILL.md
-          test -f node_modules/agent-rooms/dist/public/index.html

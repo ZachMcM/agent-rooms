@@ -9,22 +9,16 @@
   ],
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./client": "./src/client.ts",
-    "./schema": "./src/schema.ts",
-    "./relations": "./src/relations.ts",
-    "./migrator": "./src/migrator.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@agent-rooms/core": "workspace:*",
-    "@agent-rooms/protocol": "workspace:*",
     "@libsql/client": "catalog:",
     "drizzle-orm": "catalog:"
   },

@@ -11,9 +11,6 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "zod": "catalog:"
-  },
   "devDependencies": {
     "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",

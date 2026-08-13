@@ -4,15 +4,9 @@ import { migrate } from 'drizzle-orm/libsql/migrator'
 
 import type { Database } from './client'
 
-// This is the *runtime* half of migrations, not a duplicate of drizzle-kit.
-//
-// `drizzle-kit generate` authors migration SQL from schema.ts, and `drizzle-kit migrate` applies
-// it to a developer's database. Both are dev-time: drizzle-kit is a devDependency and is not
-// present on an end user's machine. The published cli ships the generated `migrations/` folder
-// and has to bring `~/.agent-rooms/db.sqlite` up to date itself on first run — that is this.
-//
-// Resolved from import.meta.url, never process.cwd(): once bundled into the published cli the
-// migrations folder sits at package root and this file runs from dist/.
+// Not a duplicate of drizzle-kit: it is a devDependency and never reaches a user's machine, so the
+// published cli applies its shipped migrations itself. Resolved from import.meta.url rather than
+// cwd because once bundled, this runs from dist/ with migrations/ at the package root.
 export const migrationsFolder = fileURLToPath(new URL('../migrations', import.meta.url))
 
 export async function runMigrations(db: Database): Promise<void> {

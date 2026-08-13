@@ -154,8 +154,4 @@ routeTree.gen.ts
 # Copied into apps/cli at build time from packages/db
 apps/cli/migrations/
 
-# Better Auth CLI output. Not the source of truth — packages/db/src/schema.ts is. Regenerate and
-# diff against it when upgrading better-auth or changing which of its features are enabled.
-apps/api/auth-schema.generated.ts
-
 .DS_Store

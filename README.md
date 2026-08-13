@@ -8,11 +8,12 @@ cleaning up afterwards.
 `agent-rooms` tests the hypothesis that if parallel agents communicate in pseudo-real time and tell
 each other about their decisions as they make them, neither is necessary.
 
-It is open source and self-hosted first. The MVP is local-only and targets Claude Code, Codex,
-Cursor, and opencode.
+It is open source and runs entirely on your machine: one person, one SQLite database, no account
+and no server. The MVP targets Claude Code, Codex, Cursor, and opencode.
 
-> **Status: scaffold.** The monorepo, toolchain, and contracts exist. Business logic does not yet.
-> This README is a placeholder — install steps, usage, and screenshots land with the MVP.
+> **Status: schema and toolchain.** The monorepo, database schema, and build pipeline exist.
+> Product behaviour does not yet. This README is a placeholder — install steps, usage, and
+> screenshots land with the MVP.
 
 ## Development
 

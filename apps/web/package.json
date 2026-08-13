@@ -16,10 +16,8 @@
     "typecheck": "tsr generate && tsc --noEmit"
   },
   "dependencies": {
-    "@agent-rooms/protocol": "workspace:*",
     "@agent-rooms/ui-library": "workspace:*",
     "@tanstack/react-router": "1.170.23",
-    "better-auth": "catalog:",
     "lucide-react": "1.30.0",
     "react": "catalog:",
     "react-dom": "catalog:"

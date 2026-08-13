@@ -1,39 +1,4 @@
 {
   "extends": ["./packages/oxlint-config/base.json"],
-  "ignorePatterns": [
-    "**/next-env.d.ts",
-    "**/routeTree.gen.ts",
-    "**/migrations/**",
-    "**/auth-schema.generated.ts"
-  ],
-  "overrides": [
-    {
-      "files": ["apps/**/*.ts", "apps/**/*.tsx"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "paths": [
-              {
-                "name": "@agent-rooms/db/client",
-                "message": "Import a domain function from @agent-rooms/db instead. Every query must be scoped by a Principal."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["apps/api/src/cloud.ts", "apps/cli/src/runtime.ts"],
-      "rules": {
-        "no-restricted-imports": "off"
-      }
-    },
-    {
-      "files": ["apps/**/*.test.ts", "apps/**/*.test.tsx"],
-      "rules": {
-        "no-restricted-imports": "off"
-      }
-    }
-  ]
+  "ignorePatterns": ["**/next-env.d.ts", "**/routeTree.gen.ts", "**/migrations/**"]
 }

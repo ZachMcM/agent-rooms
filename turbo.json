@@ -26,15 +26,8 @@
     "db:generate": {
       "cache": false
     },
-    "db:migrate": {
-      "cache": false
-    },
-    "@agent-rooms/api#build": {
-      "dependsOn": ["^build", "@agent-rooms/web#build"],
-      "outputs": ["dist/**"]
-    },
     "agent-rooms#build": {
-      "dependsOn": ["^build", "@agent-rooms/api#build"],
+      "dependsOn": ["^build"],
       "outputs": ["dist/**", "migrations/**"]
     }
   }
