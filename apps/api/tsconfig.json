@@ -1,0 +1,10 @@
+{
+  "extends": "@agent-rooms/typescript-config/node.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": false,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  }
+}
