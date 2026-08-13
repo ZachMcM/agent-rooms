@@ -2,13 +2,12 @@ import { z } from 'zod'
 
 import { membershipSchema, messageKindSchema, messageSchema } from './entities'
 
-// The session is resolved by walking the process tree into the registry the session-start hook
-// writes, so the model never supplies it. `--session` stays available as an override for harnesses
-// that can substitute it into a command file.
-export const sessionIdSchema = z.string().min(1)
+// The agent carries the conversation id and passes --conversation on every call. It is derived,
+// not minted: a hash of the harness plus its native conversation id, so it survives a resume.
+export const conversationIdSchema = z.string().min(1)
 
 export const joinRoomInputSchema = z.object({
-  sessionId: sessionIdSchema,
+  conversationId: conversationIdSchema,
   roomName: z.string().min(1),
 })
 
@@ -17,7 +16,7 @@ export const joinRoomOutputSchema = z.object({
 })
 
 export const writeMessageInputSchema = z.object({
-  sessionId: sessionIdSchema,
+  conversationId: conversationIdSchema,
   kind: messageKindSchema,
   body: z.string().min(1),
 })
@@ -27,7 +26,7 @@ export const writeMessageOutputSchema = z.object({
 })
 
 export const readMessagesInputSchema = z.object({
-  sessionId: sessionIdSchema,
+  conversationId: conversationIdSchema,
   kind: messageKindSchema.optional(),
   // Full-text, not semantic. Injection is cursor-based and never ranked.
   query: z.string().min(1).optional(),

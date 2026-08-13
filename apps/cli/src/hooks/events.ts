@@ -31,8 +31,8 @@ export const hookInputSchema = z.discriminatedUnion('hook_event_name', [
 ])
 
 // `additionalContext` is what makes the injection design work at all — the hook can add context,
-// not just allow/deny/ask. `updatedInput` rewrites tool call params; nothing uses it now that the
-// session is resolved from the process tree rather than injected into a tool call.
+// not just allow/deny/ask. `updatedInput` rewrites tool call params; unused, since the agent
+// carries the conversation id itself as a flag.
 export const preToolUseOutputSchema = z.object({
   hookSpecificOutput: z.object({
     hookEventName: z.literal('PreToolUse'),

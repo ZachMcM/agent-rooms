@@ -33,7 +33,7 @@ describe('hookInputSchema', () => {
     expect(parsed.session_id).toBe('sess_1')
   })
 
-  it('rejects a payload without a session id, since that is the durable identity', () => {
+  it("rejects a payload without Claude Code's session id, which is our conversation identity", () => {
     expect(
       hookInputSchema.safeParse({ ...base, session_id: '', hook_event_name: 'UserPromptSubmit' })
         .success,
@@ -47,7 +47,7 @@ describe('preToolUseOutputSchema', () => {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: 'allow',
-        updatedInput: { sessionId: 'sess_1' },
+        updatedInput: { command: 'ls' },
         additionalContext: 'A sibling agent chose snake_case at the API boundary.',
       },
     })

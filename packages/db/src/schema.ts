@@ -2,7 +2,6 @@ import type { MessageKind } from '@agent-rooms/protocol'
 import { sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
-
 export const user = sqliteTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -18,8 +17,9 @@ export const user = sqliteTable('user', {
     .notNull(),
 })
 
-// Not to be confused with memberships.sessionId: that is a Claude Code session, this is a browser
-// login. Nothing joins the two — an agent authenticates as its user, never as a browser session.
+// Not to be confused with memberships.conversationId: that is an agent conversation, this is a
+// browser login. Nothing joins the two — an agent authenticates as its user, never as a browser
+// session.
 export const session = sqliteTable(
   'session',
   {
@@ -105,8 +105,9 @@ export const memberships = sqliteTable(
     roomId: text('room_id')
       .notNull()
       .references(() => rooms.id, { onDelete: 'cascade' }),
-    // Durable identity, supplied by the PreToolUse hook. Survives /resume; /clear starts a new one.
-    sessionId: text('session_id').notNull(),
+    // Derived from the harness and its native conversation id, so it survives /resume; /clear
+    // starts a new one.
+    conversationId: text('conversation_id').notNull(),
     // Monotonic high-water mark over messages.id. Read-and-advance must be atomic or concurrent
     // hook processes on the same membership double-inject.
     cursor: integer('cursor').notNull().default(0),
@@ -115,8 +116,8 @@ export const memberships = sqliteTable(
       .default(sql`(unixepoch())`),
   },
   (table) => [
-    uniqueIndex('memberships_room_session_unique').on(table.roomId, table.sessionId),
-    index('memberships_session_idx').on(table.sessionId),
+    uniqueIndex('memberships_room_conversation_unique').on(table.roomId, table.conversationId),
+    index('memberships_conversation_idx').on(table.conversationId),
   ],
 )
 

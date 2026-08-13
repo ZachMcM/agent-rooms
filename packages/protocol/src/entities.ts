@@ -16,7 +16,7 @@ export const roomSchema = z.object({
 export const membershipSchema = z.object({
   id: z.string(),
   roomId: z.string(),
-  sessionId: z.string(),
+  conversationId: z.string(),
   cursor: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
 })

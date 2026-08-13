@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "42be80f3-ab2a-49b5-b10d-c4a4913599fb",
+  "id": "01afeed5-34fc-4dca-97dc-f13b20a4fd64",
   "prevIds": [
-    "dcce9825-cbd1-4609-b28c-1c9ecaa08d3b"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -190,7 +190,7 @@
       "autoincrement": false,
       "default": null,
       "generated": null,
-      "name": "session_id",
+      "name": "conversation_id",
       "entityType": "columns",
       "table": "memberships"
     },
@@ -683,28 +683,28 @@
           "isExpression": false
         },
         {
-          "value": "session_id",
+          "value": "conversation_id",
           "isExpression": false
         }
       ],
       "isUnique": true,
       "where": null,
       "origin": "manual",
-      "name": "memberships_room_session_unique",
+      "name": "memberships_room_conversation_unique",
       "entityType": "indexes",
       "table": "memberships"
     },
     {
       "columns": [
         {
-          "value": "session_id",
+          "value": "conversation_id",
           "isExpression": false
         }
       ],
       "isUnique": false,
       "where": null,
       "origin": "manual",
-      "name": "memberships_session_idx",
+      "name": "memberships_conversation_idx",
       "entityType": "indexes",
       "table": "memberships"
     },

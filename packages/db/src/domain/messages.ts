@@ -4,7 +4,7 @@ import type { Database } from '../client'
 import type { MessageRow } from '../schema'
 
 export type WriteMessageArgs = {
-  sessionId: string
+  conversationId: string
   kind: MessageKind
   body: string
 }
@@ -20,7 +20,7 @@ export function writeMessage(
   _principal: Principal,
   _args: WriteMessageArgs,
 ): Promise<MessageRow> {
-  // TODO: resolve the membership from sessionId, then insert scoped to its room
+  // TODO: resolve the membership from conversationId, then insert scoped to its room
   throw new Error('not implemented')
 }
 
