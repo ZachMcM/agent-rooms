@@ -41,8 +41,6 @@ export const memberships = sqliteTable(
   ],
 )
 
-// Not named `decisions` after the one kind the skill currently writes: widening the policy is a
-// prompt edit, widening a table name is a migration.
 export const messages = sqliteTable(
   'messages',
   {
@@ -54,8 +52,6 @@ export const messages = sqliteTable(
     membershipId: text('membership_id')
       .notNull()
       .references(() => memberships.id, { onDelete: 'cascade' }),
-    // No check constraint, so a client reading a kind added after it shipped degrades rather than
-    // throwing.
     kind: text('kind').$type<MessageKind>().notNull(),
     body: text('body').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' })
