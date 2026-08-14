@@ -1,6 +1,11 @@
 import { Command } from 'commander'
 
-import { addCreateRoomCommand, addJoinRoomCommand } from './commands/rooms'
+import {
+  addCreateRoomCommand,
+  addJoinRoomCommand,
+  addLeaveRoomCommand,
+  addListRoomsCommand,
+} from './commands/rooms'
 import { handleCliError } from './errors'
 import { packageVersion } from './paths'
 
@@ -16,6 +21,8 @@ export function createProgram(): Command {
 
   addCreateRoomCommand(program)
   addJoinRoomCommand(program)
+  addListRoomsCommand(program)
+  addLeaveRoomCommand(program)
 
   return program
 }

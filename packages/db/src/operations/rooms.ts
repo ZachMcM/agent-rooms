@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
 
-import { eq } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 
-import type { Database } from './client'
-import { memberships, rooms, type MembershipRow, type RoomRow } from './schema'
+import type { Database } from '../client'
+import { memberships, rooms, type MembershipRow, type RoomRow } from '../schema'
 
 export interface RoomInput {
   roomName: string
@@ -13,6 +13,10 @@ export interface RoomInput {
 export interface RoomMembership {
   room: RoomRow
   membership: MembershipRow
+}
+
+export interface ListRoomsInput {
+  conversationId: string
 }
 
 export class RoomNotFoundError extends Error {
@@ -33,6 +37,13 @@ export class MembershipConflictError extends Error {
   constructor(roomName: string, conversationId: string) {
     super(`Conversation ${conversationId} is already a member of room: ${roomName}`)
     this.name = 'MembershipConflictError'
+  }
+}
+
+export class MembershipNotFoundError extends Error {
+  constructor(roomName: string, conversationId: string) {
+    super(`Conversation ${conversationId} is not an active member of room: ${roomName}`)
+    this.name = 'MembershipNotFoundError'
   }
 }
 
@@ -85,6 +96,22 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
     throw new RoomNotFoundError(input.roomName)
   }
 
+  const [reactivatedMembership] = await db
+    .update(memberships)
+    .set({ status: 'active' })
+    .where(
+      and(
+        eq(memberships.roomId, room.id),
+        eq(memberships.conversationId, input.conversationId),
+        eq(memberships.status, 'inactive'),
+      ),
+    )
+    .returning()
+
+  if (reactivatedMembership) {
+    return { room, membership: reactivatedMembership }
+  }
+
   try {
     const [membership] = await db
       .insert(memberships)
@@ -103,6 +130,43 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
 
     throw error
   }
+}
+
+export async function listRooms(db: Database, input: ListRoomsInput): Promise<RoomMembership[]> {
+  return db
+    .select({ room: rooms, membership: memberships })
+    .from(memberships)
+    .innerJoin(rooms, eq(memberships.roomId, rooms.id))
+    .where(
+      and(eq(memberships.conversationId, input.conversationId), eq(memberships.status, 'active')),
+    )
+    .orderBy(asc(rooms.name))
+}
+
+export async function leaveRoom(db: Database, input: RoomInput): Promise<RoomMembership> {
+  const [room] = await db.select().from(rooms).where(eq(rooms.name, input.roomName)).limit(1)
+
+  if (!room) {
+    throw new RoomNotFoundError(input.roomName)
+  }
+
+  const [membership] = await db
+    .update(memberships)
+    .set({ status: 'inactive' })
+    .where(
+      and(
+        eq(memberships.roomId, room.id),
+        eq(memberships.conversationId, input.conversationId),
+        eq(memberships.status, 'active'),
+      ),
+    )
+    .returning()
+
+  if (!membership) {
+    throw new MembershipNotFoundError(input.roomName, input.conversationId)
+  }
+
+  return { room, membership }
 }
 
 function isUniqueConstraintError(error: unknown): boolean {
