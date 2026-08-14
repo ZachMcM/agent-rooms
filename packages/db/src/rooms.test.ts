@@ -41,6 +41,7 @@ describe('room operations', () => {
       roomId: result.room.id,
       conversationId: 'creator',
       cursor: 0,
+      status: 'active',
     })
     await expect(
       db.select().from(memberships).where(eq(memberships.id, result.membership.id)),
@@ -54,7 +55,11 @@ describe('room operations', () => {
     const joined = await joinRoom(db, { roomName: 'Build', conversationId: 'guest' })
 
     expect(joined.room).toEqual(created.room)
-    expect(joined.membership).toMatchObject({ roomId: created.room.id, conversationId: 'guest' })
+    expect(joined.membership).toMatchObject({
+      roomId: created.room.id,
+      conversationId: 'guest',
+      status: 'active',
+    })
     await expect(
       joinRoom(db, { roomName: 'build', conversationId: 'other' }),
     ).rejects.toBeInstanceOf(RoomNotFoundError)

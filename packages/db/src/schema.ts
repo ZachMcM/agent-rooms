@@ -7,6 +7,10 @@ export const MESSAGE_KINDS = ['decision', 'warning', 'question', 'answer', 'stat
 
 export type MessageKind = (typeof MESSAGE_KINDS)[number]
 
+export const MEMBERSHIP_STATUSES = ['active', 'inactive'] as const
+
+export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number]
+
 export const rooms = sqliteTable(
   'rooms',
   {
@@ -31,6 +35,7 @@ export const memberships = sqliteTable(
     // High-water mark over messages.id. Read-and-advance must be atomic or concurrent hook
     // processes on the same membership double-inject.
     cursor: integer('cursor').notNull().default(0),
+    status: text('status').$type<MembershipStatus>().notNull().default('active'),
     createdAt: integer('created_at', { mode: 'timestamp' })
       .notNull()
       .default(sql`(unixepoch())`),
