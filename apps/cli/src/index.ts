@@ -1,9 +1,3 @@
-import { Command } from 'commander'
+import { runCli } from './program'
 
-import { packageVersion } from './paths'
-
-const program = new Command('agent-rooms')
-  .description('Pseudo-real-time decision sharing between parallel coding agents.')
-  .version(packageVersion())
-
-await program.parseAsync(process.argv)
+process.exitCode = await runCli(process.argv.slice(2))

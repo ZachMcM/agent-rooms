@@ -46,20 +46,19 @@ TypeScript source, so `packages/*` need no build step.
 
 Going the other way here costs a rewrite rather than an edit:
 
-- **Business logic lives in `packages/db`**, so the CLI and the web app can't grow two versions.
-- **SQLite only.** `pgTable` forks the schema and the migration set.
 - **The database is user-global.** Agents run in separate worktrees, so project-local paths
   silently do nothing.
 - **Non-code assets resolve via `import.meta.url`**, never `process.cwd()` — bundlers ignore them,
   and cwd is the classic works-in-dev, broken-on-npm failure.
-- **`cli` is the only package that ships.** If it runs on a user's machine, it is a cli command.
 
 ## Conventions
 
 - **No doc strings.** Not on functions, not on types. Comments only for a _why_ a reader can't get
   from the code. `TODO` is fine.
-- **Unit test new business logic.** Drop `passWithNoTests: true` from a package's
-  `vitest.config.ts` once it has real tests.
+- **Unit-test business decisions and database invariants.** Temporary SQLite is allowed for
+  database tests. Do not test thin command, route, or framework wiring; add integration or E2E
+  coverage only for release-critical cross-package boundaries or regressions. Drop
+  `passWithNoTests: true` from a package's `vitest.config.ts` once it has real tests.
 - Formatting is oxfmt's job — no semicolons, single quotes, 100 columns, sorted imports. Don't
   hand-format. It formats markdown too.
 - Prefer an upstream scaffolding CLI over hand-written boilerplate. Add shadcn components with
