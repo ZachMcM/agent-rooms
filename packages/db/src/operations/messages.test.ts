@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createDatabase } from '../client'
 import { runMigrations } from '../migrator'
 import { memberships, messages } from '../schema'
-import { consumeNewMessages } from './messages'
+import { consumeNewMessages, listRoomMessages } from './messages'
 import { createRoom } from './rooms'
 
 const directories: string[] = []
@@ -47,6 +47,33 @@ describe('message operations', () => {
     const db = await createTestDatabase()
 
     await expect(consumeNewMessages(db, { conversationId: 'missing' })).resolves.toBeUndefined()
+  })
+
+  it('lists undefined without an active membership', async () => {
+    const db = await createTestDatabase()
+
+    await expect(listRoomMessages(db, { conversationId: 'missing' })).resolves.toBeUndefined()
+  })
+
+  it('lists active-room messages in ascending order without advancing the cursor', async () => {
+    const db = await createTestDatabase()
+    const active = await createRoom(db, { roomName: 'active', conversationId: 'conversation' })
+    const other = await createRoom(db, { roomName: 'other', conversationId: 'other-conversation' })
+    const first = await addMessage(db, active.room.id, active.membership.id)
+    await addMessage(db, other.room.id, other.membership.id)
+    const last = await addMessage(db, active.room.id, active.membership.id)
+    await db
+      .update(memberships)
+      .set({ cursor: first.id })
+      .where(eq(memberships.id, active.membership.id))
+
+    await expect(listRoomMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
+      room: active.room,
+      messages: [first, last],
+    })
+    await expect(
+      db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
+    ).resolves.toEqual([{ ...active.membership, cursor: first.id }])
   })
 
   it('returns an empty batch for an active membership without messages', async () => {

@@ -8,6 +8,10 @@ export interface ConsumeNewMessagesInput {
   conversationId: string
 }
 
+export interface ListRoomMessagesInput {
+  conversationId: string
+}
+
 export interface RoomMessages {
   room: RoomRow
   messages: MessageRow[]
@@ -46,4 +50,23 @@ export async function consumeNewMessages(
     .where(eq(memberships.id, activeMembership.membership.id))
 
   return { room: activeMembership.room, messages: newMessages }
+}
+
+export async function listRoomMessages(
+  db: Database,
+  input: ListRoomMessagesInput,
+): Promise<RoomMessages | undefined> {
+  const activeMembership = await findActiveRoomMembership(db, input.conversationId)
+
+  if (!activeMembership) {
+    return undefined
+  }
+
+  const roomMessages = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.roomId, activeMembership.membership.roomId))
+    .orderBy(asc(messages.id))
+
+  return { room: activeMembership.room, messages: roomMessages }
 }
