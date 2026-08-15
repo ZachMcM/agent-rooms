@@ -9,6 +9,7 @@ import { createDatabase } from '../client'
 import { runMigrations } from '../migrator'
 import { memberships, rooms } from '../schema'
 import {
+  ActiveMembershipConflictError,
   createRoom,
   joinRoom,
   MembershipConflictError,
@@ -80,18 +81,50 @@ describe('room operations', () => {
     ).rejects.toBeInstanceOf(MembershipConflictError)
   })
 
-  it('lists active room memberships for a conversation in room-name order', async () => {
+  it('rolls back a new room when its creator has an active membership elsewhere', async () => {
     const db = await createTestDatabase()
-    await createRoom(db, { roomName: 'zebra', conversationId: 'conversation' })
-    await createRoom(db, { roomName: 'alpha', conversationId: 'other' })
-    await createRoom(db, { roomName: 'middle', conversationId: 'conversation' })
-    await joinRoom(db, { roomName: 'alpha', conversationId: 'conversation' })
-    await leaveRoom(db, { roomName: 'middle', conversationId: 'conversation' })
+    await createRoom(db, { roomName: 'existing', conversationId: 'conversation' })
 
-    await expect(listRooms(db, { conversationId: 'conversation' })).resolves.toMatchObject([
-      { room: { name: 'alpha' }, membership: { conversationId: 'conversation', status: 'active' } },
-      { room: { name: 'zebra' }, membership: { conversationId: 'conversation', status: 'active' } },
-    ])
+    await expect(
+      createRoom(db, { roomName: 'rolled-back', conversationId: 'conversation' }),
+    ).rejects.toBeInstanceOf(ActiveMembershipConflictError)
+    await expect(db.select().from(rooms).where(eq(rooms.name, 'rolled-back'))).resolves.toEqual([])
+  })
+
+  it('rejects joining another room while the conversation has an active membership', async () => {
+    const db = await createTestDatabase()
+    await createRoom(db, { roomName: 'first', conversationId: 'conversation' })
+    await createRoom(db, { roomName: 'second', conversationId: 'other' })
+
+    await expect(
+      joinRoom(db, { roomName: 'second', conversationId: 'conversation' }),
+    ).rejects.toBeInstanceOf(ActiveMembershipConflictError)
+  })
+
+  it('enforces one active membership directly while allowing inactive memberships', async () => {
+    const db = await createTestDatabase()
+    const first = await createRoom(db, { roomName: 'first', conversationId: 'first-owner' })
+    const second = await createRoom(db, { roomName: 'second', conversationId: 'second-owner' })
+    const third = await createRoom(db, { roomName: 'third', conversationId: 'third-owner' })
+
+    await db
+      .insert(memberships)
+      .values({ id: 'active-membership', roomId: first.room.id, conversationId: 'conversation' })
+    await expect(
+      db.insert(memberships).values({
+        id: 'duplicate-active-membership',
+        roomId: second.room.id,
+        conversationId: 'conversation',
+      }),
+    ).rejects.toThrow()
+    await expect(
+      db.insert(memberships).values({
+        id: 'inactive-membership',
+        roomId: third.room.id,
+        conversationId: 'conversation',
+        status: 'inactive',
+      }),
+    ).resolves.toBeDefined()
   })
 
   it('leaves an active membership and keeps it inactive', async () => {
@@ -143,6 +176,18 @@ describe('room operations', () => {
       },
     })
     await expect(listRooms(db, { conversationId: 'conversation' })).resolves.toEqual([rejoined])
+  })
+
+  it('allows joining another room after leaving the active membership', async () => {
+    const db = await createTestDatabase()
+    await createRoom(db, { roomName: 'first', conversationId: 'conversation' })
+    await createRoom(db, { roomName: 'second', conversationId: 'other' })
+    await leaveRoom(db, { roomName: 'first', conversationId: 'conversation' })
+
+    const joined = await joinRoom(db, { roomName: 'second', conversationId: 'conversation' })
+
+    expect(joined).toMatchObject({ room: { name: 'second' }, membership: { status: 'active' } })
+    await expect(listRooms(db, { conversationId: 'conversation' })).resolves.toEqual([joined])
   })
 
   it('does not leave a room behind when membership creation fails', async () => {

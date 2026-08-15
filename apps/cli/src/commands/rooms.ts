@@ -1,4 +1,5 @@
 import {
+  ActiveMembershipConflictError,
   createRoom,
   joinRoom,
   leaveRoom,
@@ -30,6 +31,10 @@ export function addCreateRoomCommand(program: Command): void {
           throw new CliError('room_name_conflict', error.message, 1)
         }
 
+        if (error instanceof ActiveMembershipConflictError) {
+          throw new CliError('active_membership_conflict', error.message, 1)
+        }
+
         throw error
       }
     })
@@ -53,6 +58,10 @@ export function addJoinRoomCommand(program: Command): void {
 
         if (error instanceof MembershipConflictError) {
           throw new CliError('membership_conflict', error.message, 1)
+        }
+
+        if (error instanceof ActiveMembershipConflictError) {
+          throw new CliError('active_membership_conflict', error.message, 1)
         }
 
         throw error

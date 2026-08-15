@@ -265,6 +265,20 @@
           "isExpression": false
         }
       ],
+      "isUnique": true,
+      "where": "`status` = 'active'",
+      "origin": "manual",
+      "name": "memberships_conversation_active_unique",
+      "entityType": "indexes",
+      "table": "memberships"
+    },
+    {
+      "columns": [
+        {
+          "value": "conversation_id",
+          "isExpression": false
+        }
+      ],
       "isUnique": false,
       "where": null,
       "origin": "manual",

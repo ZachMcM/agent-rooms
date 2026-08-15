@@ -40,6 +40,13 @@ export class MembershipConflictError extends Error {
   }
 }
 
+export class ActiveMembershipConflictError extends Error {
+  constructor(conversationId: string) {
+    super(`Conversation ${conversationId} is already an active member of another room`)
+    this.name = 'ActiveMembershipConflictError'
+  }
+}
+
 export class MembershipNotFoundError extends Error {
   constructor(roomName: string, conversationId: string) {
     super(`Conversation ${conversationId} is not an active member of room: ${roomName}`)
@@ -82,6 +89,19 @@ export async function createRoom(db: Database, input: RoomInput): Promise<RoomMe
     })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
+      const existingRoom = await findRoomByName(db, input.roomName)
+
+      if (existingRoom) {
+        throw new RoomNameConflictError(input.roomName)
+      }
+
+      if (
+        (await findActiveMembership(db, input.conversationId)) ||
+        isActiveMembershipConstraintError(error)
+      ) {
+        throw new ActiveMembershipConflictError(input.conversationId)
+      }
+
       throw new RoomNameConflictError(input.roomName)
     }
 
@@ -90,46 +110,77 @@ export async function createRoom(db: Database, input: RoomInput): Promise<RoomMe
 }
 
 export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMembership> {
-  const [room] = await db.select().from(rooms).where(eq(rooms.name, input.roomName)).limit(1)
-
-  if (!room) {
-    throw new RoomNotFoundError(input.roomName)
-  }
-
-  const [reactivatedMembership] = await db
-    .update(memberships)
-    .set({ status: 'active' })
-    .where(
-      and(
-        eq(memberships.roomId, room.id),
-        eq(memberships.conversationId, input.conversationId),
-        eq(memberships.status, 'inactive'),
-      ),
-    )
-    .returning()
-
-  if (reactivatedMembership) {
-    return { room, membership: reactivatedMembership }
-  }
-
   try {
-    const [membership] = await db
-      .insert(memberships)
-      .values({ id: randomUUID(), roomId: room.id, conversationId: input.conversationId })
-      .returning()
+    return await db.transaction(async (tx) => {
+      const [room] = await tx.select().from(rooms).where(eq(rooms.name, input.roomName)).limit(1)
 
-    if (!membership) {
-      throw new Error('Room membership creation did not return an inserted record')
-    }
+      if (!room) {
+        throw new RoomNotFoundError(input.roomName)
+      }
 
-    return { room, membership }
+      const [reactivatedMembership] = await tx
+        .update(memberships)
+        .set({ status: 'active' })
+        .where(
+          and(
+            eq(memberships.roomId, room.id),
+            eq(memberships.conversationId, input.conversationId),
+            eq(memberships.status, 'inactive'),
+          ),
+        )
+        .returning()
+
+      if (reactivatedMembership) {
+        return { room, membership: reactivatedMembership }
+      }
+
+      const [membership] = await tx
+        .insert(memberships)
+        .values({ id: randomUUID(), roomId: room.id, conversationId: input.conversationId })
+        .returning()
+
+      if (!membership) {
+        throw new Error('Room membership creation did not return an inserted record')
+      }
+
+      return { room, membership }
+    })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
+      const activeMembership = await findActiveMembership(db, input.conversationId)
+
+      if (activeMembership?.room.name === input.roomName) {
+        throw new MembershipConflictError(input.roomName, input.conversationId)
+      }
+
+      if (activeMembership || isActiveMembershipConstraintError(error)) {
+        throw new ActiveMembershipConflictError(input.conversationId)
+      }
+
       throw new MembershipConflictError(input.roomName, input.conversationId)
     }
 
     throw error
   }
+}
+
+async function findRoomByName(db: Database, roomName: string): Promise<RoomRow | undefined> {
+  const [room] = await db.select().from(rooms).where(eq(rooms.name, roomName)).limit(1)
+  return room
+}
+
+async function findActiveMembership(
+  db: Database,
+  conversationId: string,
+): Promise<RoomMembership | undefined> {
+  const [membership] = await db
+    .select({ room: rooms, membership: memberships })
+    .from(memberships)
+    .innerJoin(rooms, eq(memberships.roomId, rooms.id))
+    .where(and(eq(memberships.conversationId, conversationId), eq(memberships.status, 'active')))
+    .limit(1)
+
+  return membership
 }
 
 export async function listRooms(db: Database, input: ListRoomsInput): Promise<RoomMembership[]> {
@@ -176,6 +227,21 @@ function isUniqueConstraintError(error: unknown): boolean {
 
   if (typeof error === 'object' && error !== null && 'cause' in error) {
     return isUniqueConstraintError(error.cause)
+  }
+
+  return false
+}
+
+function isActiveMembershipConstraintError(error: unknown): boolean {
+  if (
+    error instanceof Error &&
+    /memberships(?:\.conversation_id|_conversation_active_unique)/i.test(error.message)
+  ) {
+    return true
+  }
+
+  if (typeof error === 'object' && error !== null && 'cause' in error) {
+    return isActiveMembershipConstraintError(error.cause)
   }
 
   return false

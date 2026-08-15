@@ -42,6 +42,9 @@ export const memberships = sqliteTable(
   },
   (table) => [
     uniqueIndex('memberships_room_conversation_unique').on(table.roomId, table.conversationId),
+    uniqueIndex('memberships_conversation_active_unique')
+      .on(table.conversationId)
+      .where(sql`${table.status} = 'active'`),
     index('memberships_conversation_idx').on(table.conversationId),
   ],
 )
