@@ -1,5 +1,6 @@
 import { Command } from 'commander'
 
+import { addHookCommands } from './commands/hooks'
 import {
   addCreateRoomCommand,
   addJoinRoomCommand,
@@ -23,6 +24,7 @@ export function createProgram(): Command {
   addJoinRoomCommand(program)
   addListRoomsCommand(program)
   addLeaveRoomCommand(program)
+  addHookCommands(program)
 
   return program
 }
