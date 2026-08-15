@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import { Command } from 'commander'
 
 import { addHooksCommand } from './commands/hooks'
-import { addListRoomMessagesCommand } from './commands/messages'
+import { addListRoomMessagesCommand, addWriteMessagesCommand } from './commands/messages'
 import {
   addCreateRoomCommand,
   addJoinRoomCommand,
@@ -29,6 +29,7 @@ export function createProgram(): Command {
   addJoinRoomCommand(program)
   addListRoomsCommand(program)
   addListRoomMessagesCommand(program)
+  addWriteMessagesCommand(program)
   addLeaveRoomCommand(program)
   addHooksCommand(program)
 

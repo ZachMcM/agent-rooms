@@ -9,7 +9,7 @@ export interface RoomMembership {
 }
 
 export async function findActiveRoomMembership(
-  db: Database,
+  db: Pick<Database, 'select'>,
   conversationId: string,
 ): Promise<RoomMembership | undefined> {
   const [membership] = await db

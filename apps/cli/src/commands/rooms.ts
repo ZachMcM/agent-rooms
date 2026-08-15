@@ -14,7 +14,6 @@ import type { Command } from 'commander'
 import { openDatabase } from '../database'
 import { CliError } from '../errors'
 import { writeSuccess } from '../output'
-import { conversationInput } from './input'
 
 export function addCreateRoomCommand(program: Command): void {
   program
@@ -117,4 +116,14 @@ function roomInput(roomName: string, conversationId: string | undefined) {
   }
 
   return { roomName: trimmedRoomName, conversationId: trimmedConversationId }
+}
+
+export function conversationInput(conversationId: string | undefined): string {
+  const trimmedConversationId = conversationId?.trim()
+
+  if (!trimmedConversationId) {
+    throw new CliError('invalid_arguments', 'A --conversation-id is required.', 2)
+  }
+
+  return trimmedConversationId
 }

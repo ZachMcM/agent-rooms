@@ -8,7 +8,14 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createDatabase } from '../client'
 import { runMigrations } from '../migrator'
 import { memberships, messages } from '../schema'
-import { consumeNewMessages, listRoomMessages } from './messages'
+import {
+  ActiveMembershipNotFoundError,
+  consumeNewMessages,
+  InvalidMessagesError,
+  listRoomMessages,
+  writeMessages,
+  type WriteMessagesInput,
+} from './messages'
 import { createRoom } from './rooms'
 
 const directories: string[] = []
@@ -74,6 +81,86 @@ describe('message operations', () => {
     await expect(
       db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
     ).resolves.toEqual([{ ...active.membership, cursor: first.id }])
+  })
+
+  it('writes one message with the active membership without advancing its cursor', async () => {
+    const db = await createTestDatabase()
+    const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+
+    const [written] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'status', body: '  work complete  ' }],
+    })
+
+    expect(written).toMatchObject({
+      roomId: active.room.id,
+      membershipId: active.membership.id,
+      kind: 'status',
+      body: '  work complete  ',
+    })
+    await expect(
+      db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
+    ).resolves.toEqual([active.membership])
+  })
+
+  it('writes a batch atomically in input order', async () => {
+    const db = await createTestDatabase()
+    const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+
+    const written = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [
+        { kind: 'decision', body: 'Use SQLite.' },
+        { kind: 'warning', body: 'Keep the database user-global.' },
+        { kind: 'status', body: 'Database work is complete.' },
+      ],
+    })
+
+    expect(written.map(({ kind, body }) => ({ kind, body }))).toEqual([
+      { kind: 'decision', body: 'Use SQLite.' },
+      { kind: 'warning', body: 'Keep the database user-global.' },
+      { kind: 'status', body: 'Database work is complete.' },
+    ])
+    expect(written.every((message) => message.roomId === active.room.id)).toBe(true)
+    expect(written.every((message) => message.membershipId === active.membership.id)).toBe(true)
+    expect(written.map((message) => message.id)).toEqual(
+      written.map((message) => message.id).toSorted((left, right) => left - right),
+    )
+  })
+
+  it('rejects writes without an active membership', async () => {
+    const db = await createTestDatabase()
+
+    await expect(
+      writeMessages(db, {
+        conversationId: 'missing',
+        messages: [{ kind: 'status', body: 'message' }],
+      }),
+    ).rejects.toBeInstanceOf(ActiveMembershipNotFoundError)
+  })
+
+  it.each([
+    [[], 'an empty batch'],
+    [[{ kind: 'invalid', body: 'valid' }], 'an invalid kind'],
+    [[{ kind: 'status', body: '   ' }], 'a blank body'],
+    [
+      [
+        { kind: 'status', body: 'valid' },
+        { kind: 'invalid', body: 'invalid' },
+      ],
+      'a partially valid batch',
+    ],
+  ])('rejects %s without writing any rows (%s)', async (messageInput) => {
+    const db = await createTestDatabase()
+    await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+
+    await expect(
+      writeMessages(db, {
+        conversationId: 'conversation',
+        messages: messageInput,
+      } as WriteMessagesInput),
+    ).rejects.toBeInstanceOf(InvalidMessagesError)
+    await expect(db.select().from(messages)).resolves.toEqual([])
   })
 
   it('returns an empty batch for an active membership without messages', async () => {

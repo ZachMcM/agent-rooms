@@ -1,7 +1,14 @@
 import { and, asc, eq, gt } from 'drizzle-orm'
 
 import type { Database } from '../client'
-import { memberships, messages, type MessageRow, type RoomRow } from '../schema'
+import {
+  memberships,
+  MESSAGE_KINDS,
+  messages,
+  type MessageKind,
+  type MessageRow,
+  type RoomRow,
+} from '../schema'
 import { findActiveRoomMembership } from './memberships'
 
 export interface ConsumeNewMessagesInput {
@@ -12,9 +19,33 @@ export interface ListRoomMessagesInput {
   conversationId: string
 }
 
+export interface WriteMessageInput {
+  kind: MessageKind
+  body: string
+}
+
+export interface WriteMessagesInput {
+  conversationId: string
+  messages: WriteMessageInput[]
+}
+
 export interface RoomMessages {
   room: RoomRow
   messages: MessageRow[]
+}
+
+export class ActiveMembershipNotFoundError extends Error {
+  constructor(conversationId: string) {
+    super(`Conversation ${conversationId} does not have an active room membership`)
+    this.name = 'ActiveMembershipNotFoundError'
+  }
+}
+
+export class InvalidMessagesError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidMessagesError'
+  }
 }
 
 export async function consumeNewMessages(
@@ -69,4 +100,55 @@ export async function listRoomMessages(
     .orderBy(asc(messages.id))
 
   return { room: activeMembership.room, messages: roomMessages }
+}
+
+export async function writeMessages(
+  db: Database,
+  input: WriteMessagesInput,
+): Promise<MessageRow[]> {
+  validateMessages(input.messages)
+
+  return db.transaction(async (tx) => {
+    const activeMembership = await findActiveRoomMembership(tx, input.conversationId)
+
+    if (!activeMembership) {
+      throw new ActiveMembershipNotFoundError(input.conversationId)
+    }
+
+    return tx
+      .insert(messages)
+      .values(
+        input.messages.map((message) => ({
+          roomId: activeMembership.membership.roomId,
+          membershipId: activeMembership.membership.id,
+          kind: message.kind,
+          body: message.body,
+        })),
+      )
+      .returning()
+  })
+}
+
+function validateMessages(value: unknown): asserts value is WriteMessageInput[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new InvalidMessagesError('At least one message is required')
+  }
+
+  for (const [index, message] of value.entries()) {
+    if (typeof message !== 'object' || message === null || Array.isArray(message)) {
+      throw new InvalidMessagesError(`Message at index ${index} must be an object`)
+    }
+
+    if (
+      !('kind' in message) ||
+      typeof message.kind !== 'string' ||
+      !MESSAGE_KINDS.some((kind) => kind === message.kind)
+    ) {
+      throw new InvalidMessagesError(`Message at index ${index} has an invalid kind`)
+    }
+
+    if (!('body' in message) || typeof message.body !== 'string' || !message.body.trim()) {
+      throw new InvalidMessagesError(`Message at index ${index} must have a non-empty body`)
+    }
+  }
 }
