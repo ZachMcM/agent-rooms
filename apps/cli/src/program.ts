@@ -1,6 +1,8 @@
+import { createRequire } from 'node:module'
+
 import { Command } from 'commander'
 
-import { addHookCommands } from './commands/hooks'
+import { addHooksCommand } from './commands/hooks'
 import {
   addCreateRoomCommand,
   addJoinRoomCommand,
@@ -8,12 +10,14 @@ import {
   addListRoomsCommand,
 } from './commands/rooms'
 import { handleCliError } from './errors'
-import { packageVersion } from './paths'
+
+const require = createRequire(import.meta.url)
+const packageVersion = (require('../package.json') as { version: string }).version
 
 export function createProgram(): Command {
   const program = new Command('agent-rooms')
     .description('Pseudo-real-time decision sharing between parallel coding agents.')
-    .version(packageVersion())
+    .version(packageVersion)
     .configureOutput({
       writeOut: (message) => process.stdout.write(message),
       writeErr: () => {},
@@ -24,7 +28,7 @@ export function createProgram(): Command {
   addJoinRoomCommand(program)
   addListRoomsCommand(program)
   addLeaveRoomCommand(program)
-  addHookCommands(program)
+  addHooksCommand(program)
 
   return program
 }

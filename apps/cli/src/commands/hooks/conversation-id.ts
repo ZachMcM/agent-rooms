@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream'
 
-import { CliError } from '../errors'
+import { CliError } from '../../errors'
 import { readHookSessionId } from './input'
 
 const agentPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/

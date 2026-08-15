@@ -1,18 +1,18 @@
 import type { Command } from 'commander'
 
-import { resolveConversationId } from '../hooks/conversation-id'
+import { resolveConversationId } from './conversation-id'
 
-export function addHookCommands(program: Command): void {
-  const hook = program
-    .command('hook')
+export function addHooksCommand(program: Command): void {
+  const hooks = program
+    .command('hooks')
     .description('Commands invoked by agent lifecycle hooks.')
     .exitOverride()
 
-  addLogConversationIdCommand(hook)
+  addLogConversationIdCommand(hooks)
 }
 
-function addLogConversationIdCommand(hook: Command): void {
-  hook
+function addLogConversationIdCommand(hooks: Command): void {
+  hooks
     .command('log-conversation-id')
     .description('Writes the normalized conversation ID into agent context.')
     .requiredOption('--agent <name>')

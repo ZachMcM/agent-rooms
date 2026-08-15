@@ -3,16 +3,14 @@ import { randomUUID } from 'node:crypto'
 import { and, asc, eq } from 'drizzle-orm'
 
 import type { Database } from '../client'
-import { memberships, rooms, type MembershipRow, type RoomRow } from '../schema'
+import { memberships, rooms } from '../schema'
+import { findActiveRoomMembership, type RoomMembership } from './memberships'
+
+export type { RoomMembership } from './memberships'
 
 export interface RoomInput {
   roomName: string
   conversationId: string
-}
-
-export interface RoomMembership {
-  room: RoomRow
-  membership: MembershipRow
 }
 
 export interface ListRoomsInput {
@@ -89,15 +87,16 @@ export async function createRoom(db: Database, input: RoomInput): Promise<RoomMe
     })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      const existingRoom = await findRoomByName(db, input.roomName)
-
-      if (existingRoom) {
-        throw new RoomNameConflictError(input.roomName)
-      }
+      const [existingRoom] = await db
+        .select()
+        .from(rooms)
+        .where(eq(rooms.name, input.roomName))
+        .limit(1)
 
       if (
-        (await findActiveMembership(db, input.conversationId)) ||
-        isActiveMembershipConstraintError(error)
+        !existingRoom &&
+        ((await findActiveRoomMembership(db, input.conversationId)) ||
+          isActiveMembershipConstraintError(error))
       ) {
         throw new ActiveMembershipConflictError(input.conversationId)
       }
@@ -147,13 +146,12 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
     })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      const activeMembership = await findActiveMembership(db, input.conversationId)
+      const activeMembership = await findActiveRoomMembership(db, input.conversationId)
 
-      if (activeMembership?.room.name === input.roomName) {
-        throw new MembershipConflictError(input.roomName, input.conversationId)
-      }
-
-      if (activeMembership || isActiveMembershipConstraintError(error)) {
+      if (
+        (activeMembership && activeMembership.room.name !== input.roomName) ||
+        (!activeMembership && isActiveMembershipConstraintError(error))
+      ) {
         throw new ActiveMembershipConflictError(input.conversationId)
       }
 
@@ -162,25 +160,6 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
 
     throw error
   }
-}
-
-async function findRoomByName(db: Database, roomName: string): Promise<RoomRow | undefined> {
-  const [room] = await db.select().from(rooms).where(eq(rooms.name, roomName)).limit(1)
-  return room
-}
-
-async function findActiveMembership(
-  db: Database,
-  conversationId: string,
-): Promise<RoomMembership | undefined> {
-  const [membership] = await db
-    .select({ room: rooms, membership: memberships })
-    .from(memberships)
-    .innerJoin(rooms, eq(memberships.roomId, rooms.id))
-    .where(and(eq(memberships.conversationId, conversationId), eq(memberships.status, 'active')))
-    .limit(1)
-
-  return membership
 }
 
 export async function listRooms(db: Database, input: ListRoomsInput): Promise<RoomMembership[]> {

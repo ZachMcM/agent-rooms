@@ -26,7 +26,7 @@ describe('readHookSessionId', () => {
     ['{"session_id":"   "}', 'a blank session ID'],
     ['{"session_id":"unsafe value"}', 'whitespace in a session ID'],
     ['{"session_id":"<unsafe>"}', 'markup in a session ID'],
-    ['{"session_id":"unsafe\\\"value"}', 'quotes in a session ID'],
+    ['{"session_id":"unsafe\\"value"}', 'quotes in a session ID'],
   ])('rejects %s (%s)', async (input) => {
     await expect(read(input)).rejects.toMatchObject({
       code: 'invalid_hook_input',

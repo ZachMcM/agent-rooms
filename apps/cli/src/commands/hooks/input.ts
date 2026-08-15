@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream'
 
-import { CliError } from '../errors'
+import { CliError } from '../../errors'
 
 const sessionIdPattern = /^[A-Za-z0-9._:-]+$/
 

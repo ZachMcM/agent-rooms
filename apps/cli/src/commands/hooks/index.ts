@@ -1,0 +1,1 @@
+export { addHooksCommand } from './commands'

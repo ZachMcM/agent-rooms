@@ -32,8 +32,7 @@ export const memberships = sqliteTable(
       .references(() => rooms.id, { onDelete: 'cascade' }),
     // Derived from the harness and its native conversation id, so it survives /resume.
     conversationId: text('conversation_id').notNull(),
-    // High-water mark over messages.id. Read-and-advance must be atomic or concurrent hook
-    // processes on the same membership double-inject.
+    // High-water mark over messages.id.
     cursor: integer('cursor').notNull().default(0),
     status: text('status').$type<MembershipStatus>().notNull().default('active'),
     createdAt: integer('created_at', { mode: 'timestamp' })
