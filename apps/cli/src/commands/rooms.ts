@@ -18,6 +18,7 @@ import { writeSuccess } from '../output'
 export function addCreateRoomCommand(program: Command): void {
   program
     .command('create-room <room-name>')
+    .description('Creates a room and joins the current conversation.')
     .option('--conversation-id <id>')
     .exitOverride()
     .action(async (roomName: string, options: { conversationId?: string }) => {
@@ -43,6 +44,7 @@ export function addCreateRoomCommand(program: Command): void {
 export function addJoinRoomCommand(program: Command): void {
   program
     .command('join-room <room-name>')
+    .description('Joins an existing room with the current conversation.')
     .option('--conversation-id <id>')
     .exitOverride()
     .action(async (roomName: string, options: { conversationId?: string }) => {
@@ -72,6 +74,7 @@ export function addJoinRoomCommand(program: Command): void {
 export function addListRoomsCommand(program: Command): void {
   program
     .command('list-rooms')
+    .description('Lists available rooms.')
     .exitOverride()
     .action(async () => {
       const db = await openDatabase()
@@ -83,6 +86,7 @@ export function addListRoomsCommand(program: Command): void {
 export function addLeaveRoomCommand(program: Command): void {
   program
     .command('leave-room <room-name>')
+    .description('Leaves a room with the current conversation.')
     .option('--conversation-id <id>')
     .exitOverride()
     .action(async (roomName: string, options: { conversationId?: string }) => {

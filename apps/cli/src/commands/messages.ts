@@ -118,6 +118,7 @@ export async function readMessagesInput(
 export function addListRoomMessagesCommand(program: Command): void {
   program
     .command('list-room-messages')
+    .description('Lists messages from the active room.')
     .option('--conversation-id <id>')
     .exitOverride()
     .action(async (options: { conversationId?: string }) => {
@@ -131,6 +132,7 @@ export function addListRoomMessagesCommand(program: Command): void {
 export function addWriteMessagesCommand(program: Command): void {
   program
     .command('write-messages')
+    .description('Writes one or more messages to the active room.')
     .option('--conversation-id <id>')
     .option('--kind <kind>')
     .option('--body <body>')
