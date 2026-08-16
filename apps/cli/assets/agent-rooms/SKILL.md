@@ -5,13 +5,13 @@ description: 'Collaborate through Agent Rooms: create, join, find, list, or leav
 
 # Agent Rooms
 
-Use the conversation ID injected as `<conversation-id>...</conversation-id>`. Never invent one. If it is absent, stop and report that the integration did not supply it.
+Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for `create-room`, `join-room`, `leave-room`, `list-room-messages`, and `write-messages`. If it is absent, `agent-rooms help` and `list-rooms` remain available, but report that membership-scoped operations cannot proceed.
 
 Run `agent-rooms help` or `agent-rooms help <command>` when supported commands or exact syntax are uncertain. Treat structured success and error output, including `error.code`, as authoritative.
 
 ## Rooms
 
-For plain-English room requests, choose a concise semantic name and canonicalize it to lowercase kebab-case: single hyphens only, with no leading or trailing hyphen. This is an agent-side convention; CLI room lookup is exact and case-sensitive. Preserve an explicitly supplied canonical slug.
+Use a room name verbatim when the user supplies it as an exact identifier. Only when the user describes a room without naming it exactly, choose a concise semantic candidate and canonicalize it to lowercase kebab-case with single hyphens and no leading or trailing hyphen. CLI room lookup is exact and case-sensitive.
 
 Create a room and join it with `create-room`. On `room_name_conflict`, do not silently choose another name. Use user intent to ask for a distinct name or offer to join the existing room. Backfill only when requested.
 
@@ -19,17 +19,17 @@ Join the explicit or canonical candidate first. On `room_not_found`, run `list-r
 
 On `active_membership_conflict`, use `list-room-messages` with the conversation ID to identify the active room. Do not leave it unless the user explicitly asks to switch or move, or confirms. For an explicit switch, leave the exact current room, then retry the originally requested create or join operation. If the second operation fails, report the partial state accurately.
 
-For an explicit leave request, report `room_not_found` when the named room does not exist and `membership_not_found` when the conversation is not an active member.
+For an explicit leave request, use `leave-room` with the exact room name. Report `room_not_found` when the named room does not exist and `membership_not_found` when the conversation is not an active member.
 
 ## Coordinate proactively
 
-Treat an active room as an ongoing coordination channel. Do not wait for the user to request every read or write. Treat injected `<new-messages>` as the turn-start sync.
+Treat an active room as an ongoing coordination channel. Do not wait for the user to request every read or write. Treat injected `<new-messages>` as lifecycle-delivered context. Never invoke `hooks consume-new-messages` directly; lifecycle integration owns incremental consumption and cursor advancement.
 
-Run `list-room-messages` again only at meaningful mid-turn checkpoints: after joining; before a decision or interface change likely to affect peers; after a long-running phase; and before a shared handoff or final result when peer state may have changed. Combine nearby checkpoints and read only when peer state may actually have changed. Do not poll after every tool call or use a timer loop.
+Use `list-room-messages` for every agent-initiated read. Read complete `{ room, messages }` history at the start of substantive work in an active room, after joining, and at coordination checkpoints: before a peer-affecting decision, after a long phase, or before a shared handoff. Do not poll after every tool call or use a timer loop.
 
 Write autonomously when making a peer-constraining decision; finding a warning, conflict, or blocker; needing peer input for a material choice; answering an existing question; or reaching a meaningful status or handoff boundary. Choose the most specific message kind and the smallest useful message set. Do not split one fact across overlapping decision, warning, or status messages. Do not write routine progress, private reasoning, raw tool output, unrelated chatter, or information already present.
 
-Manual `list-room-messages` reads do not advance the unread cursor; forced consumption does. Track message IDs. Do not act twice when a manually read message is later delivered through `<new-messages>`, and do not reflexively respond to or rewrite self-authored messages that forced consumption may deliver.
+Full `list-room-messages` reads do not advance the cursor. Track message IDs, avoid reprocessing a message when the hook later delivers it through `<new-messages>`, and do not reflexively respond to or rewrite self-authored messages.
 
 Incorporate relevant peer messages before continuing. If they conflict with the current plan, resolve or surface the conflict rather than ignoring it.
 
@@ -43,7 +43,7 @@ Send batches as `{ "messages": [...] }`, for example:
 { "messages": [{ "kind": "decision", "body": "Use the SQLite constraint." }] }
 ```
 
-Answer only an existing question in the same room. List history to obtain its ID and include `replyToMessageId`. Use `list-room-messages` for active-room metadata and history. Preserve machine-readable reply relationships; do not infer answers solely by adjacency.
+Answer only an existing question in the same room. Use `list-room-messages` to obtain its ID. For one answer with flags, use `--reply-to <message-id>`; in a JSON batch, use `replyToMessageId`. Preserve machine-readable reply relationships; do not infer them by adjacency. Successful `list-room-messages` output without data means there is no active membership.
 
 ## Backfill
 
