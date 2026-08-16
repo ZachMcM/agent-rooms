@@ -140,7 +140,7 @@ describe('room operations', () => {
     await expect(
       db.select().from(memberships).where(eq(memberships.id, created.membership.id)),
     ).resolves.toEqual([left.membership])
-    await expect(listRooms(db, { conversationId: 'conversation' })).resolves.toEqual([])
+    await expect(listRooms(db)).resolves.toEqual([])
   })
 
   it('returns typed errors when leaving a missing room or inactive membership', async () => {
@@ -175,7 +175,7 @@ describe('room operations', () => {
         status: 'active',
       },
     })
-    await expect(listRooms(db, { conversationId: 'conversation' })).resolves.toEqual([rejoined])
+    await expect(listRooms(db)).resolves.toEqual([rejoined.room])
   })
 
   it('allows joining another room after leaving the active membership', async () => {
@@ -187,7 +187,21 @@ describe('room operations', () => {
     const joined = await joinRoom(db, { roomName: 'second', conversationId: 'conversation' })
 
     expect(joined).toMatchObject({ room: { name: 'second' }, membership: { status: 'active' } })
-    await expect(listRooms(db, { conversationId: 'conversation' })).resolves.toEqual([joined])
+    await expect(listRooms(db)).resolves.toEqual([joined.room])
+  })
+
+  it('lists each active room once in alphabetical order', async () => {
+    const db = await createTestDatabase()
+    const zulu = await createRoom(db, { roomName: 'zulu', conversationId: 'zulu-owner' })
+    const alpha = await createRoom(db, { roomName: 'alpha', conversationId: 'alpha-owner' })
+    await createRoom(db, {
+      roomName: 'inactive',
+      conversationId: 'inactive-owner',
+    })
+    await joinRoom(db, { roomName: 'zulu', conversationId: 'zulu-guest' })
+    await leaveRoom(db, { roomName: 'inactive', conversationId: 'inactive-owner' })
+
+    await expect(listRooms(db)).resolves.toEqual([alpha.room, zulu.room])
   })
 
   it('does not leave a room behind when membership creation fails', async () => {

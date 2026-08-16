@@ -72,13 +72,11 @@ export function addJoinRoomCommand(program: Command): void {
 export function addListRoomsCommand(program: Command): void {
   program
     .command('list-rooms')
-    .option('--conversation-id <id>')
     .exitOverride()
-    .action(async (options: { conversationId?: string }) => {
-      const conversationId = conversationInput(options.conversationId)
+    .action(async () => {
       const db = await openDatabase()
 
-      writeSuccess(await listRooms(db, { conversationId }))
+      writeSuccess(await listRooms(db))
     })
 }
 

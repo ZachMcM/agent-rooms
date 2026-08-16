@@ -3,17 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { and, asc, eq } from 'drizzle-orm'
 
 import type { Database } from '../client'
-import { memberships, rooms } from '../schema'
+import { memberships, rooms, type RoomRow } from '../schema'
 import { findActiveRoomMembership, type RoomMembership } from './memberships'
 
 export type { RoomMembership } from './memberships'
 
 export interface RoomInput {
   roomName: string
-  conversationId: string
-}
-
-export interface ListRoomsInput {
   conversationId: string
 }
 
@@ -162,14 +158,12 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
   }
 }
 
-export async function listRooms(db: Database, input: ListRoomsInput): Promise<RoomMembership[]> {
+export async function listRooms(db: Database): Promise<RoomRow[]> {
   return db
-    .select({ room: rooms, membership: memberships })
-    .from(memberships)
-    .innerJoin(rooms, eq(memberships.roomId, rooms.id))
-    .where(
-      and(eq(memberships.conversationId, input.conversationId), eq(memberships.status, 'active')),
-    )
+    .selectDistinct({ id: rooms.id, name: rooms.name, createdAt: rooms.createdAt })
+    .from(rooms)
+    .innerJoin(memberships, eq(memberships.roomId, rooms.id))
+    .where(eq(memberships.status, 'active'))
     .orderBy(asc(rooms.name))
 }
 
