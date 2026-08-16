@@ -76,11 +76,47 @@ describe('message operations', () => {
 
     await expect(listRoomMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
       room: active.room,
-      messages: [first, last],
+      messages: [
+        { ...first, replyTo: null },
+        { ...last, replyTo: null },
+      ],
     })
     await expect(
       db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
     ).resolves.toEqual([{ ...active.membership, cursor: first.id }])
+  })
+
+  it('hydrates reply targets when listing messages', async () => {
+    const db = await createTestDatabase()
+    await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    const [question] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'question', body: 'Which database should we use?' }],
+    })
+
+    if (!question) {
+      throw new Error('Question write did not return an inserted record')
+    }
+
+    const [answer] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'answer', body: 'SQLite.', replyToMessageId: question.id }],
+    })
+
+    if (!answer) {
+      throw new Error('Answer write did not return an inserted record')
+    }
+
+    await expect(listRoomMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
+      room: expect.objectContaining({ name: 'build' }),
+      messages: [
+        { ...question, replyTo: null },
+        {
+          ...answer,
+          replyTo: { id: question.id, kind: question.kind, body: question.body },
+        },
+      ],
+    })
   })
 
   it('writes one message with the active membership without advancing its cursor', async () => {
@@ -259,7 +295,13 @@ describe('message operations', () => {
 
     const consumed = await consumeNewMessages(db, { conversationId: 'conversation' })
 
-    expect(consumed).toEqual({ room: active.room, messages: [first, last] })
+    expect(consumed).toEqual({
+      room: active.room,
+      messages: [
+        { ...first, replyTo: null },
+        { ...last, replyTo: null },
+      ],
+    })
     await expect(
       db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
     ).resolves.toEqual([{ ...active.membership, cursor: last.id }])
@@ -267,6 +309,45 @@ describe('message operations', () => {
       room: active.room,
       messages: [],
     })
+  })
+
+  it('hydrates reply targets outside the new-message batch', async () => {
+    const db = await createTestDatabase()
+    const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    const [question] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'question', body: 'Which database should we use?' }],
+    })
+
+    if (!question) {
+      throw new Error('Question write did not return an inserted record')
+    }
+
+    await db
+      .update(memberships)
+      .set({ cursor: question.id })
+      .where(eq(memberships.id, active.membership.id))
+    const [answer] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'answer', body: 'SQLite.', replyToMessageId: question.id }],
+    })
+
+    if (!answer) {
+      throw new Error('Answer write did not return an inserted record')
+    }
+
+    await expect(consumeNewMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
+      room: active.room,
+      messages: [
+        {
+          ...answer,
+          replyTo: { id: question.id, kind: question.kind, body: question.body },
+        },
+      ],
+    })
+    await expect(
+      db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
+    ).resolves.toEqual([{ ...active.membership, cursor: answer.id }])
   })
 
   it('skips messages at or before the existing cursor', async () => {
@@ -281,7 +362,7 @@ describe('message operations', () => {
 
     await expect(consumeNewMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
       room: active.room,
-      messages: [second],
+      messages: [{ ...second, replyTo: null }],
     })
   })
 
@@ -292,7 +373,7 @@ describe('message operations', () => {
 
     await expect(consumeNewMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
       room: active.room,
-      messages: [selfAuthored],
+      messages: [{ ...selfAuthored, replyTo: null }],
     })
   })
 })

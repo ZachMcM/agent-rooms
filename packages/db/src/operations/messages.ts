@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 
 import type { Database } from '../client'
@@ -6,6 +6,7 @@ import {
   memberships,
   messages,
   NON_ANSWER_MESSAGE_KINDS,
+  type MessageKind,
   type MessageRow,
   type RoomRow,
 } from '../schema'
@@ -26,6 +27,7 @@ const writeMessageSchema = z.discriminatedUnion('kind', [
   nonAnswerMessageSchema,
 ])
 const writeMessagesSchema = z.array(writeMessageSchema).min(1)
+const replyTargetColumns = { id: true, kind: true, body: true } as const
 
 export interface ConsumeNewMessagesInput {
   conversationId: string
@@ -42,9 +44,17 @@ export interface WriteMessagesInput {
   messages: WriteMessageInput[]
 }
 
+export interface ReplyTarget {
+  id: number
+  kind: MessageKind
+  body: string
+}
+
+export type RoomMessage = MessageRow & { replyTo: ReplyTarget | null }
+
 export interface RoomMessages {
   room: RoomRow
-  messages: MessageRow[]
+  messages: RoomMessage[]
 }
 
 export class ActiveMembershipNotFoundError extends Error {
@@ -71,16 +81,18 @@ export async function consumeNewMessages(
     return undefined
   }
 
-  const newMessages = await db
-    .select()
-    .from(messages)
-    .where(
-      and(
-        eq(messages.roomId, activeMembership.membership.roomId),
-        gt(messages.id, activeMembership.membership.cursor),
-      ),
-    )
-    .orderBy(asc(messages.id))
+  const newMessages = await db.query.messages.findMany({
+    where: {
+      roomId: activeMembership.membership.roomId,
+      id: { gt: activeMembership.membership.cursor },
+    },
+    orderBy: { id: 'asc' },
+    with: {
+      replyTo: {
+        columns: replyTargetColumns,
+      },
+    },
+  })
 
   const lastMessage = newMessages.at(-1)
 
@@ -100,19 +112,34 @@ export async function listRoomMessages(
   db: Database,
   input: ListRoomMessagesInput,
 ): Promise<RoomMessages | undefined> {
-  const activeMembership = await findActiveRoomMembership(db, input.conversationId)
+  const activeMembership = await db.query.memberships.findFirst({
+    where: {
+      conversationId: input.conversationId,
+      status: 'active',
+    },
+    with: {
+      room: {
+        with: {
+          messages: {
+            orderBy: { id: 'asc' },
+            with: {
+              replyTo: {
+                columns: replyTargetColumns,
+              },
+            },
+          },
+        },
+      },
+    },
+  })
 
   if (!activeMembership) {
     return undefined
   }
 
-  const roomMessages = await db
-    .select()
-    .from(messages)
-    .where(eq(messages.roomId, activeMembership.membership.roomId))
-    .orderBy(asc(messages.id))
+  const { messages: roomMessages, ...room } = activeMembership.room
 
-  return { room: activeMembership.room, messages: roomMessages }
+  return { room, messages: roomMessages }
 }
 
 export async function writeMessages(
@@ -134,15 +161,19 @@ export async function writeMessages(
       throw new ActiveMembershipNotFoundError(input.conversationId)
     }
 
-    const replyTargetIds = parsedMessages.data.flatMap((message) =>
-      message.kind === 'answer' ? [message.replyToMessageId] : [],
-    )
+    const questionIds = [
+      ...new Set(
+        parsedMessages.data.flatMap((message) =>
+          message.kind === 'answer' ? [message.replyToMessageId] : [],
+        ),
+      ),
+    ]
 
-    if (replyTargetIds.length > 0) {
+    if (questionIds.length > 0) {
       const replyTargets = await tx
         .select({ id: messages.id, roomId: messages.roomId, kind: messages.kind })
         .from(messages)
-        .where(inArray(messages.id, replyTargetIds))
+        .where(inArray(messages.id, questionIds))
       const validReplyTargetIds = new Set(
         replyTargets
           .filter(
@@ -152,7 +183,7 @@ export async function writeMessages(
           .map((message) => message.id),
       )
 
-      if (replyTargetIds.some((id) => !validReplyTargetIds.has(id))) {
+      if (questionIds.some((id) => !validReplyTargetIds.has(id))) {
         throw new InvalidMessagesError('Answers must reply to question messages in the same room')
       }
     }
