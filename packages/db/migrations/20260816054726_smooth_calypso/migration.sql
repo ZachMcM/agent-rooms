@@ -1,0 +1,2 @@
+ALTER TABLE `messages` ADD `reply_to_message_id` integer REFERENCES messages(id) ON DELETE CASCADE;--> statement-breakpoint
+CREATE INDEX `messages_reply_to_message_id_idx` ON `messages` (`reply_to_message_id`);

@@ -128,6 +128,77 @@ describe('message operations', () => {
     )
   })
 
+  it('links multiple answers to a question and cascades their deletion', async () => {
+    const db = await createTestDatabase()
+    await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    const [question] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'question', body: 'Which database should we use?' }],
+    })
+
+    if (!question) {
+      throw new Error('Question write did not return an inserted record')
+    }
+
+    const answers = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [
+        { kind: 'answer', body: 'SQLite.', replyToMessageId: question.id },
+        { kind: 'answer', body: 'SQLite with WAL enabled.', replyToMessageId: question.id },
+      ],
+    })
+
+    expect(answers.map((answer) => answer.replyToMessageId)).toEqual([question.id, question.id])
+
+    await db.delete(messages).where(eq(messages.id, question.id))
+
+    await expect(db.select().from(messages)).resolves.toEqual([])
+  })
+
+  it('rejects reply targets that are missing, not questions, or in another room atomically', async () => {
+    const db = await createTestDatabase()
+    await createRoom(db, { roomName: 'active', conversationId: 'conversation' })
+    await createRoom(db, { roomName: 'other', conversationId: 'other-conversation' })
+    const [status] = await writeMessages(db, {
+      conversationId: 'conversation',
+      messages: [{ kind: 'status', body: 'Work started.' }],
+    })
+    const [otherQuestion] = await writeMessages(db, {
+      conversationId: 'other-conversation',
+      messages: [{ kind: 'question', body: 'Unrelated question?' }],
+    })
+
+    if (!status || !otherQuestion) {
+      throw new Error('Reply target setup did not return inserted records')
+    }
+
+    await expect(
+      writeMessages(db, {
+        conversationId: 'conversation',
+        messages: [
+          { kind: 'decision', body: 'This row must roll back.' },
+          { kind: 'answer', body: 'Missing.', replyToMessageId: 999_999 },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(InvalidMessagesError)
+    await expect(
+      writeMessages(db, {
+        conversationId: 'conversation',
+        messages: [{ kind: 'answer', body: 'Not a question.', replyToMessageId: status.id }],
+      }),
+    ).rejects.toBeInstanceOf(InvalidMessagesError)
+    await expect(
+      writeMessages(db, {
+        conversationId: 'conversation',
+        messages: [{ kind: 'answer', body: 'Wrong room.', replyToMessageId: otherQuestion.id }],
+      }),
+    ).rejects.toBeInstanceOf(InvalidMessagesError)
+    await expect(db.select().from(messages).orderBy(messages.id)).resolves.toEqual([
+      status,
+      otherQuestion,
+    ])
+  })
+
   it('rejects writes without an active membership', async () => {
     const db = await createTestDatabase()
 
@@ -143,6 +214,11 @@ describe('message operations', () => {
     [[], 'an empty batch'],
     [[{ kind: 'invalid', body: 'valid' }], 'an invalid kind'],
     [[{ kind: 'status', body: '   ' }], 'a blank body'],
+    [[{ kind: 'answer', body: 'missing target' }], 'an answer without a reply target'],
+    [
+      [{ kind: 'question', body: 'unexpected target', replyToMessageId: 1 }],
+      'a non-answer with a reply target',
+    ],
     [
       [
         { kind: 'status', body: 'valid' },
@@ -150,7 +226,7 @@ describe('message operations', () => {
       ],
       'a partially valid batch',
     ],
-  ])('rejects %s without writing any rows (%s)', async (messageInput) => {
+  ])('rejects %s without writing any rows (%s)', async (messageInput, _case) => {
     const db = await createTestDatabase()
     await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
 

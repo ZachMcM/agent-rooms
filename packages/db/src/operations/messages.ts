@@ -1,21 +1,30 @@
-import { and, asc, eq, gt } from 'drizzle-orm'
+import { and, asc, eq, gt, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 
 import type { Database } from '../client'
 import {
   memberships,
-  MESSAGE_KINDS,
   messages,
-  type MessageKind,
+  NON_ANSWER_MESSAGE_KINDS,
   type MessageRow,
   type RoomRow,
 } from '../schema'
 import { findActiveRoomMembership } from './memberships'
 
-const writeMessageSchema = z.strictObject({
-  kind: z.enum(MESSAGE_KINDS),
-  body: z.string().refine((body) => Boolean(body.trim())),
+const bodySchema = z.string().refine((body) => Boolean(body.trim()))
+const answerMessageSchema = z.strictObject({
+  kind: z.literal('answer'),
+  body: bodySchema,
+  replyToMessageId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 })
+const nonAnswerMessageSchema = z.strictObject({
+  kind: z.enum(NON_ANSWER_MESSAGE_KINDS),
+  body: bodySchema,
+})
+const writeMessageSchema = z.discriminatedUnion('kind', [
+  answerMessageSchema,
+  nonAnswerMessageSchema,
+])
 const writeMessagesSchema = z.array(writeMessageSchema).min(1)
 
 export interface ConsumeNewMessagesInput {
@@ -26,10 +35,7 @@ export interface ListRoomMessagesInput {
   conversationId: string
 }
 
-export interface WriteMessageInput {
-  kind: MessageKind
-  body: string
-}
+export type WriteMessageInput = z.infer<typeof writeMessageSchema>
 
 export interface WriteMessagesInput {
   conversationId: string
@@ -117,7 +123,7 @@ export async function writeMessages(
 
   if (!parsedMessages.success) {
     throw new InvalidMessagesError(
-      'Messages must be a non-empty array with valid kinds and non-empty bodies',
+      'Messages must be valid and non-empty; answers require reply targets and other kinds must omit them',
     )
   }
 
@@ -128,6 +134,29 @@ export async function writeMessages(
       throw new ActiveMembershipNotFoundError(input.conversationId)
     }
 
+    const replyTargetIds = parsedMessages.data.flatMap((message) =>
+      message.kind === 'answer' ? [message.replyToMessageId] : [],
+    )
+
+    if (replyTargetIds.length > 0) {
+      const replyTargets = await tx
+        .select({ id: messages.id, roomId: messages.roomId, kind: messages.kind })
+        .from(messages)
+        .where(inArray(messages.id, replyTargetIds))
+      const validReplyTargetIds = new Set(
+        replyTargets
+          .filter(
+            (message) =>
+              message.roomId === activeMembership.membership.roomId && message.kind === 'question',
+          )
+          .map((message) => message.id),
+      )
+
+      if (replyTargetIds.some((id) => !validReplyTargetIds.has(id))) {
+        throw new InvalidMessagesError('Answers must reply to question messages in the same room')
+      }
+    }
+
     return tx
       .insert(messages)
       .values(
@@ -136,6 +165,7 @@ export async function writeMessages(
           membershipId: activeMembership.membership.id,
           kind: message.kind,
           body: message.body,
+          replyToMessageId: message.kind === 'answer' ? message.replyToMessageId : null,
         })),
       )
       .returning()

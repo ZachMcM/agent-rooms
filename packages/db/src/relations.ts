@@ -26,5 +26,16 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.memberships.id,
       optional: false,
     }),
+    replyTo: r.one.messages({
+      from: r.messages.replyToMessageId,
+      to: r.messages.id,
+      optional: true,
+      alias: 'reply',
+    }),
+    replies: r.many.messages({
+      from: r.messages.id,
+      to: r.messages.replyToMessageId,
+      alias: 'reply',
+    }),
   },
 }))
