@@ -1,8 +1,13 @@
 import type { Readable } from 'node:stream'
 
+import { z } from 'zod'
+
 import { CliError } from '../../errors'
 
 const sessionIdPattern = /^[A-Za-z0-9._:-]+$/
+const hookInputSchema = z.object({
+  session_id: z.string().trim().min(1).regex(sessionIdPattern),
+})
 
 export async function readHookSessionId(stream: Readable): Promise<string> {
   let input = ''
@@ -23,27 +28,13 @@ export async function readHookSessionId(stream: Readable): Promise<string> {
     throw invalidHookInput('Hook input must contain valid JSON.')
   }
 
-  if (!isRecord(payload)) {
-    throw invalidHookInput('Hook input must be a JSON object with a session_id.')
+  const parsed = hookInputSchema.safeParse(payload)
+
+  if (!parsed.success) {
+    throw invalidHookInput('Hook input must include a supported string session_id.')
   }
 
-  const sessionId = payload.session_id
-
-  if (typeof sessionId !== 'string') {
-    throw invalidHookInput('Hook input must include a string session_id.')
-  }
-
-  const normalizedSessionId = sessionId.trim()
-
-  if (!normalizedSessionId || !sessionIdPattern.test(normalizedSessionId)) {
-    throw invalidHookInput('Hook input session_id contains unsupported characters.')
-  }
-
-  return normalizedSessionId
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return parsed.data.session_id
 }
 
 function invalidHookInput(message: string): CliError {

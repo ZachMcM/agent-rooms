@@ -20,7 +20,8 @@
   "dependencies": {
     "@agent-rooms/core": "workspace:*",
     "@libsql/client": "catalog:",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@agent-rooms/typescript-config": "workspace:*",

@@ -323,6 +323,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 1.0.0-rc.4(@libsql/client@0.17.4)(zod@4.4.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@agent-rooms/typescript-config':
         specifier: workspace:*

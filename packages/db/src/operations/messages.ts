@@ -1,4 +1,5 @@
 import { and, asc, eq, gt } from 'drizzle-orm'
+import { z } from 'zod'
 
 import type { Database } from '../client'
 import {
@@ -10,6 +11,12 @@ import {
   type RoomRow,
 } from '../schema'
 import { findActiveRoomMembership } from './memberships'
+
+const writeMessageSchema = z.strictObject({
+  kind: z.enum(MESSAGE_KINDS),
+  body: z.string().refine((body) => Boolean(body.trim())),
+})
+const writeMessagesSchema = z.array(writeMessageSchema).min(1)
 
 export interface ConsumeNewMessagesInput {
   conversationId: string
@@ -106,7 +113,13 @@ export async function writeMessages(
   db: Database,
   input: WriteMessagesInput,
 ): Promise<MessageRow[]> {
-  validateMessages(input.messages)
+  const parsedMessages = writeMessagesSchema.safeParse(input.messages)
+
+  if (!parsedMessages.success) {
+    throw new InvalidMessagesError(
+      'Messages must be a non-empty array with valid kinds and non-empty bodies',
+    )
+  }
 
   return db.transaction(async (tx) => {
     const activeMembership = await findActiveRoomMembership(tx, input.conversationId)
@@ -118,7 +131,7 @@ export async function writeMessages(
     return tx
       .insert(messages)
       .values(
-        input.messages.map((message) => ({
+        parsedMessages.data.map((message) => ({
           roomId: activeMembership.membership.roomId,
           membershipId: activeMembership.membership.id,
           kind: message.kind,
@@ -127,28 +140,4 @@ export async function writeMessages(
       )
       .returning()
   })
-}
-
-function validateMessages(value: unknown): asserts value is WriteMessageInput[] {
-  if (!Array.isArray(value) || value.length === 0) {
-    throw new InvalidMessagesError('At least one message is required')
-  }
-
-  for (const [index, message] of value.entries()) {
-    if (typeof message !== 'object' || message === null || Array.isArray(message)) {
-      throw new InvalidMessagesError(`Message at index ${index} must be an object`)
-    }
-
-    if (
-      !('kind' in message) ||
-      typeof message.kind !== 'string' ||
-      !MESSAGE_KINDS.some((kind) => kind === message.kind)
-    ) {
-      throw new InvalidMessagesError(`Message at index ${index} has an invalid kind`)
-    }
-
-    if (!('body' in message) || typeof message.body !== 'string' || !message.body.trim()) {
-      throw new InvalidMessagesError(`Message at index ${index} must have a non-empty body`)
-    }
-  }
 }
