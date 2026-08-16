@@ -7,6 +7,7 @@
     "agent-rooms": "./dist/index.js"
   },
   "files": [
+    "assets",
     "dist",
     "migrations"
   ],
