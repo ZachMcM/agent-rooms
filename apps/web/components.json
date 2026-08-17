@@ -1,20 +1,20 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "base-rhea",
-  "rsc": true,
+  "rsc": false,
   "tsx": true,
   "tailwind": {
     "config": "",
-    "css": "src/styles/globals.css",
+    "css": "../../packages/ui-library/src/styles/globals.css",
     "baseColor": "neutral",
     "cssVariables": true
   },
   "iconLibrary": "remixicon",
   "aliases": {
     "components": "@agent-rooms/ui-library/components",
-    "utils": "@agent-rooms/ui-library/lib/utils",
     "hooks": "@agent-rooms/ui-library/hooks",
     "lib": "@agent-rooms/ui-library/lib",
+    "utils": "@agent-rooms/ui-library/lib/utils",
     "ui": "@agent-rooms/ui-library/components"
   },
   "rtl": false,
