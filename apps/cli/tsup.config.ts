@@ -11,7 +11,7 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   dts: false,
-  noExternal: [/^@agent-rooms\//],
+  noExternal: [/^@agent-rooms\//, /^@hono\//, 'hono'],
   external: ['@libsql/client'],
   banner: { js: '#!/usr/bin/env node' },
 })

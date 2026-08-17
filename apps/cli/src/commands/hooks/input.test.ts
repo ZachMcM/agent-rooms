@@ -16,6 +16,14 @@ describe('readHookSessionId', () => {
   })
 
   it.each([
+    ['conversation_id', '{"conversation_id":"cursor:abc_123"}', 'cursor:abc_123'],
+    ['sessionId', '{"sessionId":"gemini:abc_123"}', 'gemini:abc_123'],
+    ['matching IDs', '{"session_id":"shared:123","conversation_id":"shared:123"}', 'shared:123'],
+  ])('reads a session ID from %s', async (_case, input, expected) => {
+    await expect(read(input)).resolves.toBe(expected)
+  })
+
+  it.each([
     ['', 'empty input'],
     ['not json', 'malformed JSON'],
     ['null', 'null'],
@@ -27,6 +35,7 @@ describe('readHookSessionId', () => {
     ['{"session_id":"unsafe value"}', 'whitespace in a session ID'],
     ['{"session_id":"<unsafe>"}', 'markup in a session ID'],
     ['{"session_id":"unsafe\\"value"}', 'quotes in a session ID'],
+    ['{"session_id":"one","conversation_id":"two"}', 'conflicting session IDs'],
   ])('rejects %s (%s)', async (input) => {
     await expect(read(input)).rejects.toMatchObject({
       code: 'invalid_hook_input',

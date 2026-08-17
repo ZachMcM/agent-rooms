@@ -1,0 +1,996 @@
+import {
+  lstat,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  readlink,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+import { afterEach, describe, expect, it } from 'vitest'
+
+import { providerHookConfig } from '../commands/hooks'
+import { parseJsonc } from './jsonc'
+import { runInstall, runUninstall } from './transaction'
+
+const directories: string[] = []
+
+afterEach(async () => {
+  await Promise.all(
+    directories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })),
+  )
+})
+
+describe('installer transaction', () => {
+  it('previews without staging or writing', async () => {
+    const home = await temporaryHome()
+    await mkdir(join(home, '.codex'))
+    const result = await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: join(home, '.codex') }],
+      shell: '/bin/zsh',
+      dryRun: true,
+      yes: true,
+    })
+
+    expect(result.changes.map((change) => change.action)).toContain('patch codex hooks')
+    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('uses exact npm argv, installs owned integrations, and uninstalls them', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    await writeFile(
+      join(codex, 'hooks.json'),
+      '{"hooks":{"UserPromptSubmit":[{"command":"keep"}]}}\n',
+    )
+    await writeFile(join(home, '.zshrc'), 'export EDITOR=vim\n')
+    const { calls, spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '/bin/zsh',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+      now: () => new Date('2026-08-16T00:00:00.000Z'),
+    })
+
+    expect(calls[0]).toEqual(['npm', '--version'])
+    expect(calls[1]).toEqual([
+      'npm',
+      'install',
+      '--prefix',
+      join(home, '.agent-rooms', '.stage-1.2.3'),
+      '--omit=dev',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--package-lock=false',
+      'agent-rooms@1.2.3',
+    ])
+    expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
+    expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('consume-new-messages')
+    expect(await readFile(join(home, '.zshrc'), 'utf8')).toContain('>>> agent-rooms >>>')
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as { previous?: string; backups?: string[] }
+    expect(manifest.previous).toBeUndefined()
+    expect(manifest.backups).toBeUndefined()
+    await expect(lstat(join(home, '.agent-rooms', 'backups'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    expect((await lstat(join(home, '.agent-rooms', 'current'))).isSymbolicLink()).toBe(true)
+    expect((await lstat(join(home, '.agent-rooms', 'db.sqlite'))).mode & 0o777).toBe(0o600)
+    expect(calls.some((call) => call.join(' ').includes('SELECT 1'))).toBe(true)
+    expect(
+      (
+        await readdir(join(home, '.agent-rooms', 'runtime', '1.2.3', 'node_modules', 'agent-rooms'))
+      ).some((name) => name.startsWith('.verify-libsql-')),
+    ).toBe(false)
+    await expect(
+      readFile(
+        join(
+          home,
+          '.agent-rooms',
+          'runtime',
+          '1.2.3',
+          'node_modules',
+          'agent-rooms',
+          'assets',
+          'dashboard',
+          'server',
+          'index.mjs',
+        ),
+        'utf8',
+      ),
+    ).resolves.toBe('export default {}')
+    await expect(
+      readFile(
+        join(
+          home,
+          '.agent-rooms',
+          'runtime',
+          '1.2.3',
+          'node_modules',
+          'agent-rooms',
+          'assets',
+          'dashboard',
+          'public',
+          'assets',
+          'app.js',
+        ),
+        'utf8',
+      ),
+    ).resolves.toBe('export default {}')
+
+    await runUninstall({
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '/bin/zsh',
+      yes: true,
+    })
+
+    expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
+    expect(await readFile(join(codex, 'hooks.json'), 'utf8')).not.toContain('consume-new-messages')
+    expect(await readFile(join(home, '.zshrc'), 'utf8')).not.toContain('>>> agent-rooms >>>')
+  })
+
+  it('records only inserted hooks and preserves an identical preexisting hook on uninstall', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    const existing = (
+      providerHookConfig(join(home, '.agent-rooms', 'bin', 'agent-rooms')) as {
+        codex: { hooks: { UserPromptSubmit: unknown[] } }
+      }
+    ).codex.hooks.UserPromptSubmit[0]
+    await writeFile(
+      join(codex, 'hooks.json'),
+      JSON.stringify({ hooks: { UserPromptSubmit: [existing] } }),
+    )
+    const { spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as { hooks: Array<{ event: string }> }
+    expect(manifest.hooks.some((hook) => hook.event === 'UserPromptSubmit')).toBe(false)
+
+    await runUninstall({
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+    })
+
+    const hooks = JSON.parse(await readFile(join(codex, 'hooks.json'), 'utf8')) as {
+      hooks: { UserPromptSubmit: unknown[] }
+    }
+    expect(hooks.hooks.UserPromptSubmit).toEqual([existing])
+  })
+
+  it('preserves duplicate preexisting hooks without claiming either one', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    const existing = (
+      providerHookConfig(join(home, '.agent-rooms', 'bin', 'agent-rooms')) as {
+        codex: { hooks: { UserPromptSubmit: unknown[] } }
+      }
+    ).codex.hooks.UserPromptSubmit[0]
+    await writeFile(
+      join(codex, 'hooks.json'),
+      JSON.stringify({ hooks: { UserPromptSubmit: [existing, existing] } }),
+    )
+    const { spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as { hooks: Array<{ event: string }> }
+    const hooks = JSON.parse(await readFile(join(codex, 'hooks.json'), 'utf8')) as {
+      hooks: { UserPromptSubmit: unknown[] }
+    }
+    expect(manifest.hooks.some((hook) => hook.event === 'UserPromptSubmit')).toBe(false)
+    expect(hooks.hooks.UserPromptSubmit).toEqual([existing, existing])
+  })
+
+  it('removes only the repaired owned duplicate hook', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    const { spawn } = packageSpawn('1.2.3')
+    const install = {
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex' as const, path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath: string) => writeFile(databasePath, 'database'),
+    }
+
+    await runInstall(install)
+    const owned = (
+      providerHookConfig(join(home, '.agent-rooms', 'bin', 'agent-rooms')) as {
+        codex: { hooks: { UserPromptSubmit: unknown[] } }
+      }
+    ).codex.hooks.UserPromptSubmit[0]
+    await writeFile(
+      join(codex, 'hooks.json'),
+      `{\n  "hooks": {\n    "UserPromptSubmit": [\n      // user-owned duplicate\n      ${JSON.stringify(owned)},\n      ${JSON.stringify(owned)}\n    ]\n  }\n}\n`,
+    )
+
+    await runInstall(install)
+    await runUninstall({ homeDirectory: home, yes: true })
+
+    const hooks = await readFile(join(codex, 'hooks.json'), 'utf8')
+    expect(hooks).toContain('// user-owned duplicate')
+    expect(
+      (parseJsonc(hooks) as { hooks: { UserPromptSubmit: unknown[] } }).hooks.UserPromptSubmit,
+    ).toEqual([owned])
+  })
+
+  it('preserves retained source inside a touched hook event array', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    const retained =
+      '// retain this exact entry\n      { "command": "keep", "nested": ["format",] }'
+    await mkdir(codex)
+    await writeFile(
+      join(codex, 'hooks.json'),
+      `{\n  "hooks": {\n    "UserPromptSubmit": [\n      ${retained},\n    ],\n  },\n}\n`,
+    )
+    const { spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await runUninstall({ homeDirectory: home, yes: true })
+
+    const hooks = await readFile(join(codex, 'hooks.json'), 'utf8')
+    expect(hooks).toContain(retained)
+    expect(hooks).not.toContain('consume-new-messages')
+  })
+
+  it('retains hook ownership through a same-version repair', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    await writeFile(
+      join(codex, 'hooks.json'),
+      '{\n  "hooks": {\n    // keep this hook\n    "UserPromptSubmit": [{"command":"keep"}],\n    "Unknown": [{"command":"leave"}]\n  }\n}\n',
+    )
+    const { spawn } = packageSpawn('1.2.3')
+    const install = {
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex' as const, path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath: string) => writeFile(databasePath, 'database'),
+    }
+
+    await runInstall(install)
+    await runInstall(install)
+    await runUninstall({ homeDirectory: home, yes: true })
+
+    const hooks = await readFile(join(codex, 'hooks.json'), 'utf8')
+    expect(hooks).toContain('// keep this hook')
+    expect(hooks).toContain('"keep"')
+    expect(hooks).toContain('"Unknown"')
+    expect(hooks).not.toContain('consume-new-messages')
+  })
+
+  it('rolls back newly created config, skill, and profile files after a late failure', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    const { spawn } = packageSpawn('1.2.3')
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [{ client: 'codex', path: codex }],
+        shell: '/bin/zsh',
+        yes: true,
+        spawn,
+        migrate: async (databasePath) => writeFile(databasePath, 'database'),
+        now: () => {
+          throw new Error('clock failed')
+        },
+      }),
+    ).rejects.toThrow('configuration was restored')
+
+    for (const path of [
+      join(codex, 'hooks.json'),
+      join(codex, 'skills', 'agent-rooms', 'SKILL.md'),
+      join(home, '.zshrc'),
+    ]) {
+      await expect(lstat(path)).rejects.toMatchObject({ code: 'ENOENT' })
+    }
+    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    await expect(lstat(join(home, '.agent-rooms', 'bin', 'agent-rooms'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+  })
+
+  it('retains rollback runtimes when a post-activation manifest write fails', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await runInstall({
+      version: '1.2.4',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.4').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    const currentLink = join(home, '.agent-rooms', 'current')
+    const binLink = join(home, '.agent-rooms', 'bin', 'agent-rooms')
+    const currentBefore = await readlink(currentLink)
+    const binBefore = await readlink(binLink)
+
+    await expect(
+      runInstall({
+        version: '1.2.5',
+        homeDirectory: home,
+        roots: [{ client: 'codex', path: codex }],
+        shell: '',
+        yes: true,
+        spawn: packageSpawn('1.2.5').spawn,
+        migrate: async (databasePath) => writeFile(databasePath, 'database'),
+        now: () => {
+          throw new Error('clock failed')
+        },
+      }),
+    ).rejects.toThrow('configuration was restored')
+
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.5'))).resolves.toBeDefined()
+    expect(await readlink(currentLink)).toBe(currentBefore)
+    expect(await readlink(binLink)).toBe(binBefore)
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as { current: string }
+    expect(manifest.current).toBe('1.2.4')
+  })
+
+  it('reuses a verified same-version runtime without reinstalling it', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    const { calls, spawn } = packageSpawn('1.2.3')
+    const install = {
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex' as const, path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath: string) => writeFile(databasePath, 'database'),
+    }
+
+    await runInstall(install)
+    const runtime = join(home, '.agent-rooms', 'runtime', '1.2.3')
+    const runtimeInode = (await lstat(runtime, { bigint: true })).ino
+    await runInstall(install)
+
+    expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(1)
+    expect(calls.filter((call) => call[0] === 'node' && call.includes('--eval'))).toHaveLength(2)
+    expect(calls.filter((call) => call[0] === 'node' && call.at(-1) === '--version')).toHaveLength(
+      2,
+    )
+    expect((await lstat(runtime, { bigint: true })).ino).toBe(runtimeInode)
+    await expect(lstat(join(home, '.agent-rooms', 'previous'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+  })
+
+  it('refuses a corrupt existing same-version runtime with a repair instruction', async () => {
+    const home = await temporaryHome()
+    const installRoot = join(home, '.agent-rooms')
+    const runtime = join(installRoot, 'runtime', '1.2.3')
+    await mkdir(runtime, { recursive: true })
+    await writeFile(join(runtime, 'corrupt'), 'runtime')
+    await writeFile(
+      join(installRoot, 'install-state.json'),
+      JSON.stringify({
+        version: 1,
+        package: { name: 'agent-rooms', version: '1.2.3' },
+        installedAt: '2026-08-16T00:00:00.000Z',
+        current: '1.2.3',
+      }),
+    )
+    const { calls, spawn } = packageSpawn('1.2.3')
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        yes: true,
+        spawn,
+        migrate: async (databasePath) => writeFile(databasePath, 'database'),
+      }),
+    ).rejects.toThrow(`remove ${runtime} and rerun install to repair it`)
+    expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(0)
+  })
+
+  it('publishes the verified stage by rename', async () => {
+    const home = await temporaryHome()
+    let stagedInode: bigint | undefined
+    const { spawn } = packageSpawn('1.2.3', {
+      mutate: async (packageRoot) => {
+        stagedInode = (await lstat(dirname(dirname(packageRoot)), { bigint: true })).ino
+      },
+    })
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    const runtimeInode = (
+      await lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'), { bigint: true })
+    ).ino
+    expect(runtimeInode).toBe(stagedInode)
+  })
+
+  it('cleans legacy previous links and backup directories on successful install', async () => {
+    const home = await temporaryHome()
+    const installRoot = join(home, '.agent-rooms')
+    const backups = join(installRoot, 'backups')
+    await mkdir(join(installRoot, 'runtime', '1.2.2'), { recursive: true })
+    await mkdir(backups)
+    await writeFile(join(backups, 'legacy.bak'), 'backup')
+    await symlink(join('runtime', '1.2.2'), join(installRoot, 'previous'))
+    await writeFile(
+      join(installRoot, 'install-state.json'),
+      JSON.stringify({
+        version: 1,
+        package: { name: 'agent-rooms', version: '1.2.3' },
+        installedAt: '2026-08-16T00:00:00.000Z',
+        current: '1.2.3',
+        previous: '1.2.2',
+        roots: [],
+        hooks: [],
+        skills: [],
+        profiles: [],
+        backups: [join(backups, 'legacy.bak')],
+      }),
+    )
+    const { spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    await expect(lstat(join(installRoot, 'previous'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(backups)).rejects.toMatchObject({ code: 'ENOENT' })
+    const manifest = JSON.parse(
+      await readFile(join(installRoot, 'install-state.json'), 'utf8'),
+    ) as {
+      previous?: string
+      backups?: string[]
+    }
+    expect(manifest.previous).toBeUndefined()
+    expect(manifest.backups).toBeUndefined()
+  })
+
+  it('retains the formerly current runtime for one successful install', async () => {
+    const home = await temporaryHome()
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await runInstall({
+      version: '1.2.4',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.4').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
+
+    await runInstall({
+      version: '1.2.5',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.5').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.5'))).resolves.toBeDefined()
+  })
+
+  it('rejects a downgrade before staging or migration', async () => {
+    const home = await temporaryHome()
+    const installRoot = join(home, '.agent-rooms')
+    await mkdir(installRoot)
+    await writeFile(
+      join(installRoot, 'install-state.json'),
+      JSON.stringify({
+        version: 1,
+        package: { name: 'agent-rooms', version: '1.2.3' },
+        installedAt: '2026-08-16T00:00:00.000Z',
+        current: '1.2.3',
+      }),
+    )
+    const calls: string[] = []
+
+    await expect(
+      runInstall({
+        version: '1.2.2',
+        homeDirectory: home,
+        roots: [],
+        yes: true,
+        spawn: async (command) => {
+          calls.push(command)
+        },
+        migrate: async () => {
+          calls.push('migrate')
+        },
+      }),
+    ).rejects.toThrow('Refusing to downgrade')
+    expect(calls).toEqual([])
+  })
+
+  it.each([
+    {
+      name: 'a bin outside the package',
+      message: 'Package bin must be inside',
+      mutate: async (root: string) =>
+        writeFile(
+          join(root, 'package.json'),
+          JSON.stringify({
+            name: 'agent-rooms',
+            version: '1.2.3',
+            bin: { 'agent-rooms': '../outside.js' },
+          }),
+        ),
+    },
+    {
+      name: 'empty migrations',
+      message: 'migrations must contain a non-empty file',
+      mutate: async (root: string) => rm(join(root, 'migrations', '0000.sql')),
+    },
+    {
+      name: 'the old dashboard shape',
+      message: 'dashboard server entry must be a non-empty',
+      mutate: async (root: string) => {
+        const dashboard = join(root, 'assets', 'dashboard')
+        await rm(dashboard, { recursive: true })
+        await mkdir(join(dashboard, 'assets'), { recursive: true })
+        await writeFile(join(dashboard, 'index.html'), '<script src="assets/app.js"></script>')
+        await writeFile(join(dashboard, 'assets', 'app.js'), 'export default {}')
+      },
+    },
+    {
+      name: 'missing dashboard public assets',
+      message: 'dashboard public assets must contain a non-empty',
+      mutate: async (root: string) =>
+        rm(join(root, 'assets', 'dashboard', 'public', 'assets', 'app.js')),
+    },
+    {
+      name: 'a symlinked dashboard public asset',
+      message: 'symbolic link',
+      mutate: async (root: string) => {
+        const outside = join(dirname(root), 'outside-dashboard.js')
+        const asset = join(root, 'assets', 'dashboard', 'public', 'assets', 'app.js')
+        await writeFile(outside, 'outside')
+        await rm(asset)
+        await symlink(outside, asset)
+      },
+    },
+  ])('rejects a staged package with $name before migration', async ({ mutate, message }) => {
+    const home = await temporaryHome()
+    const { spawn } = packageSpawn('1.2.3', { mutate })
+    let migrated = false
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        yes: true,
+        spawn,
+        migrate: async () => {
+          migrated = true
+        },
+      }),
+    ).rejects.toThrow(message)
+    expect(migrated).toBe(false)
+  })
+
+  it('requires the staged executable to report exactly the requested version', async () => {
+    const home = await temporaryHome()
+    const { spawn } = packageSpawn('1.2.3', { reportedVersion: ' 1.2.3 ' })
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        yes: true,
+        spawn,
+      }),
+    ).rejects.toThrow('Staged package --version returned')
+  })
+
+  it('requires a non-empty SQL migration file', async () => {
+    const home = await temporaryHome()
+    const { spawn } = packageSpawn('1.2.3', {
+      mutate: async (root) => {
+        await rm(join(root, 'migrations', '0000.sql'))
+        await writeFile(join(root, 'migrations', 'snapshot.json'), '{}')
+      },
+    })
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        yes: true,
+        spawn,
+      }),
+    ).rejects.toThrow('migrations must contain a non-empty file')
+  })
+
+  it('aborts before migration when the staged native libsql smoke query fails', async () => {
+    const home = await temporaryHome()
+    const { spawn } = packageSpawn('1.2.3', { nativeSmokeFailure: true })
+    let migrated = false
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        yes: true,
+        spawn,
+        migrate: async () => {
+          migrated = true
+        },
+      }),
+    ).rejects.toThrow('native smoke failed')
+    expect(migrated).toBe(false)
+    await expect(lstat(join(home, '.agent-rooms', '.stage-1.2.3'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+  })
+
+  it('preserves modified skills and removes the managed block from modified profiles on uninstall', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    const skill = join(codex, 'skills', 'agent-rooms', 'SKILL.md')
+    const profile = join(home, '.zshrc')
+    await mkdir(codex)
+    const { spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '/bin/zsh',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await writeFile(skill, 'user modified skill')
+    await writeFile(profile, `${await readFile(profile, 'utf8')}export EDITOR=vim\n`)
+
+    const result = await runUninstall({
+      homeDirectory: home,
+      shell: '/bin/zsh',
+      yes: true,
+    })
+
+    expect(result.warnings).toEqual([
+      `Preserved modified skill: ${skill}`,
+      `Removed managed PATH block from modified profile: ${profile}`,
+    ])
+    await expect(readFile(skill, 'utf8')).resolves.toBe('user modified skill')
+    await expect(readFile(profile, 'utf8')).resolves.toContain('export EDITOR=vim\n')
+    await expect(readFile(profile, 'utf8')).resolves.not.toContain('>>> agent-rooms >>>')
+  })
+
+  it('shows the complete plan in one interactive confirmation', async () => {
+    const home = await temporaryHome()
+    let message = ''
+    const { spawn } = packageSpawn('1.2.3')
+    const result = await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      isTTY: true,
+      prompt: async (value) => {
+        message = value
+        return true
+      },
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    expect(message).toContain('The following changes will be made:')
+    for (const change of result.changes)
+      expect(message).toContain(`${change.action}: ${change.path}`)
+    expect(message).toMatch(/Continue\?$/)
+  })
+
+  it('uninstalls from the manifest without detecting newly malformed client roots', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    const { spawn } = packageSpawn('1.2.3')
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    const malformed = join(home, 'new-codex-root')
+    await symlink(codex, malformed)
+    const original = process.env.CODEX_HOME
+    process.env.CODEX_HOME = malformed
+    try {
+      await runUninstall({ homeDirectory: home, yes: true })
+    } finally {
+      if (original === undefined) delete process.env.CODEX_HOME
+      else process.env.CODEX_HOME = original
+    }
+
+    await expect(lstat(join(home, '.agent-rooms', 'install-state.json'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+  })
+
+  it('uninstalls a legacy manifest with previous and backups', async () => {
+    const home = await temporaryHome()
+    const installRoot = join(home, '.agent-rooms')
+    const backups = join(installRoot, 'backups')
+    await mkdir(join(installRoot, 'runtime', '1.2.2'), { recursive: true })
+    await mkdir(join(installRoot, 'runtime', '1.2.3'), { recursive: true })
+    await mkdir(backups)
+    await writeFile(join(backups, 'legacy.bak'), 'backup')
+    await symlink(join('runtime', '1.2.3'), join(installRoot, 'current'))
+    await symlink(join('runtime', '1.2.2'), join(installRoot, 'previous'))
+    await writeFile(
+      join(installRoot, 'install-state.json'),
+      JSON.stringify({
+        version: 1,
+        package: { name: 'agent-rooms', version: '1.2.3' },
+        installedAt: '2026-08-16T00:00:00.000Z',
+        current: '1.2.3',
+        previous: '1.2.2',
+        roots: [],
+        hooks: [],
+        skills: [],
+        profiles: [],
+        backups: [join(backups, 'legacy.bak')],
+      }),
+    )
+
+    await runUninstall({ homeDirectory: home, yes: true })
+
+    await expect(lstat(join(installRoot, 'install-state.json'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    await expect(lstat(join(installRoot, 'runtime'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(installRoot, 'previous'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(backups)).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it.each([
+    ['darwin', '.bash_profile'],
+    ['linux', '.bashrc'],
+  ] as const)('selects the %s bash profile', async (platform, filename) => {
+    const home = await temporaryHome()
+    const result = await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '/bin/bash',
+      platform,
+      dryRun: true,
+      yes: true,
+      spawn: async () => ({ stdout: '10.8.2\n', stderr: '' }),
+    })
+
+    expect(result.changes).toContainEqual({
+      path: join(home, filename),
+      action: 'add PATH block',
+    })
+  })
+
+  it('warns when PATH must be configured manually', async () => {
+    const home = await temporaryHome()
+    const result = await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [],
+      shell: '/bin/nu',
+      dryRun: true,
+      yes: true,
+      spawn: async () => ({ stdout: '10.8.2\n', stderr: '' }),
+    })
+
+    expect(result.warnings).toEqual([
+      `No supported shell was detected (nu); add ${join(home, '.agent-rooms', 'bin')} to PATH manually.`,
+    ])
+  })
+})
+
+async function temporaryHome(): Promise<string> {
+  const home = await mkdtemp(join(tmpdir(), 'agent-rooms-transaction-'))
+  directories.push(home)
+  return home
+}
+
+function packageSpawn(
+  version: string,
+  options: {
+    nativeSmokeFailure?: boolean
+    reportedVersion?: string
+    mutate?: (packageRoot: string) => Promise<unknown>
+  } = {},
+): {
+  calls: string[][]
+  spawn: (
+    command: string,
+    args: string[],
+    spawnOptions?: { cwd?: string },
+  ) => Promise<{ stdout: string; stderr: string }>
+} {
+  const calls: string[][] = []
+  return {
+    calls,
+    spawn: async (command, args, spawnOptions) => {
+      calls.push([command, ...args])
+      if (command === 'npm' && args[0] === 'install') {
+        const packageRoot = await stagedPackage(args[args.indexOf('--prefix') + 1]!, version)
+        await options.mutate?.(packageRoot)
+      }
+      if (command === 'npm') return { stdout: '10.8.2\n', stderr: '' }
+      if (args.includes('--eval')) {
+        const packageRoot = spawnOptions?.cwd
+        if (!packageRoot) throw new Error('Expected staged package cwd.')
+        const databaseUrl = args.at(-1)
+        if (!databaseUrl) throw new Error('Expected staged verification database URL.')
+        await writeFile(fileURLToPath(databaseUrl), 'database')
+        if (options.nativeSmokeFailure) throw new Error('native smoke failed')
+        const client = join(
+          dirname(dirname(packageRoot)),
+          'node_modules',
+          '@libsql',
+          'client',
+          'index.js',
+        )
+        return { stdout: pathToFileURL(client).href, stderr: '' }
+      }
+      if (args.at(-1) === '--version') {
+        return { stdout: `${options.reportedVersion ?? version}\n`, stderr: '' }
+      }
+      return { stdout: '', stderr: '' }
+    },
+  }
+}
+
+async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<string> {
+  const root = join(stage, 'node_modules', 'agent-rooms')
+  const client = join(stage, 'node_modules', '@libsql', 'client')
+  await mkdir(client, { recursive: true })
+  await mkdir(join(root, 'migrations'), { recursive: true })
+  await mkdir(join(root, 'assets', 'agent-rooms'), { recursive: true })
+  await mkdir(join(root, 'assets', 'dashboard', 'server'), { recursive: true })
+  await mkdir(join(root, 'assets', 'dashboard', 'public', 'assets'), { recursive: true })
+  await mkdir(join(root, 'dist'), { recursive: true })
+  await writeFile(
+    join(root, 'package.json'),
+    JSON.stringify({
+      name: 'agent-rooms',
+      version,
+      bin: { 'agent-rooms': 'dist/index.js' },
+    }),
+  )
+  await writeFile(
+    join(client, 'package.json'),
+    JSON.stringify({ name: '@libsql/client', type: 'module', exports: './index.js' }),
+  )
+  await writeFile(join(client, 'index.js'), 'export default {}')
+  await writeFile(join(root, 'migrations', '0000.sql'), 'select 1;')
+  await writeFile(join(root, 'assets', 'agent-rooms', 'SKILL.md'), 'skill')
+  await writeFile(join(root, 'assets', 'dashboard', 'server', 'index.mjs'), 'export default {}')
+  await writeFile(
+    join(root, 'assets', 'dashboard', 'public', 'assets', 'app.js'),
+    'export default {}',
+  )
+  await writeFile(join(root, 'dist', 'index.js'), `console.log('${version}')`)
+  return root
+}

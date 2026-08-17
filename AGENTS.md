@@ -1,7 +1,7 @@
 # agent-rooms
 
 A CLI and lifecycle hooks that share decisions between parallel coding agents in pseudo-real time,
-so they don't drift on adjacent work. Targets Claude Code, Codex, Cursor, and opencode.
+so they don't drift on adjacent work. Targets Claude Code, Codex, Cursor, and Gemini CLI.
 
 One person, one SQLite database at `~/.agent-rooms/db.sqlite`. No accounts, no auth, no server.
 

@@ -5,9 +5,13 @@ import { z } from 'zod'
 import { CliError } from '../../errors'
 
 const sessionIdPattern = /^[A-Za-z0-9._:-]+$/
-const hookInputSchema = z.object({
-  session_id: z.string().trim().min(1).regex(sessionIdPattern),
-})
+const hookInputSchema = z
+  .object({
+    session_id: z.string().trim().min(1).regex(sessionIdPattern).optional(),
+    conversation_id: z.string().trim().min(1).regex(sessionIdPattern).optional(),
+    sessionId: z.string().trim().min(1).regex(sessionIdPattern).optional(),
+  })
+  .passthrough()
 
 export async function readHookSessionId(stream: Readable): Promise<string> {
   let input = ''
@@ -17,7 +21,7 @@ export async function readHookSessionId(stream: Readable): Promise<string> {
   }
 
   if (!input.trim()) {
-    throw invalidHookInput('Hook input must be a JSON object with a session_id.')
+    throw invalidHookInput('Hook input must be a JSON object with a supported session ID.')
   }
 
   let payload: unknown
@@ -31,10 +35,28 @@ export async function readHookSessionId(stream: Readable): Promise<string> {
   const parsed = hookInputSchema.safeParse(payload)
 
   if (!parsed.success) {
-    throw invalidHookInput('Hook input must include a supported string session_id.')
+    throw invalidHookInput(
+      'Hook input must include a supported string session_id, conversation_id, or sessionId.',
+    )
   }
 
-  return parsed.data.session_id
+  const sessionIds = [
+    parsed.data.session_id,
+    parsed.data.conversation_id,
+    parsed.data.sessionId,
+  ].filter((value): value is string => value !== undefined)
+
+  if (sessionIds.length === 0) {
+    throw invalidHookInput(
+      'Hook input must include a supported string session_id, conversation_id, or sessionId.',
+    )
+  }
+
+  if (new Set(sessionIds).size !== 1) {
+    throw invalidHookInput('Hook input must not contain conflicting session IDs.')
+  }
+
+  return sessionIds[0]!
 }
 
 function invalidHookInput(message: string): CliError {

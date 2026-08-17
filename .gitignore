@@ -141,6 +141,7 @@ dist
 # Build output
 dist/
 build/
+.output/
 
 # Nextra / Pagefind search index
 _pagefind/
@@ -151,7 +152,8 @@ routeTree.gen.ts
 # Local agent-rooms data
 .agent-rooms/
 
-# Copied into apps/cli at build time from packages/db
+# Copied into apps/cli during the package build
 apps/cli/migrations/
+apps/cli/assets/dashboard/
 
 .DS_Store

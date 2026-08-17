@@ -27,9 +27,10 @@ afterEach(async () => {
 async function createTestDatabase() {
   const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-db-'))
   directories.push(directory)
-  const db = createDatabase(`file:${join(directory, 'db.sqlite')}`)
+  const url = `file:${join(directory, 'db.sqlite')}`
+  const db = createDatabase(url)
   await runMigrations(db)
-  return db
+  return { db, url }
 }
 
 async function addMessage(
@@ -51,19 +52,19 @@ async function addMessage(
 
 describe('message operations', () => {
   it('returns undefined without an active membership', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
 
     await expect(consumeNewMessages(db, { conversationId: 'missing' })).resolves.toBeUndefined()
   })
 
   it('lists undefined without an active membership', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
 
     await expect(listRoomMessages(db, { conversationId: 'missing' })).resolves.toBeUndefined()
   })
 
   it('lists active-room messages in ascending order without advancing the cursor', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'active', conversationId: 'conversation' })
     const other = await createRoom(db, { roomName: 'other', conversationId: 'other-conversation' })
     const first = await addMessage(db, active.room.id, active.membership.id)
@@ -87,7 +88,7 @@ describe('message operations', () => {
   })
 
   it('hydrates reply targets when listing messages', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const [question] = await writeMessages(db, {
       conversationId: 'conversation',
@@ -120,7 +121,7 @@ describe('message operations', () => {
   })
 
   it('writes one message with the active membership without advancing its cursor', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
 
     const [written] = await writeMessages(db, {
@@ -140,7 +141,7 @@ describe('message operations', () => {
   })
 
   it('writes a batch atomically in input order', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
 
     const written = await writeMessages(db, {
@@ -165,7 +166,7 @@ describe('message operations', () => {
   })
 
   it('links multiple answers to a question and cascades their deletion', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const [question] = await writeMessages(db, {
       conversationId: 'conversation',
@@ -192,7 +193,7 @@ describe('message operations', () => {
   })
 
   it('rejects reply targets that are missing, not questions, or in another room atomically', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     await createRoom(db, { roomName: 'active', conversationId: 'conversation' })
     await createRoom(db, { roomName: 'other', conversationId: 'other-conversation' })
     const [status] = await writeMessages(db, {
@@ -236,7 +237,7 @@ describe('message operations', () => {
   })
 
   it('rejects writes without an active membership', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
 
     await expect(
       writeMessages(db, {
@@ -263,7 +264,7 @@ describe('message operations', () => {
       'a partially valid batch',
     ],
   ])('rejects %s without writing any rows (%s)', async (messageInput, _case) => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
 
     await expect(
@@ -276,7 +277,7 @@ describe('message operations', () => {
   })
 
   it('returns an empty batch for an active membership without messages', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
 
     await expect(consumeNewMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
@@ -286,7 +287,7 @@ describe('message operations', () => {
   })
 
   it('returns active-room messages in ascending order and advances the cursor', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'active', conversationId: 'conversation' })
     const other = await createRoom(db, { roomName: 'other', conversationId: 'other-conversation' })
     const first = await addMessage(db, active.room.id, active.membership.id)
@@ -311,8 +312,33 @@ describe('message operations', () => {
     })
   })
 
+  it('delivers each message once when two consumers race for the same conversation', async () => {
+    const { db, url } = await createTestDatabase()
+    const concurrentDb = createDatabase(url)
+    const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    const first = await addMessage(db, active.room.id, active.membership.id)
+    const second = await addMessage(db, active.room.id, active.membership.id)
+
+    const results = await Promise.allSettled([
+      consumeNewMessages(db, { conversationId: 'conversation' }),
+      consumeNewMessages(concurrentDb, { conversationId: 'conversation' }),
+    ])
+    const delivered = results.flatMap((result) =>
+      result.status === 'fulfilled' ? (result.value?.messages ?? []) : [],
+    )
+
+    expect(delivered.map((message) => message.id).toSorted((a, b) => a - b)).toEqual([
+      first.id,
+      second.id,
+    ])
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    await expect(
+      db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
+    ).resolves.toEqual([{ ...active.membership, cursor: second.id }])
+  })
+
   it('hydrates reply targets outside the new-message batch', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const [question] = await writeMessages(db, {
       conversationId: 'conversation',
@@ -351,7 +377,7 @@ describe('message operations', () => {
   })
 
   it('skips messages at or before the existing cursor', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const first = await addMessage(db, active.room.id, active.membership.id)
     const second = await addMessage(db, active.room.id, active.membership.id)
@@ -367,7 +393,7 @@ describe('message operations', () => {
   })
 
   it('includes messages authored by the consuming membership', async () => {
-    const db = await createTestDatabase()
+    const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const selfAuthored = await addMessage(db, active.room.id, active.membership.id)
 

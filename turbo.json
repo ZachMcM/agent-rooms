@@ -28,7 +28,7 @@
     },
     "agent-rooms#build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "migrations/**"]
+      "outputs": ["assets/dashboard/**", "dist/**", "migrations/**"]
     }
   }
 }

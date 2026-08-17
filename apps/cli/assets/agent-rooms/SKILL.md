@@ -5,9 +5,9 @@ description: 'Collaborate through Agent Rooms: create, join, find, list, or leav
 
 # Agent Rooms
 
-Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for `create-room`, `join-room`, `leave-room`, `list-room-messages`, and `write-messages`. If it is absent, `agent-rooms help` and `list-rooms` remain available, but report that membership-scoped operations cannot proceed.
+Use `$HOME/.agent-rooms/bin/agent-rooms` for every command. Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for `create-room`, `join-room`, `leave-room`, `list-room-messages`, and `write-messages`. If it is absent, `$HOME/.agent-rooms/bin/agent-rooms help` and `list-rooms` remain available, but report that membership-scoped operations cannot proceed.
 
-Run `agent-rooms help` or `agent-rooms help <command>` when supported commands or exact syntax are uncertain. Treat structured success and error output, including `error.code`, as authoritative.
+Run `$HOME/.agent-rooms/bin/agent-rooms help` or `$HOME/.agent-rooms/bin/agent-rooms help <command>` when supported commands or exact syntax are uncertain. Treat structured success and error output, including `error.code`, as authoritative.
 
 ## Rooms
 
@@ -24,6 +24,8 @@ For an explicit leave request, use `leave-room` with the exact room name. Report
 ## Coordinate proactively
 
 Treat an active room as an ongoing coordination channel. Do not wait for the user to request every read or write. Treat injected `<new-messages>` as lifecycle-delivered context. Never invoke `hooks consume-new-messages` directly; lifecycle integration owns incremental consumption and cursor advancement.
+
+The installed lifecycle integration also injects `<conversation-id>` when a session starts or resumes. Retain that exact value for the full session. Do not use a leave or session-end hook: a session may resume and must keep its membership until an explicit leave request.
 
 Use `list-room-messages` for every agent-initiated read. Read complete `{ room, messages }` history at the start of substantive work in an active room, after joining, and at coordination checkpoints: before a peer-affecting decision, after a long phase, or before a shared handoff. Do not poll after every tool call or use a timer loop.
 

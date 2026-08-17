@@ -75,37 +75,42 @@ export async function consumeNewMessages(
   db: Database,
   input: ConsumeNewMessagesInput,
 ): Promise<RoomMessages | undefined> {
-  const activeMembership = await findActiveRoomMembership(db, input.conversationId)
+  return db.transaction(
+    async (tx) => {
+      const activeMembership = await findActiveRoomMembership(tx, input.conversationId)
 
-  if (!activeMembership) {
-    return undefined
-  }
+      if (!activeMembership) {
+        return undefined
+      }
 
-  const newMessages = await db.query.messages.findMany({
-    where: {
-      roomId: activeMembership.membership.roomId,
-      id: { gt: activeMembership.membership.cursor },
+      const newMessages = await tx.query.messages.findMany({
+        where: {
+          roomId: activeMembership.membership.roomId,
+          id: { gt: activeMembership.membership.cursor },
+        },
+        orderBy: { id: 'asc' },
+        with: {
+          replyTo: {
+            columns: replyTargetColumns,
+          },
+        },
+      })
+
+      const lastMessage = newMessages.at(-1)
+
+      if (!lastMessage) {
+        return { room: activeMembership.room, messages: [] }
+      }
+
+      await tx
+        .update(memberships)
+        .set({ cursor: lastMessage.id })
+        .where(eq(memberships.id, activeMembership.membership.id))
+
+      return { room: activeMembership.room, messages: newMessages }
     },
-    orderBy: { id: 'asc' },
-    with: {
-      replyTo: {
-        columns: replyTargetColumns,
-      },
-    },
-  })
-
-  const lastMessage = newMessages.at(-1)
-
-  if (!lastMessage) {
-    return { room: activeMembership.room, messages: [] }
-  }
-
-  await db
-    .update(memberships)
-    .set({ cursor: lastMessage.id })
-    .where(eq(memberships.id, activeMembership.membership.id))
-
-  return { room: activeMembership.room, messages: newMessages }
+    { behavior: 'immediate' },
+  )
 }
 
 export async function listRoomMessages(
