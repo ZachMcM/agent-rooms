@@ -17,8 +17,6 @@
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
-    "@fontsource-variable/geist": "catalog:",
-    "@fontsource-variable/geist-mono": "catalog:",
     "@remixicon/react": "catalog:",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
