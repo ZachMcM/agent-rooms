@@ -2,7 +2,7 @@ import { consumeNewMessages } from '@agent-rooms/db'
 import type { Command } from 'commander'
 
 import { openDatabase } from '../../database'
-import { resolveConversationId } from './conversation-id'
+import { resolveHookConversation } from './conversation-id'
 import { conversationIdContext, messagesContext, serializeHookContext } from './output'
 
 export function addHooksCommand(program: Command): void {
@@ -19,19 +19,24 @@ function addConsumeNewMessagesCommand(hooks: Command): void {
   hooks
     .command('consume-new-messages')
     .description('Writes unread messages from the active room into agent context.')
-    .requiredOption('--agent <name>')
+    .requiredOption(
+      '--provider <provider>',
+      'Hook transport provider (claude, codex, cursor, or gemini)',
+    )
     .option('--event <name>')
     .exitOverride()
-    .action(async (options: { agent: string; event?: string }) => {
-      const conversationId = await resolveConversationId({
-        agent: options.agent,
+    .action(async (options: { provider: string; event?: string }) => {
+      const conversation = await resolveHookConversation({
+        provider: options.provider,
         stream: process.stdin,
       })
       const db = await openDatabase()
-      const roomMessages = await consumeNewMessages(db, { conversationId })
+      const roomMessages = await consumeNewMessages(db, {
+        conversationId: conversation.conversationId,
+      })
 
       const output = serializeHookContext({
-        agent: options.agent.trim(),
+        provider: conversation.provider,
         event: options.event,
         context:
           roomMessages && roomMessages.messages.length > 0
@@ -39,9 +44,7 @@ function addConsumeNewMessagesCommand(hooks: Command): void {
             : undefined,
       })
 
-      if (output) {
-        process.stdout.write(output)
-      }
+      process.stdout.write(output)
     })
 }
 
@@ -49,23 +52,24 @@ function addLogConversationIdCommand(hooks: Command): void {
   hooks
     .command('log-conversation-id')
     .description('Writes the normalized conversation ID into agent context.')
-    .requiredOption('--agent <name>')
+    .requiredOption(
+      '--provider <provider>',
+      'Hook transport provider (claude, codex, cursor, or gemini)',
+    )
     .option('--event <name>')
     .exitOverride()
-    .action(async (options: { agent: string; event?: string }) => {
-      const conversationId = await resolveConversationId({
-        agent: options.agent,
+    .action(async (options: { provider: string; event?: string }) => {
+      const conversation = await resolveHookConversation({
+        provider: options.provider,
         stream: process.stdin,
       })
 
       const output = serializeHookContext({
-        agent: options.agent.trim(),
+        provider: conversation.provider,
         event: options.event,
-        context: conversationIdContext(conversationId),
+        context: conversationIdContext(conversation.conversationId),
       })
 
-      if (output) {
-        process.stdout.write(output)
-      }
+      process.stdout.write(output)
     })
 }

@@ -1,27 +1,21 @@
-export type HookProvider = 'claude' | 'codex' | 'cursor' | 'gemini'
+import type { Provider } from './conversation-id'
 
 type HookOutput = Record<string, unknown>
 
-const knownProviders = new Set<HookProvider>(['claude', 'codex', 'cursor', 'gemini'])
-
 export function serializeHookContext({
-  agent,
+  provider,
   event,
   context,
 }: {
-  agent: string
+  provider: Provider
   event?: string
   context?: string
-}): string | undefined {
+}): string {
   if (!context) {
-    return isHookProvider(agent) ? '{}\n' : undefined
+    return '{}\n'
   }
 
-  if (!isHookProvider(agent)) {
-    return `${context}\n`
-  }
-
-  const output = providerOutput(agent, event, context)
+  const output = providerOutput(provider, event, context)
   return `${JSON.stringify(output)}\n`
 }
 
@@ -34,7 +28,7 @@ export function messagesContext(roomMessages: unknown): string {
 }
 
 function providerOutput(
-  provider: HookProvider,
+  provider: Provider,
   event: string | undefined,
   context: string,
 ): HookOutput {
@@ -55,10 +49,6 @@ function providerOutput(
   }
 
   return { hookSpecificOutput: { additionalContext: context } }
-}
-
-function isHookProvider(agent: string): agent is HookProvider {
-  return knownProviders.has(agent as HookProvider)
 }
 
 function escapeXml(value: string): string {

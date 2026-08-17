@@ -2,34 +2,36 @@ import { Readable } from 'node:stream'
 
 import { describe, expect, it } from 'vitest'
 
-import { resolveConversationId } from './conversation-id'
+import { resolveHookConversation } from './conversation-id'
 
-function resolve(agent: string, input: string): Promise<string> {
-  return resolveConversationId({ agent, stream: Readable.from([input]) })
+function resolve(provider: string, input: string) {
+  return resolveHookConversation({ provider, stream: Readable.from([input]) })
 }
 
-describe('resolveConversationId', () => {
-  it('returns the exact conversation ID', async () => {
-    await expect(resolve('codex', '{"session_id":"session:123"}')).resolves.toBe(
-      'codex-session:123',
-    )
+describe('resolveHookConversation', () => {
+  it('uses the provider for the conversation prefix', async () => {
+    await expect(resolve('claude', '{"session_id":"session:123"}')).resolves.toEqual({
+      provider: 'claude',
+      conversationId: 'claude-session:123',
+    })
   })
 
-  it('trims agent and session ID', async () => {
-    await expect(resolve('  claude-code  ', '{"session_id":"  codex:abc_123  "}')).resolves.toBe(
-      'claude-code-codex:abc_123',
-    )
+  it('keeps provider-prefixed conversation continuity', async () => {
+    await expect(
+      resolve('codex', '{"session_id":"  codex:abc-123-with-hyphens  "}'),
+    ).resolves.toMatchObject({
+      conversationId: 'codex-codex:abc-123-with-hyphens',
+    })
   })
 
-  it.each(['', 'Claude-code', 'claude_code', '-claude', 'claude-', 'claude--code'])(
-    'rejects invalid agent slug %s',
-    async (agent) => {
-      await expect(resolve(agent, '{"session_id":"session:123"}')).rejects.toMatchObject(
-        expect.objectContaining({
-          code: 'invalid_arguments',
-          exitCode: 2,
-        }),
-      )
+  it.each(['', 'Claude', 'opencode', 'claude-code', ' claude'])(
+    'rejects provider %s',
+    async (provider) => {
+      await expect(resolve(provider, '')).rejects.toMatchObject({
+        code: 'invalid_arguments',
+        exitCode: 2,
+        message: 'The --provider value must be one of claude, codex, cursor, or gemini.',
+      })
     },
   )
 

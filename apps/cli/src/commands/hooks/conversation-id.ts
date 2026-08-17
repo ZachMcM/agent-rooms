@@ -3,28 +3,43 @@ import type { Readable } from 'node:stream'
 import { CliError } from '../../errors'
 import { readHookSessionId } from './input'
 
-const agentPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+export const PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'] as const
 
-export async function resolveConversationId({
-  agent,
-  stream,
-}: {
-  agent: string
-  stream: Readable
-}): Promise<string> {
-  return `${normalizeAgent(agent)}-${await readHookSessionId(stream)}`
+export type Provider = (typeof PROVIDERS)[number]
+
+const providers = new Set<string>(PROVIDERS)
+
+export function isProvider(value: string): value is Provider {
+  return providers.has(value)
 }
 
-function normalizeAgent(agent: string): string {
-  const normalizedAgent = agent.trim()
+export interface HookConversation {
+  provider: Provider
+  conversationId: string
+}
 
-  if (!agentPattern.test(normalizedAgent)) {
+export async function resolveHookConversation({
+  provider,
+  stream,
+}: {
+  provider: string
+  stream: Readable
+}): Promise<HookConversation> {
+  const hookProvider = parseHookProvider(provider)
+  return {
+    provider: hookProvider,
+    conversationId: `${hookProvider}-${await readHookSessionId(stream)}`,
+  }
+}
+
+export function parseHookProvider(provider: string): Provider {
+  if (!isProvider(provider)) {
     throw new CliError(
       'invalid_arguments',
-      'The --agent value must be a lowercase kebab-case slug.',
+      'The --provider value must be one of claude, codex, cursor, or gemini.',
       2,
     )
   }
 
-  return normalizedAgent
+  return provider
 }

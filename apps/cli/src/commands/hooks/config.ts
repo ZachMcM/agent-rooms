@@ -1,13 +1,15 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
+import type { Provider } from './conversation-id'
+
 export const hookExecutable = join(homedir(), '.agent-rooms', 'bin', 'agent-rooms')
 
 export function providerHookConfig(executable: string = hookExecutable): Record<string, unknown> {
-  const identity = (agent: string, event: string) =>
-    hookCommand(executable, 'log-conversation-id', agent, event)
-  const delivery = (agent: string, event: string) =>
-    hookCommand(executable, 'consume-new-messages', agent, event)
+  const identity = (provider: Provider, event: string) =>
+    hookCommand(executable, 'log-conversation-id', provider, event)
+  const delivery = (provider: Provider, event: string) =>
+    hookCommand(executable, 'consume-new-messages', provider, event)
 
   return {
     claude: {
@@ -50,8 +52,13 @@ export function providerHookConfig(executable: string = hookExecutable): Record<
   }
 }
 
-function hookCommand(executable: string, command: string, agent: string, event: string): string {
-  return `${shellQuote(executable)} hooks ${command} --agent ${agent} --event ${event}`
+function hookCommand(
+  executable: string,
+  command: 'log-conversation-id' | 'consume-new-messages',
+  provider: Provider,
+  event: string,
+): string {
+  return `${shellQuote(executable)} hooks ${command} --provider ${provider} --event ${event}`
 }
 
 function shellQuote(value: string): string {

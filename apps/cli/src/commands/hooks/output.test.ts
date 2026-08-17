@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { PROVIDERS, type Provider } from './conversation-id'
 import { conversationIdContext, messagesContext, serializeHookContext } from './output'
 
 describe('hook output', () => {
@@ -9,7 +10,7 @@ describe('hook output', () => {
     )
   })
 
-  it.each([
+  it.each<[Provider, string, string]>([
     [
       'claude',
       'UserPromptSubmit',
@@ -35,22 +36,23 @@ describe('hook output', () => {
       'AfterAgent',
       '{"decision":"deny","reason":"<conversation-id>gemini-session</conversation-id>"}\n',
     ],
-  ])('serializes %s %s output', (agent, event, expected) => {
+  ])('serializes %s %s output', (provider, event, expected) => {
     expect(
-      serializeHookContext({ agent, event, context: conversationIdContext(`${agent}-session`) }),
+      serializeHookContext({
+        provider,
+        event,
+        context: conversationIdContext(`${provider}-session`),
+      }),
     ).toBe(expected)
   })
 
-  it.each(['claude', 'codex', 'cursor', 'gemini'])('emits an empty object for %s', (agent) => {
-    expect(serializeHookContext({ agent })).toBe('{}\n')
+  it.each(PROVIDERS)('emits an empty object for %s', (provider) => {
+    expect(serializeHookContext({ provider })).toBe('{}\n')
   })
 
-  it('preserves markup output for manual providers', () => {
-    expect(
-      serializeHookContext({
-        agent: 'manual-agent',
-        context: '<conversation-id>manual</conversation-id>',
-      }),
-    ).toBe('<conversation-id>manual</conversation-id>\n')
+  it('escapes the conversation ID in context', () => {
+    expect(conversationIdContext('session<&>')).toBe(
+      '<conversation-id>session&lt;&amp;&gt;</conversation-id>',
+    )
   })
 })

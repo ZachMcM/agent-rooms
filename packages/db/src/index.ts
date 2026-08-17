@@ -1,5 +1,6 @@
 export { createDatabase, type Database } from './client'
 export * from './migrator'
+export * from './operations/dashboard'
 export * from './operations/messages'
 export * from './operations/rooms'
 export * from './schema'

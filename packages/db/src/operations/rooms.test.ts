@@ -163,6 +163,10 @@ describe('room operations', () => {
     const db = await createTestDatabase()
     const created = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     await leaveRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    await db
+      .update(memberships)
+      .set({ cursor: 12 })
+      .where(eq(memberships.id, created.membership.id))
 
     const rejoined = await joinRoom(db, { roomName: 'build', conversationId: 'conversation' })
 
@@ -170,7 +174,7 @@ describe('room operations', () => {
       room: created.room,
       membership: {
         id: created.membership.id,
-        cursor: created.membership.cursor,
+        cursor: 12,
         conversationId: created.membership.conversationId,
         status: 'active',
       },

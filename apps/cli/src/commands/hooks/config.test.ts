@@ -9,7 +9,7 @@ describe('providerHookConfig', () => {
     }
 
     expect(config.cursor.hooks.sessionStart[0]?.command).toBe(
-      `'${`/Users/Test User/it's/bin/agent-rooms`.replaceAll("'", `'"'"'`)}' hooks log-conversation-id --agent cursor --event sessionStart`,
+      `'${`/Users/Test User/it's/bin/agent-rooms`.replaceAll("'", `'"'"'`)}' hooks log-conversation-id --provider cursor --event sessionStart`,
     )
   })
 
@@ -24,7 +24,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --agent claude --event SessionStart',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider claude --event SessionStart',
                 },
               ],
             },
@@ -34,7 +34,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent claude --event SessionStart',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event SessionStart',
                 },
               ],
             },
@@ -45,7 +45,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent claude --event UserPromptSubmit',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event UserPromptSubmit',
                 },
               ],
             },
@@ -56,7 +56,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent claude --event PostToolUse',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event PostToolUse',
                 },
               ],
             },
@@ -67,7 +67,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent claude --event Stop',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event Stop',
                 },
               ],
             },
@@ -83,7 +83,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --agent codex --event SessionStart',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider codex --event SessionStart',
                 },
               ],
             },
@@ -93,7 +93,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent codex --event SessionStart',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event SessionStart',
                 },
               ],
             },
@@ -104,7 +104,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent codex --event UserPromptSubmit',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event UserPromptSubmit',
                 },
               ],
             },
@@ -115,7 +115,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent codex --event PostToolUse',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event PostToolUse',
                 },
               ],
             },
@@ -126,7 +126,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent codex --event Stop',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event Stop',
                 },
               ],
             },
@@ -138,19 +138,19 @@ describe('providerHookConfig', () => {
           sessionStart: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --agent cursor --event sessionStart',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider cursor --event sessionStart',
             },
           ],
           postToolUse: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent cursor --event postToolUse',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider cursor --event postToolUse',
             },
           ],
           stop: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent cursor --event stop',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider cursor --event stop',
             },
           ],
         },
@@ -160,25 +160,25 @@ describe('providerHookConfig', () => {
           SessionStart: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --agent gemini --event SessionStart',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider gemini --event SessionStart',
             },
           ],
           BeforeAgent: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent gemini --event BeforeAgent',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider gemini --event BeforeAgent',
             },
           ],
           AfterTool: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent gemini --event AfterTool',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider gemini --event AfterTool',
             },
           ],
           AfterAgent: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --agent gemini --event AfterAgent',
+                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider gemini --event AfterAgent',
             },
           ],
         },
