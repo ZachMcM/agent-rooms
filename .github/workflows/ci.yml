@@ -53,7 +53,8 @@ jobs:
           ./node_modules/.bin/agent-rooms --help
           test -d node_modules/agent-rooms/migrations
           test -f node_modules/agent-rooms/assets/agent-rooms/SKILL.md
-          test -f node_modules/agent-rooms/assets/dashboard/index.html
+          test -f node_modules/agent-rooms/assets/dashboard/server/index.mjs
+          test -d node_modules/agent-rooms/assets/dashboard/public/assets
           node -e "require('@libsql/client')"
       - name: Smoke test the packaged dashboard
         run: |
@@ -66,13 +67,12 @@ jobs:
           dashboard_pid=$!
           trap 'kill "$dashboard_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 20); do
-            if curl --fail --silent http://127.0.0.1:61937/api/health > health.json; then
+            if curl --fail --silent http://127.0.0.1:61937/ > dashboard.html; then
               break
             fi
             sleep 0.25
           done
-          test "$(cat health.json)" = '{"ok":true}'
-          curl --fail --silent http://127.0.0.1:61937/rooms/example | grep -q '<div id="app">'
+          grep -q 'Agent Rooms' dashboard.html
           if HOME="$test_home" ./node_modules/.bin/agent-rooms dashboard --port 61937 2> collision.err; then
             exit 1
           fi

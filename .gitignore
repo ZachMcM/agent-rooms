@@ -146,9 +146,6 @@ build/
 # Nextra / Pagefind search index
 _pagefind/
 
-# TanStack Router generated route tree
-routeTree.gen.ts
-
 # Local agent-rooms data
 .agent-rooms/
 
