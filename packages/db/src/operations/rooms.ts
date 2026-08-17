@@ -158,7 +158,7 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
   }
 }
 
-export async function listRooms(db: Database): Promise<RoomRow[]> {
+export async function listActiveRooms(db: Database): Promise<RoomRow[]> {
   return db
     .selectDistinct({ id: rooms.id, name: rooms.name, createdAt: rooms.createdAt })
     .from(rooms)

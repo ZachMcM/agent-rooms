@@ -10,7 +10,7 @@ import {
   addCreateRoomCommand,
   addJoinRoomCommand,
   addLeaveRoomCommand,
-  addListRoomsCommand,
+  addListActiveRoomsCommand,
 } from './commands/rooms'
 import { handleCliError } from './errors'
 
@@ -29,7 +29,7 @@ export function createProgram(): Command {
 
   addCreateRoomCommand(program)
   addJoinRoomCommand(program)
-  addListRoomsCommand(program)
+  addListActiveRoomsCommand(program)
   addListRoomMessagesCommand(program)
   addWriteMessagesCommand(program)
   addLeaveRoomCommand(program)

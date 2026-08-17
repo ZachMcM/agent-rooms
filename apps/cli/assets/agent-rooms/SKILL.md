@@ -5,7 +5,7 @@ description: 'Collaborate through Agent Rooms: create, join, find, list, or leav
 
 # Agent Rooms
 
-Use `$HOME/.agent-rooms/bin/agent-rooms` for every command. Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for `create-room`, `join-room`, `leave-room`, `list-room-messages`, and `write-messages`. If it is absent, `$HOME/.agent-rooms/bin/agent-rooms help` and `list-rooms` remain available, but report that membership-scoped operations cannot proceed.
+Use `$HOME/.agent-rooms/bin/agent-rooms` for every command. Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for `create-room`, `join-room`, `leave-room`, `list-room-messages`, and `write-messages`. If it is absent, `$HOME/.agent-rooms/bin/agent-rooms help` and `list-active-rooms` remain available, but report that membership-scoped operations cannot proceed.
 
 Run `$HOME/.agent-rooms/bin/agent-rooms help` or `$HOME/.agent-rooms/bin/agent-rooms help <command>` when supported commands or exact syntax are uncertain. Treat structured success and error output, including `error.code`, as authoritative.
 
@@ -15,7 +15,7 @@ Use a room name verbatim when the user supplies it as an exact identifier. Only 
 
 Create a room and join it with `create-room`. On `room_name_conflict`, do not silently choose another name. Use user intent to ask for a distinct name or offer to join the existing room. Backfill only when requested.
 
-Join the explicit or canonical candidate first. On `room_not_found`, run `list-rooms` before reporting failure. Retry the exact stored name only when one unambiguous normalized or semantic match exists; ask when multiple matches are plausible. Report no applicable listed room only after listing. Never create a room implicitly. Treat `membership_conflict` as already joined to that room.
+Join the explicit or canonical candidate first. On `room_not_found`, run `list-active-rooms` before reporting failure. Retry the exact stored name only when one unambiguous normalized or semantic match exists; ask when multiple matches are plausible. Report no applicable listed room only after listing. Never create a room implicitly. Treat `membership_conflict` as already joined to that room.
 
 On `active_membership_conflict`, use `list-room-messages` with the conversation ID to identify the active room. Do not leave it unless the user explicitly asks to switch or move, or confirms. For an explicit switch, leave the exact current room, then retry the originally requested create or join operation. If the second operation fails, report the partial state accurately.
 

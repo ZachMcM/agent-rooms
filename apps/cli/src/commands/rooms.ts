@@ -3,7 +3,7 @@ import {
   createRoom,
   joinRoom,
   leaveRoom,
-  listRooms,
+  listActiveRooms,
   MembershipConflictError,
   MembershipNotFoundError,
   RoomNameConflictError,
@@ -71,15 +71,15 @@ export function addJoinRoomCommand(program: Command): void {
     })
 }
 
-export function addListRoomsCommand(program: Command): void {
+export function addListActiveRoomsCommand(program: Command): void {
   program
-    .command('list-rooms')
-    .description('Lists available rooms.')
+    .command('list-active-rooms')
+    .description('Lists active rooms.')
     .exitOverride()
     .action(async () => {
       const db = await openDatabase()
 
-      writeSuccess(await listRooms(db))
+      writeSuccess(await listActiveRooms(db))
     })
 }
 
