@@ -1,4 +1,4 @@
-import { asc, desc, eq, inArray, sql } from 'drizzle-orm'
+import { asc, eq, inArray, sql } from 'drizzle-orm'
 
 import type { Database } from '../client'
 import {
@@ -89,42 +89,21 @@ export class InvalidSearchLimitError extends Error {
 }
 
 export async function listRoomOverviews(db: Database): Promise<RoomOverview[]> {
-  const rows = await db
-    .select({
-      room: rooms,
-      member: {
-        id: memberships.id,
-        conversationId: memberships.conversationId,
-        status: memberships.status,
+  const roomResults = await db.query.rooms.findMany({
+    orderBy: (room, { asc }) => [asc(sql`lower(${room.name})`), asc(room.name), asc(room.id)],
+    with: {
+      memberships: {
+        columns: {
+          id: true,
+          conversationId: true,
+          status: true,
+        },
+        orderBy: { id: 'asc' },
       },
-    })
-    .from(rooms)
-    .leftJoin(memberships, eq(memberships.roomId, rooms.id))
-    .orderBy(asc(sql`lower(${rooms.name})`), asc(rooms.name), asc(rooms.id), asc(memberships.id))
+    },
+  })
 
-  const overviews: RoomOverview[] = []
-
-  for (const row of rows) {
-    const previous = overviews.at(-1)
-    const overview =
-      previous?.room.id === row.room.id
-        ? previous
-        : { room: row.room, members: [] satisfies RoomOverviewMember[] }
-
-    if (overview !== previous) {
-      overviews.push(overview)
-    }
-
-    if (row.member) {
-      overview.members.push({
-        id: row.member.id,
-        conversationId: row.member.conversationId,
-        status: row.member.status,
-      })
-    }
-  }
-
-  return overviews
+  return roomResults.map(({ memberships: members, ...room }) => ({ room, members }))
 }
 
 export async function getRoomMembers(
@@ -230,43 +209,49 @@ export async function searchRoomsAndMessages(
     .orderBy(asc(sql`lower(${rooms.name})`), asc(rooms.name), asc(rooms.id))
     .limit(limit)
 
-  const messageResults = await db
-    .select({
+  const messageResults = await db.query.messages.findMany({
+    columns: {
+      id: true,
+      kind: true,
+      body: true,
+      createdAt: true,
+    },
+    where: {
+      roomId: input.roomId,
+      RAW: (message) => sql`instr(lower(${message.body}), lower(${query})) > 0`,
+    },
+    orderBy: { id: 'desc' },
+    limit,
+    with: {
       room: {
-        id: rooms.id,
-        name: rooms.name,
+        columns: {
+          id: true,
+          name: true,
+        },
       },
-      member: {
-        id: memberships.id,
-        conversationId: memberships.conversationId,
+      membership: {
+        columns: {
+          id: true,
+          conversationId: true,
+        },
       },
-      message: {
-        id: messages.id,
-        kind: messages.kind,
-        body: messages.body,
-        createdAt: messages.createdAt,
-      },
-    })
-    .from(messages)
-    .innerJoin(rooms, eq(rooms.id, messages.roomId))
-    .innerJoin(memberships, eq(memberships.id, messages.membershipId))
-    .where(
-      input.roomId !== undefined
-        ? sql`${messages.roomId} = ${input.roomId} and instr(lower(${messages.body}), lower(${query})) > 0`
-        : sql`instr(lower(${messages.body}), lower(${query})) > 0`,
-    )
-    .orderBy(desc(messages.id))
-    .limit(limit)
+    },
+  })
 
   return {
     rooms: roomResults,
     messages: messageResults.map((result) => ({
       room: result.room,
       member: {
-        id: result.member.id,
-        conversationId: result.member.conversationId,
+        id: result.membership.id,
+        conversationId: result.membership.conversationId,
       },
-      message: result.message,
+      message: {
+        id: result.id,
+        kind: result.kind,
+        body: result.body,
+        createdAt: result.createdAt,
+      },
     })),
   }
 }
