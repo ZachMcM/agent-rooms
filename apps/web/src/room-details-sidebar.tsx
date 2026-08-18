@@ -72,7 +72,7 @@ export function RoomDetailsSidebar({
       <Card className="gap-0 py-0">
         <Collapsible defaultOpen>
           <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:text-foreground w-full rounded-xl px-6 py-3 text-left text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset">
-            <span className="inline-flex items-center">
+            <span className="inline-flex items-center text-sm">
               Properties
               <ChevronRight
                 className="ml-2.5 size-3.5 transition-transform group-data-panel-open:rotate-90"
@@ -123,7 +123,7 @@ export function RoomDetailsSidebar({
       <Card className="gap-0 py-0">
         <Collapsible defaultOpen>
           <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:text-foreground w-full rounded-xl px-6 py-3 text-left text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset">
-            <span className="inline-flex items-center">
+            <span className="inline-flex items-center text-sm">
               Members
               <ChevronRight
                 className="ml-2.5 size-3.5 transition-transform group-data-panel-open:rotate-90"
