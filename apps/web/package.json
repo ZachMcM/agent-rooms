@@ -8,7 +8,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "build": "vite build && node ./scripts/verify-production.mjs",
+    "build": "vite build && node ./scripts/copy-migrations.mjs && node ./scripts/verify-production.mjs",
     "dev": "vite dev --port 3000",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
@@ -16,7 +16,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@agent-rooms/core": "workspace:*",
+    "@agent-rooms/db": "workspace:*",
     "@agent-rooms/ui-library": "workspace:*",
+    "@libsql/client": "catalog:",
     "@tanstack/react-router": "1.170.29",
     "@tanstack/react-start": "1.168.46",
     "react": "catalog:",

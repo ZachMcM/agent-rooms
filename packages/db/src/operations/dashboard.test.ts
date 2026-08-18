@@ -8,6 +8,7 @@ import { createDatabase, type Database } from '../client'
 import { runMigrations } from '../migrator'
 import { memberships, messages, rooms } from '../schema'
 import {
+  getRoomMessages,
   getRoomMembers,
   InvalidSearchLimitError,
   listRoomOverviews,
@@ -207,6 +208,100 @@ describe('dashboard operations', () => {
 
     await expect(getRoomMembers(db, { roomId: room.id })).resolves.toEqual({ room, members: [] })
     await expect(getRoomMembers(db, { roomId: 'missing' })).resolves.toBeUndefined()
+  })
+
+  it('lists messages from existing rooms without changing member cursors', async () => {
+    const db = await createTestDatabase()
+    const room = await insertRoom(db, 'closed-room', 'closed')
+    const answerMembership = {
+      id: 'answer-member',
+      roomId: room.id,
+      conversationId: 'answer-conversation',
+      status: 'inactive' as const,
+      cursor: 1,
+    }
+    const inactiveMembership = {
+      id: 'inactive-member',
+      roomId: room.id,
+      conversationId: 'inactive-conversation',
+      status: 'inactive' as const,
+      cursor: 2,
+    }
+
+    await db.insert(memberships).values([answerMembership, inactiveMembership])
+    const [question, answer] = await db
+      .insert(messages)
+      .values([
+        {
+          id: 2,
+          roomId: room.id,
+          membershipId: inactiveMembership.id,
+          kind: 'question',
+          body: 'Which plan?',
+        },
+        {
+          id: 3,
+          roomId: room.id,
+          membershipId: answerMembership.id,
+          kind: 'answer',
+          body: 'The approved plan.',
+          replyToMessageId: 2,
+        },
+      ])
+      .returning()
+
+    if (!question || !answer) {
+      throw new Error('Expected message setup to return rows')
+    }
+
+    await expect(getRoomMessages(db, { roomId: room.id })).resolves.toEqual({
+      room,
+      messages: [
+        {
+          ...question,
+          membership: {
+            id: inactiveMembership.id,
+            conversationId: inactiveMembership.conversationId,
+            status: inactiveMembership.status,
+          },
+          replyTo: null,
+        },
+        {
+          ...answer,
+          membership: {
+            id: answerMembership.id,
+            conversationId: answerMembership.conversationId,
+            status: answerMembership.status,
+          },
+          replyTo: {
+            id: question.id,
+            kind: question.kind,
+            body: question.body,
+            membership: {
+              id: inactiveMembership.id,
+              conversationId: inactiveMembership.conversationId,
+              status: inactiveMembership.status,
+            },
+          },
+        },
+      ],
+    })
+    await expect(getRoomMessages(db, { roomId: 'missing' })).resolves.toBeUndefined()
+
+    const emptyRoom = await insertRoom(db, 'empty-room', 'empty')
+    await expect(getRoomMessages(db, { roomId: emptyRoom.id })).resolves.toEqual({
+      room: emptyRoom,
+      messages: [],
+    })
+    await expect(
+      db
+        .select({ id: memberships.id, cursor: memberships.cursor })
+        .from(memberships)
+        .orderBy(memberships.id),
+    ).resolves.toEqual([
+      { id: answerMembership.id, cursor: answerMembership.cursor },
+      { id: inactiveMembership.id, cursor: inactiveMembership.cursor },
+    ])
   })
 
   it('searches case-insensitive literal substrings and scopes only message results', async () => {

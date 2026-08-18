@@ -6,5 +6,6 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
+  ssr: { external: ['@libsql/client'] },
   plugins: [tailwindcss(), tanstackStart(), viteReact(), nitro({ preset: 'node-server' })],
 })

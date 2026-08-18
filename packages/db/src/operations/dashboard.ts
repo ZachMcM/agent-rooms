@@ -9,6 +9,7 @@ import {
   type MessageKind,
   type RoomRow,
 } from '../schema'
+import type { ListedRoomMessages } from './messages'
 
 export interface RoomOverviewMember {
   id: string
@@ -22,6 +23,10 @@ export interface RoomOverview {
 }
 
 export interface GetRoomMembersInput {
+  roomId: string
+}
+
+export interface GetRoomMessagesInput {
   roomId: string
 }
 
@@ -90,7 +95,7 @@ export class InvalidSearchLimitError extends Error {
 
 export async function listRoomOverviews(db: Database): Promise<RoomOverview[]> {
   const roomResults = await db.query.rooms.findMany({
-    orderBy: (room, { asc }) => [asc(sql`lower(${room.name})`), asc(room.name), asc(room.id)],
+    orderBy: (room) => [asc(sql`lower(${room.name})`), asc(room.name), asc(room.id)],
     with: {
       memberships: {
         columns: {
@@ -184,6 +189,53 @@ export async function getRoomMembers(
       ]
     }),
   }
+}
+
+export async function getRoomMessages(
+  db: Database,
+  input: GetRoomMessagesInput,
+): Promise<ListedRoomMessages | undefined> {
+  const roomResult = await db.query.rooms.findFirst({
+    where: { id: input.roomId },
+    with: {
+      messages: {
+        orderBy: { id: 'asc' },
+        with: {
+          membership: {
+            columns: {
+              id: true,
+              conversationId: true,
+              status: true,
+            },
+          },
+          replyTo: {
+            columns: {
+              id: true,
+              kind: true,
+              body: true,
+            },
+            with: {
+              membership: {
+                columns: {
+                  id: true,
+                  conversationId: true,
+                  status: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+
+  if (!roomResult) {
+    return undefined
+  }
+
+  const { messages: roomMessages, ...room } = roomResult
+
+  return { room, messages: roomMessages }
 }
 
 export async function searchRoomsAndMessages(

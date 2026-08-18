@@ -1,10 +1,15 @@
 import { spawn } from 'node:child_process'
+import { once } from 'node:events'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const entrypoint = fileURLToPath(new URL('../.output/server/index.mjs', import.meta.url))
 const port = String(40000 + Math.floor(Math.random() * 10000))
+const testHome = await mkdtemp(join(tmpdir(), 'agent-rooms-web-production-'))
 const child = spawn(process.execPath, [entrypoint], {
-  env: { ...process.env, NITRO_HOST: '127.0.0.1', NITRO_PORT: port },
+  env: { ...process.env, HOME: testHome, NITRO_HOST: '127.0.0.1', NITRO_PORT: port },
   stdio: ['ignore', 'pipe', 'pipe'],
 })
 let output = ''
@@ -21,6 +26,12 @@ try {
     throw new Error('Health endpoint returned an unexpected response.')
   }
 
+  const rooms = await fetch(`${url}/api/rooms`)
+
+  if (!rooms.ok || JSON.stringify(await rooms.json()) !== JSON.stringify([])) {
+    throw new Error('Rooms endpoint did not read from the temporary production database.')
+  }
+
   const root = await fetch(url)
   const html = await root.text()
   const asset = html.match(/\/assets\/[^"']+\.js/)
@@ -33,7 +44,13 @@ try {
     throw new Error('Built client asset did not load.')
   }
 } finally {
-  child.kill('SIGTERM')
+  if (child.exitCode === null && child.signalCode === null) {
+    const exited = once(child, 'exit')
+    child.kill('SIGTERM')
+    await exited
+  }
+
+  await rm(testHome, { recursive: true })
 }
 
 function waitForServer(server) {

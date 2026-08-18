@@ -6,6 +6,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "dashboard:seed": "pnpm --filter @agent-rooms/db dashboard:seed",
+    "dashboard:dev": "pnpm dashboard:seed && AGENT_ROOMS_WEB_DATABASE_URL=\"file://$PWD/.agent-rooms/dashboard-dev.sqlite\" pnpm --filter @agent-rooms/web dev",
     "clean": "turbo run clean && rm -rf node_modules",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
