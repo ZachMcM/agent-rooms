@@ -34,7 +34,7 @@ apps/
   api         Express backend/API
   cli         The product, and the only published package
 packages/
-  ui-library        shadcn, preset b27Gcu6y — every React app except Nextra
+  ui-library        shadcn, preset bbVJxYW — every React app except Nextra
   db                Drizzle schema, relations, and migrations
   core              paths
   oxlint-config / oxfmt-config / typescript-config

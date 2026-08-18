@@ -87,7 +87,8 @@ export function RoomSidebar() {
         <Button
           type="button"
           variant="outline"
-          className="text-muted-foreground justify-start"
+          size="sm"
+          className="text-muted-foreground justify-start gap-1.5 items-center"
           aria-label="Search rooms and messages, coming soon"
           title="Search rooms and messages, coming soon"
         >
@@ -110,7 +111,7 @@ export function RoomSidebar() {
             {roomGroups.map((group) => (
               <div key={group.heading ?? 'rooms'} className="pb-2 last:pb-0">
                 {group.heading ? (
-                  <SidebarGroupLabel className="h-auto px-2 py-2 text-[11px] tracking-wide">
+                  <SidebarGroupLabel className="h-auto px-2 py-2 tracking-wide">
                     {group.heading}
                   </SidebarGroupLabel>
                 ) : null}
@@ -211,7 +212,7 @@ function FilterSubmenu({
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="[&>svg:last-child]:ml-1">
         <span>{label}</span>
-        <span className="text-muted-foreground ml-auto text-xs">{selectedLabel}</span>
+        <span className="ml-auto text-xs">{selectedLabel}</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="min-w-36 rounded-xl">
         <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
