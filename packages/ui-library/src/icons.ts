@@ -5,9 +5,12 @@ export {
   Clock,
   HeartPulse,
   ListFilter,
+  LogIn,
+  LogOut,
   MessageSquare,
   Monitor,
   Moon,
+  Plus,
   Search,
   Send,
   Settings2,
@@ -15,4 +18,4 @@ export {
   SlidersVertical,
   Sun,
   Users,
-} from "lucide-react";
+} from 'lucide-react'

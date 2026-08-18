@@ -2,18 +2,27 @@ import {
   AgentHarnessIcon,
   type AgentHarness,
 } from '@agent-rooms/ui-library/components/agent-harness-icon'
-import { Card, CardContent, CardHeader } from '@agent-rooms/ui-library/components/card'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@agent-rooms/ui-library/components/empty'
+import { Marker, MarkerContent } from '@agent-rooms/ui-library/components/marker'
 import { MessageKindBadge } from '@agent-rooms/ui-library/components/message-kind-badge'
 import { ScrollArea } from '@agent-rooms/ui-library/components/scroll-area'
-import { Separator } from '@agent-rooms/ui-library/components/separator'
 import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
+import { Send } from '@agent-rooms/ui-library/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link, useLocation } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { RiCornerDownRightLine } from 'react-icons/ri'
 
 import type { RoomDetail } from '../../api'
 import { roomDetailQueryOptions } from '../../queries'
-import { RoomDetailsSidebar } from '../../room-details-sidebar'
+import { RoomDetailsSidebar, RoomDetailsSidebarSkeleton } from '../../room-details-sidebar'
+import { messageFragment, parseMessageFragment } from '../../room-navigation'
 import { formatRelativeTime, getRoomTimeline, type RoomTimelineItem } from '../../room-timeline'
 
 export const Route = createFileRoute('/rooms/$roomId')({ component: RoomPage })
@@ -33,7 +42,28 @@ function RoomPage() {
 }
 
 function RoomDetailContent({ room }: { room: RoomDetail }) {
+  const hash = useLocation({ select: (location) => location.hash })
+  const handledHash = useRef<string | null>(null)
   const timeline = getRoomTimeline(room.room, room.messages, room.events)
+  const messageIds = room.messages.map((message) => message.id).join(',')
+
+  useEffect(() => {
+    const messageId = parseMessageFragment(hash)
+    if (messageId === null) {
+      handledHash.current = null
+      return
+    }
+    if (handledHash.current === hash) return
+
+    const target = document.getElementById(messageFragment(messageId))
+    if (!target) return
+
+    target.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'center',
+    })
+    handledHash.current = hash
+  }, [hash, messageIds])
 
   return (
     <>
@@ -41,16 +71,21 @@ function RoomDetailContent({ room }: { room: RoomDetail }) {
         <ScrollArea className="h-full">
           <ol className="space-y-8 px-2 py-4 sm:px-4">
             {timeline.map((item) => (
-              <TimelineItem key={getTimelineItemKey(item)} item={item} />
+              <TimelineItem key={getTimelineItemKey(item)} item={item} roomId={room.room.id} />
             ))}
             {room.messages.length === 0 ? (
-              <li className="flex min-h-44 items-center justify-center px-6 text-center">
-                <div>
-                  <p className="text-sm font-medium">No messages yet</p>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Messages shared in this room will appear here.
-                  </p>
-                </div>
+              <li className="flex min-h-44 items-center justify-center px-6">
+                <Empty className="min-h-44 border-0 p-6">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Send aria-hidden="true" />
+                    </EmptyMedia>
+                    <EmptyTitle className="text-base">No messages shared</EmptyTitle>
+                    <EmptyDescription>
+                      Messages shared with this room will appear here.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               </li>
             ) : null}
           </ol>
@@ -61,29 +96,37 @@ function RoomDetailContent({ room }: { room: RoomDetail }) {
   )
 }
 
-function TimelineItem({ item }: { item: RoomTimelineItem }) {
-  if (item.type === 'message') return <MessageItem item={item} />
+function TimelineItem({ item, roomId }: { item: RoomTimelineItem; roomId: string }) {
+  if (item.type === 'message') return <MessageItem item={item} roomId={roomId} />
 
-  const text =
+  const { text } =
     item.type === 'room-created'
-      ? 'Room created'
-      : `${item.event.membership.conversationId} ${item.event.kind === 'join' ? 'joined' : 'left'}`
+      ? { text: 'Room created' }
+      : item.event.kind === 'join'
+        ? { text: `${item.event.membership.conversationId} joined` }
+        : { text: `${item.event.membership.conversationId} left` }
 
   return (
-    <li className="text-muted-foreground flex items-center gap-3 text-xs">
-      <Separator className="flex-1" />
-      <span className="min-w-0 text-center break-all">{text}</span>
-      <span className="shrink-0 text-[11px]">{formatRelativeTime(item.createdAt)}</span>
-      <Separator className="flex-1" />
-    </li>
+    <Marker variant="separator" className="text-xs">
+      <MarkerContent className="max-w-[calc(100%-3rem)]">
+        <span className="break-all">{text}</span>{' '}
+        <span className="shrink-0 text-[11px]">{formatRelativeTime(item.createdAt)}</span>
+      </MarkerContent>
+    </Marker>
   )
 }
 
-function MessageItem({ item }: { item: Extract<RoomTimelineItem, { type: 'message' }> }) {
+function MessageItem({
+  item,
+  roomId,
+}: {
+  item: Extract<RoomTimelineItem, { type: 'message' }>
+  roomId: string
+}) {
   const { message } = item
 
   return (
-    <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
+    <li id={messageFragment(message.id)} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
       <AgentHarnessIcon
         harness={resolveAgentHarness(message.membership.conversationId)}
         className="mt-0.5"
@@ -105,7 +148,18 @@ function MessageItem({ item }: { item: Extract<RoomTimelineItem, { type: 'messag
           </div>
         ) : null}
         <p className="mt-2 min-w-0 text-sm leading-6 wrap-anywhere whitespace-pre-wrap">
-          <span className="text-muted-foreground">#{message.id}</span> {message.body}
+          <Link
+            to="/rooms/$roomId"
+            params={{ roomId }}
+            hash={messageFragment(message.id)}
+            hashScrollIntoView={false}
+            resetScroll={false}
+            aria-label={`Link to message ${message.id}`}
+            className="text-muted-foreground hover:text-foreground focus-visible:text-foreground rounded-sm underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
+          >
+            #{message.id}
+          </Link>{' '}
+          {message.body}
         </p>
       </div>
     </li>
@@ -129,22 +183,72 @@ function resolveAgentHarness(conversationId: string): AgentHarness {
 function RoomPageSkeleton() {
   return (
     <>
-      <div className="space-y-5 px-2 py-4 sm:px-4">
-        <Skeleton className="h-4 w-36" />
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-16 w-full" />
+      <div className="min-h-0" role="status" aria-label="Loading messages" aria-busy="true">
+        <ScrollArea className="h-full">
+          <ol className="space-y-8 px-2 py-4 sm:px-4" aria-hidden="true">
+            <MessageTimelineSkeleton />
+          </ol>
+        </ScrollArea>
       </div>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-5 w-24" />
-          <Skeleton className="h-4 w-36" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Skeleton className="h-14 w-full" />
-          <Skeleton className="h-14 w-full" />
-        </CardContent>
-      </Card>
+      <RoomDetailsSidebarSkeleton />
+    </>
+  )
+}
+
+function MessageTimelineSkeleton() {
+  return (
+    <>
+      <li className="flex items-center gap-3">
+        <Skeleton className="h-px flex-1" />
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-3 w-12" />
+        <Skeleton className="h-px flex-1" />
+      </li>
+      <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
+        <Skeleton className="mt-0.5 size-8 rounded-lg" />
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+            <Skeleton className="h-3 w-12" />
+          </div>
+          <div className="mt-2 space-y-2">
+            <Skeleton className="h-4 w-11/12" />
+            <Skeleton className="h-4 w-3/5" />
+          </div>
+        </div>
+      </li>
+      <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
+        <Skeleton className="mt-0.5 size-8 rounded-lg" />
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-5 w-14 rounded-full" />
+            <Skeleton className="h-3 w-10" />
+          </div>
+          <div className="bg-secondary mt-2 rounded-md px-2.5 py-1.5">
+            <Skeleton className="h-3 w-4/5" />
+          </div>
+          <div className="mt-2 space-y-2">
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-4 w-2/5" />
+          </div>
+        </div>
+      </li>
+      <li className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
+        <Skeleton className="mt-0.5 size-8 rounded-lg" />
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-5 w-18 rounded-full" />
+            <Skeleton className="h-3 w-14" />
+          </div>
+          <div className="mt-2 space-y-2">
+            <Skeleton className="h-4 w-10/12" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      </li>
     </>
   )
 }

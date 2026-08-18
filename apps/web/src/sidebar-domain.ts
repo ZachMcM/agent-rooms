@@ -16,7 +16,7 @@ export interface RoomGroup {
 }
 
 export const defaultSidebarFilters: SidebarFilters = {
-  status: 'active',
+  status: 'all',
   lastActivity: 'all',
   groupBy: 'date',
 }
