@@ -42,7 +42,7 @@ describe('sidebar domain', () => {
       filterRooms(rooms, defaultSidebarFilters, now).map(
         ({ room: overviewRoom }) => overviewRoom.id,
       ),
-    ).toEqual(['active'])
+    ).toEqual(['active', 'closed'])
     expect(
       filterRooms(rooms, { ...defaultSidebarFilters, status: 'closed' }, now).map(
         ({ room: overviewRoom }) => overviewRoom.id,
@@ -158,7 +158,7 @@ describe('sidebar domain', () => {
     expect(formatDateHeading(new Date(2026, 7, 17, 0), now)).toBe('Today')
     expect(formatDateHeading(new Date(2026, 7, 16, 23, 59), now)).toBe('Yesterday')
     expect(defaultSidebarFilters).toEqual({
-      status: 'active',
+      status: 'all',
       lastActivity: 'all',
       groupBy: 'date',
     })

@@ -1,4 +1,4 @@
-import { Button } from "@agent-rooms/ui-library/components/button";
+import { Button } from '@agent-rooms/ui-library/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@agent-rooms/ui-library/components/dropdown-menu";
-import { Kbd, KbdGroup } from "@agent-rooms/ui-library/components/kbd";
+} from '@agent-rooms/ui-library/components/dropdown-menu'
+import { Kbd, KbdGroup } from '@agent-rooms/ui-library/components/kbd'
 import {
   Sidebar,
   SidebarContent,
@@ -24,25 +24,19 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@agent-rooms/ui-library/components/sidebar";
-import { Skeleton } from "@agent-rooms/ui-library/components/skeleton";
-import { useTheme } from "@agent-rooms/ui-library/components/theme-provider";
-import {
-  Monitor,
-  Moon,
-  Search,
-  Settings2,
-  Sun,
-} from "@agent-rooms/ui-library/icons";
-import { useQuery } from "@tanstack/react-query";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { RiGithubFill } from "react-icons/ri";
+} from '@agent-rooms/ui-library/components/sidebar'
+import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
+import { useTheme } from '@agent-rooms/ui-library/components/theme-provider'
+import { Monitor, Moon, Search, Settings2, Sun } from '@agent-rooms/ui-library/icons'
+import { useQuery } from '@tanstack/react-query'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { RiGithubFill } from 'react-icons/ri'
 
-import { externalLinks } from "./config";
-import { roomOverviewsQueryOptions } from "./queries";
-import { isSearchShortcut } from "./room-navigation";
-import { RoomSearch } from "./room-search";
+import { externalLinks } from './config'
+import { roomOverviewsQueryOptions } from './queries'
+import { isSearchShortcut } from './room-navigation'
+import { RoomSearch } from './room-search'
 import {
   defaultSidebarFilters,
   filterRooms,
@@ -51,55 +45,52 @@ import {
   type RoomGroupBy,
   type RoomStatusFilter,
   type SidebarFilters,
-} from "./sidebar-domain";
+} from './sidebar-domain'
 
 const statusOptions: Array<{ value: RoomStatusFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "closed", label: "Closed" },
-];
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'closed', label: 'Closed' },
+]
 
 const activityOptions: Array<{ value: RoomActivityFilter; label: string }> = [
-  { value: "1d", label: "1d" },
-  { value: "3d", label: "3d" },
-  { value: "7d", label: "7d" },
-  { value: "30d", label: "30d" },
-  { value: "all", label: "All" },
-];
+  { value: '1d', label: '1d' },
+  { value: '3d', label: '3d' },
+  { value: '7d', label: '7d' },
+  { value: '30d', label: '30d' },
+  { value: 'all', label: 'All' },
+]
 
 const groupOptions: Array<{ value: RoomGroupBy; label: string }> = [
-  { value: "date", label: "Date" },
-  { value: "status", label: "Status" },
-  { value: "none", label: "None" },
-];
+  { value: 'date', label: 'Date' },
+  { value: 'status', label: 'Status' },
+  { value: 'none', label: 'None' },
+]
 
 export function RoomSidebar() {
-  const [filters, setFilters] = useState<SidebarFilters>(defaultSidebarFilters);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const rooms = useQuery(roomOverviewsQueryOptions);
+  const [filters, setFilters] = useState<SidebarFilters>(defaultSidebarFilters)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const rooms = useQuery(roomOverviewsQueryOptions)
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
-  });
-  const visibleRooms = filterRooms(rooms.data ?? [], filters);
-  const roomGroups = getRoomGroups(visibleRooms, filters.groupBy);
+  })
+  const visibleRooms = filterRooms(rooms.data ?? [], filters)
+  const roomGroups = getRoomGroups(visibleRooms, filters.groupBy)
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (!isSearchShortcut(event)) return;
+      if (!isSearchShortcut(event)) return
 
-      event.preventDefault();
-      setIsSearchOpen((current) => !current);
+      event.preventDefault()
+      setIsSearchOpen((current) => !current)
     }
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
-  function updateFilter<Key extends keyof SidebarFilters>(
-    key: Key,
-    value: SidebarFilters[Key],
-  ) {
-    setFilters((current) => ({ ...current, [key]: value }));
+  function updateFilter<Key extends keyof SidebarFilters>(key: Key, value: SidebarFilters[Key]) {
+    setFilters((current) => ({ ...current, [key]: value }))
   }
 
   return (
@@ -139,19 +130,15 @@ export function RoomSidebar() {
           <SidebarGroupContent className="min-h-0">
             {rooms.isPending ? <RoomListSkeleton /> : null}
             {rooms.isError ? (
-              <p className="text-destructive px-2 py-3 text-sm">
-                Could not load rooms.
-              </p>
+              <p className="text-destructive px-2 py-3 text-sm">Could not load rooms.</p>
             ) : null}
             {rooms.data && visibleRooms.length === 0 ? (
               <p className="text-muted-foreground px-2 py-3 text-sm">
-                {rooms.data.length === 0
-                  ? "No rooms yet."
-                  : "No rooms match these filters."}
+                {rooms.data.length === 0 ? 'No rooms yet.' : 'No rooms match these filters.'}
               </p>
             ) : null}
             {roomGroups.map((group) => (
-              <div key={group.heading ?? "rooms"} className="pb-2 last:pb-0">
+              <div key={group.heading ?? 'rooms'} className="pb-2 last:pb-0">
                 {group.heading ? (
                   <SidebarGroupLabel className="h-auto px-2 py-2 font-normal tracking-wide">
                     {group.heading}
@@ -159,7 +146,7 @@ export function RoomSidebar() {
                 ) : null}
                 <SidebarMenu>
                   {group.rooms.map((overview) => {
-                    const roomPath = `/rooms/${overview.room.id}`;
+                    const roomPath = `/rooms/${overview.room.id}`
 
                     return (
                       <SidebarMenuItem key={overview.room.id}>
@@ -167,19 +154,14 @@ export function RoomSidebar() {
                           isActive={pathname === roomPath}
                           tooltip={overview.room.name}
                           render={
-                            <Link
-                              to="/rooms/$roomId"
-                              params={{ roomId: overview.room.id }}
-                            />
+                            <Link to="/rooms/$roomId" params={{ roomId: overview.room.id }} />
                           }
                           className="h-8 gap-2 px-2.5 py-1"
                         >
-                          <span className="min-w-0 flex-1 truncate">
-                            {overview.room.name}
-                          </span>
+                          <span className="min-w-0 flex-1 truncate">{overview.room.name}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
-                    );
+                    )
                   })}
                 </SidebarMenu>
               </div>
@@ -189,9 +171,7 @@ export function RoomSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-sidebar-border flex-row items-center gap-1 border-t px-3 py-2">
         <Button
-          render={
-            <a href={externalLinks.github} target="_blank" rel="noreferrer" />
-          }
+          render={<a href={externalLinks.github} target="_blank" rel="noreferrer" />}
           variant="outline"
           size="icon-sm"
           aria-label="Open GitHub"
@@ -202,7 +182,7 @@ export function RoomSidebar() {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }
 
 function RoomFilters({
@@ -210,23 +190,15 @@ function RoomFilters({
   onChange,
   onReset,
 }: {
-  filters: SidebarFilters;
-  onChange: <Key extends keyof SidebarFilters>(
-    key: Key,
-    value: SidebarFilters[Key],
-  ) => void;
-  onReset: () => void;
+  filters: SidebarFilters
+  onChange: <Key extends keyof SidebarFilters>(key: Key, value: SidebarFilters[Key]) => void
+  onReset: () => void
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Filter rooms"
-          >
+          <Button type="button" variant="ghost" size="icon" aria-label="Filter rooms">
             <Settings2 aria-hidden="true" />
           </Button>
         }
@@ -236,30 +208,26 @@ function RoomFilters({
           label="Status"
           value={filters.status}
           options={statusOptions}
-          onValueChange={(value) =>
-            onChange("status", value as RoomStatusFilter)
-          }
+          onValueChange={(value) => onChange('status', value as RoomStatusFilter)}
         />
         <FilterSubmenu
           label="Last activity"
           value={filters.lastActivity}
           options={activityOptions}
-          onValueChange={(value) =>
-            onChange("lastActivity", value as RoomActivityFilter)
-          }
+          onValueChange={(value) => onChange('lastActivity', value as RoomActivityFilter)}
         />
         <DropdownMenuSeparator />
         <FilterSubmenu
           label="Group by"
           value={filters.groupBy}
           options={groupOptions}
-          onValueChange={(value) => onChange("groupBy", value as RoomGroupBy)}
+          onValueChange={(value) => onChange('groupBy', value as RoomGroupBy)}
         />
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onReset}>Reset to defaults</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }
 
 function FilterSubmenu({
@@ -268,12 +236,12 @@ function FilterSubmenu({
   options,
   onValueChange,
 }: {
-  label: string;
-  value: string;
-  options: Array<{ value: string; label: string }>;
-  onValueChange: (value: string) => void;
+  label: string
+  value: string
+  options: Array<{ value: string; label: string }>
+  onValueChange: (value: string) => void
 }) {
-  const selectedLabel = options.find((option) => option.value === value)?.label;
+  const selectedLabel = options.find((option) => option.value === value)?.label
 
   return (
     <DropdownMenuSub>
@@ -291,28 +259,23 @@ function FilterSubmenu({
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
-  );
+  )
 }
 
 const themes = [
-  { value: "light", label: "Light", Icon: Sun },
-  { value: "dark", label: "Dark", Icon: Moon },
-  { value: "system", label: "System", Icon: Monitor },
-] as const;
+  { value: 'light', label: 'Light', Icon: Sun },
+  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: 'system', label: 'System', Icon: Monitor },
+] as const
 
 function ThemeSelector() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            aria-label="Change theme"
-          >
+          <Button type="button" variant="outline" size="icon-sm" aria-label="Change theme">
             <Sun className="scale-100 rotate-0 transition-transform dark:scale-0 dark:-rotate-90" />
             <Moon className="absolute scale-0 rotate-90 transition-transform dark:scale-100 dark:rotate-0" />
             <span className="sr-only">Change theme</span>
@@ -330,7 +293,7 @@ function ThemeSelector() {
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }
 
 function RoomListSkeleton() {
@@ -342,5 +305,5 @@ function RoomListSkeleton() {
         </div>
       ))}
     </div>
-  );
+  )
 }
