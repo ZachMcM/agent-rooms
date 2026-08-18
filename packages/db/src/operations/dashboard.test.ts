@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { createDatabase, type Database } from '../client'
 import { runMigrations } from '../migrator'
-import { memberships, messages, rooms } from '../schema'
+import { membershipLifecycleEvents, memberships, messages, rooms } from '../schema'
 import {
   getRoomDetail,
   getRoomMessages,
@@ -259,8 +259,64 @@ describe('dashboard operations', () => {
       room,
       members: [],
       messages: [],
+      events: [],
     })
     await expect(getRoomDetail(db, { roomId: 'missing' })).resolves.toBeUndefined()
+  })
+
+  it('returns membership lifecycle events in chronological order with deterministic ties', async () => {
+    const db = await createTestDatabase()
+    const room = await insertRoom(db, 'timeline-room', 'timeline')
+    await db.insert(memberships).values([
+      { id: 'first-member', roomId: room.id, conversationId: 'first-conversation' },
+      {
+        id: 'second-member',
+        roomId: room.id,
+        conversationId: 'second-conversation',
+        status: 'inactive',
+      },
+    ])
+    const sharedTime = new Date('2026-08-18T12:00:00.000Z')
+    await db.insert(membershipLifecycleEvents).values([
+      {
+        membershipId: 'second-member',
+        kind: 'join',
+        createdAt: new Date('2026-08-18T11:59:00.000Z'),
+      },
+      { membershipId: 'first-member', kind: 'join', createdAt: sharedTime },
+      { membershipId: 'second-member', kind: 'leave', createdAt: sharedTime },
+    ])
+
+    const detail = await getRoomDetail(db, { roomId: room.id })
+
+    expect(detail?.events).toEqual([
+      {
+        id: 1,
+        kind: 'join',
+        createdAt: new Date('2026-08-18T11:59:00.000Z'),
+        membership: {
+          id: 'second-member',
+          conversationId: 'second-conversation',
+          status: 'inactive',
+        },
+      },
+      {
+        id: 2,
+        kind: 'join',
+        createdAt: sharedTime,
+        membership: { id: 'first-member', conversationId: 'first-conversation', status: 'active' },
+      },
+      {
+        id: 3,
+        kind: 'leave',
+        createdAt: sharedTime,
+        membership: {
+          id: 'second-member',
+          conversationId: 'second-conversation',
+          status: 'inactive',
+        },
+      },
+    ])
   })
 
   it('lists messages from existing rooms without changing member cursors', async () => {

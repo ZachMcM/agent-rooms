@@ -29,12 +29,26 @@ export interface RoomDetail {
   room: Room
   members: RoomMember[]
   messages: RoomMessage[]
+  events: RoomTimelineEvent[]
 }
 
 export interface RoomMessage {
   id: number
   kind: MessageKind
   body: string
+  createdAt: string
+  membership: RoomOverviewMember
+  replyTo: {
+    id: number
+    kind: MessageKind
+    body: string
+    membership: RoomOverviewMember
+  } | null
+}
+
+export interface RoomTimelineEvent {
+  id: number
+  kind: 'join' | 'leave'
   createdAt: string
   membership: RoomOverviewMember
 }

@@ -1,5 +1,5 @@
 import { cn } from '@agent-rooms/ui-library/lib/utils'
-import { MessageSquare } from 'lucide-react'
+import { Astroid } from 'lucide-react'
 import { PiOpenAiLogo } from 'react-icons/pi'
 import { SiClaude, SiCursor, SiGooglegemini } from 'react-icons/si'
 
@@ -46,7 +46,7 @@ function AgentHarnessIcon({ harness, className }: { harness: AgentHarness; class
 
   return (
     <span className={containerClassName} aria-hidden="true">
-      <MessageSquare className={iconClassName} />
+      <Astroid className={iconClassName} />
     </span>
   )
 }

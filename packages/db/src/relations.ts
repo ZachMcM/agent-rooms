@@ -14,6 +14,14 @@ export const relations = defineRelations(schema, (r) => ({
       optional: false,
     }),
     messages: r.many.messages(),
+    lifecycleEvents: r.many.membershipLifecycleEvents(),
+  },
+  membershipLifecycleEvents: {
+    membership: r.one.memberships({
+      from: r.membershipLifecycleEvents.membershipId,
+      to: r.memberships.id,
+      optional: false,
+    }),
   },
   messages: {
     room: r.one.rooms({

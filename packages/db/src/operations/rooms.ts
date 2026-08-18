@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { and, asc, eq } from 'drizzle-orm'
 
 import type { Database } from '../client'
-import { memberships, rooms, type RoomRow } from '../schema'
+import { membershipLifecycleEvents, memberships, rooms, type RoomRow } from '../schema'
 import { findActiveRoomMembership, type RoomMembership } from './memberships'
 
 export type { RoomMembership } from './memberships'
@@ -79,6 +79,10 @@ export async function createRoom(db: Database, input: RoomInput): Promise<RoomMe
         throw new Error('Room membership creation did not return an inserted record')
       }
 
+      await tx
+        .insert(membershipLifecycleEvents)
+        .values({ membershipId: membership.id, kind: 'join' })
+
       return { room, membership }
     })
   } catch (error) {
@@ -126,6 +130,9 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
         .returning()
 
       if (reactivatedMembership) {
+        await tx
+          .insert(membershipLifecycleEvents)
+          .values({ membershipId: reactivatedMembership.id, kind: 'join' })
         return { room, membership: reactivatedMembership }
       }
 
@@ -137,6 +144,10 @@ export async function joinRoom(db: Database, input: RoomInput): Promise<RoomMemb
       if (!membership) {
         throw new Error('Room membership creation did not return an inserted record')
       }
+
+      await tx
+        .insert(membershipLifecycleEvents)
+        .values({ membershipId: membership.id, kind: 'join' })
 
       return { room, membership }
     })
@@ -168,29 +179,35 @@ export async function listActiveRooms(db: Database): Promise<RoomRow[]> {
 }
 
 export async function leaveRoom(db: Database, input: RoomInput): Promise<RoomMembership> {
-  const [room] = await db.select().from(rooms).where(eq(rooms.name, input.roomName)).limit(1)
+  return db.transaction(async (tx) => {
+    const [room] = await tx.select().from(rooms).where(eq(rooms.name, input.roomName)).limit(1)
 
-  if (!room) {
-    throw new RoomNotFoundError(input.roomName)
-  }
+    if (!room) {
+      throw new RoomNotFoundError(input.roomName)
+    }
 
-  const [membership] = await db
-    .update(memberships)
-    .set({ status: 'inactive' })
-    .where(
-      and(
-        eq(memberships.roomId, room.id),
-        eq(memberships.conversationId, input.conversationId),
-        eq(memberships.status, 'active'),
-      ),
-    )
-    .returning()
+    const [membership] = await tx
+      .update(memberships)
+      .set({ status: 'inactive' })
+      .where(
+        and(
+          eq(memberships.roomId, room.id),
+          eq(memberships.conversationId, input.conversationId),
+          eq(memberships.status, 'active'),
+        ),
+      )
+      .returning()
 
-  if (!membership) {
-    throw new MembershipNotFoundError(input.roomName, input.conversationId)
-  }
+    if (!membership) {
+      throw new MembershipNotFoundError(input.roomName, input.conversationId)
+    }
 
-  return { room, membership }
+    await tx
+      .insert(membershipLifecycleEvents)
+      .values({ membershipId: membership.id, kind: 'leave' })
+
+    return { room, membership }
+  })
 }
 
 function isUniqueConstraintError(error: unknown): boolean {

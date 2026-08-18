@@ -19,7 +19,8 @@
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "react-icons": "catalog:"
   },
   "devDependencies": {
     "@agent-rooms/typescript-config": "workspace:*",

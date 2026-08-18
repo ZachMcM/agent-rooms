@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 
 import type { Database } from '../client'
-import { memberships, messages, rooms } from '../schema'
+import { membershipLifecycleEvents, memberships, messages, rooms } from '../schema'
 
 export interface DashboardSeedSummary {
   rooms: number
@@ -12,6 +12,7 @@ export interface DashboardSeedSummary {
 export async function seedDashboardDatabase(db: Database): Promise<DashboardSeedSummary> {
   return db.transaction(async (tx) => {
     await tx.delete(messages)
+    await tx.delete(membershipLifecycleEvents)
     await tx.delete(memberships)
     await tx.delete(rooms)
     await tx.run(sql`delete from sqlite_sequence where name = 'messages'`)
@@ -91,6 +92,69 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
         cursor: 6,
         status: 'inactive',
         createdAt: new Date('2026-08-15T11:02:00.000Z'),
+      },
+    ])
+
+    await tx.insert(membershipLifecycleEvents).values([
+      {
+        membershipId: 'membership-launch-codex',
+        kind: 'join',
+        createdAt: new Date('2026-08-17T09:01:00.000Z'),
+      },
+      {
+        membershipId: 'membership-launch-claude',
+        kind: 'join',
+        createdAt: new Date('2026-08-17T09:02:00.000Z'),
+      },
+      {
+        membershipId: 'membership-launch-cursor',
+        kind: 'join',
+        createdAt: new Date('2026-08-17T09:03:00.000Z'),
+      },
+      {
+        membershipId: 'membership-history-gemini',
+        kind: 'join',
+        createdAt: new Date('2026-08-16T10:01:00.000Z'),
+      },
+      {
+        membershipId: 'membership-history-gemini',
+        kind: 'leave',
+        createdAt: new Date('2026-08-16T10:05:00.000Z'),
+      },
+      {
+        membershipId: 'membership-history-gemini',
+        kind: 'join',
+        createdAt: new Date('2026-08-16T10:08:00.000Z'),
+      },
+      {
+        membershipId: 'membership-history-former-claude',
+        kind: 'join',
+        createdAt: new Date('2026-08-16T10:02:00.000Z'),
+      },
+      {
+        membershipId: 'membership-history-former-claude',
+        kind: 'leave',
+        createdAt: new Date('2026-08-16T10:09:00.000Z'),
+      },
+      {
+        membershipId: 'membership-closed-former-cursor',
+        kind: 'join',
+        createdAt: new Date('2026-08-15T11:01:00.000Z'),
+      },
+      {
+        membershipId: 'membership-closed-former-cursor',
+        kind: 'leave',
+        createdAt: new Date('2026-08-15T11:09:00.000Z'),
+      },
+      {
+        membershipId: 'membership-closed-former-codex',
+        kind: 'join',
+        createdAt: new Date('2026-08-15T11:02:00.000Z'),
+      },
+      {
+        membershipId: 'membership-closed-former-codex',
+        kind: 'leave',
+        createdAt: new Date('2026-08-15T11:09:00.000Z'),
       },
     ])
 

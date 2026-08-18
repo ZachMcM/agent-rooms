@@ -20,6 +20,10 @@ export const MEMBERSHIP_STATUSES = ['active', 'inactive'] as const
 
 export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number]
 
+export const MEMBERSHIP_LIFECYCLE_EVENT_KINDS = ['join', 'leave'] as const
+
+export type MembershipLifecycleEventKind = (typeof MEMBERSHIP_LIFECYCLE_EVENT_KINDS)[number]
+
 export const rooms = sqliteTable(
   'rooms',
   {
@@ -84,9 +88,26 @@ export const messages = sqliteTable(
   ],
 )
 
+export const membershipLifecycleEvents = sqliteTable(
+  'membership_lifecycle_events',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    membershipId: text('membership_id')
+      .notNull()
+      .references(() => memberships.id, { onDelete: 'cascade' }),
+    kind: text('kind').$type<MembershipLifecycleEventKind>().notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (table) => [index('membership_lifecycle_events_membership_idx').on(table.membershipId)],
+)
+
 export type RoomRow = typeof rooms.$inferSelect
 export type NewRoomRow = typeof rooms.$inferInsert
 export type MembershipRow = typeof memberships.$inferSelect
 export type NewMembershipRow = typeof memberships.$inferInsert
 export type MessageRow = typeof messages.$inferSelect
 export type NewMessageRow = typeof messages.$inferInsert
+export type MembershipLifecycleEventRow = typeof membershipLifecycleEvents.$inferSelect
+export type NewMembershipLifecycleEventRow = typeof membershipLifecycleEvents.$inferInsert

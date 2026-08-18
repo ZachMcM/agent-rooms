@@ -32,6 +32,7 @@ describe('dashboard queries', () => {
         },
       ],
       messages: [],
+      events: [],
     }
     vi.mocked(getRoomDetail).mockResolvedValue(detail)
 

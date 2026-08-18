@@ -93,7 +93,7 @@ export function RoomSidebar() {
           title="Search rooms and messages, coming soon"
         >
           <Search aria-hidden="true" />
-          Search rooms
+          Search...
         </Button>
       </SidebarHeader>
       <SidebarContent>
@@ -129,7 +129,7 @@ export function RoomSidebar() {
                           }
                           className="h-8 gap-2 px-2.5 py-1"
                         >
-                          <span className="min-w-0 flex-1 truncate font-medium">
+                          <span className="min-w-0 flex-1 truncate">
                             {overview.room.name}
                           </span>
                         </SidebarMenuButton>

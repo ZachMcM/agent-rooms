@@ -322,6 +322,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
+      react-icons:
+        specifier: 'catalog:'
+        version: 5.7.0(react@19.2.8)
     devDependencies:
       '@agent-rooms/typescript-config':
         specifier: workspace:*

@@ -2,12 +2,12 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { createDatabase } from '../client'
 import { runMigrations } from '../migrator'
-import { memberships, rooms } from '../schema'
+import { membershipLifecycleEvents, memberships, rooms } from '../schema'
 import {
   ActiveMembershipConflictError,
   createRoom,
@@ -180,6 +180,29 @@ describe('room operations', () => {
       },
     })
     await expect(listActiveRooms(db)).resolves.toEqual([rejoined.room])
+  })
+
+  it('records every join and leave for one membership', async () => {
+    const db = await createTestDatabase()
+    const created = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+
+    await leaveRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    await joinRoom(db, { roomName: 'build', conversationId: 'conversation' })
+
+    await expect(
+      db
+        .select({
+          membershipId: membershipLifecycleEvents.membershipId,
+          kind: membershipLifecycleEvents.kind,
+        })
+        .from(membershipLifecycleEvents)
+        .where(eq(membershipLifecycleEvents.membershipId, created.membership.id))
+        .orderBy(asc(membershipLifecycleEvents.id)),
+    ).resolves.toEqual([
+      { membershipId: created.membership.id, kind: 'join' },
+      { membershipId: created.membership.id, kind: 'leave' },
+      { membershipId: created.membership.id, kind: 'join' },
+    ])
   })
 
   it('allows joining another room after leaving the active membership', async () => {

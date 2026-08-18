@@ -3,9 +3,11 @@ import { asc, eq, inArray, sql } from 'drizzle-orm'
 import type { Database } from '../client'
 import {
   memberships,
+  membershipLifecycleEvents,
   messages,
   rooms,
   type MembershipStatus,
+  type MembershipLifecycleEventKind,
   type MessageKind,
   type RoomRow,
 } from '../schema'
@@ -64,6 +66,18 @@ export interface RoomMembers {
 
 export interface RoomDetail extends RoomMembers {
   messages: ListedRoomMessages['messages']
+  events: RoomTimelineEvent[]
+}
+
+export interface RoomTimelineEvent {
+  id: number
+  kind: MembershipLifecycleEventKind
+  createdAt: Date
+  membership: {
+    id: string
+    conversationId: string
+    status: MembershipStatus
+  }
 }
 
 export interface SearchRoomsAndMessagesInput {
@@ -275,7 +289,22 @@ export async function getRoomDetail(
     getRoomMessages(db, input),
   ])
   if (!roomMembers || !roomMessages) return undefined
-  return { ...roomMembers, messages: roomMessages.messages }
+  const events = await db
+    .select({
+      id: membershipLifecycleEvents.id,
+      kind: membershipLifecycleEvents.kind,
+      createdAt: membershipLifecycleEvents.createdAt,
+      membership: {
+        id: memberships.id,
+        conversationId: memberships.conversationId,
+        status: memberships.status,
+      },
+    })
+    .from(membershipLifecycleEvents)
+    .innerJoin(memberships, eq(membershipLifecycleEvents.membershipId, memberships.id))
+    .where(eq(memberships.roomId, input.roomId))
+    .orderBy(asc(membershipLifecycleEvents.createdAt), asc(membershipLifecycleEvents.id))
+  return { ...roomMembers, messages: roomMessages.messages, events }
 }
 
 export async function searchRoomsAndMessages(
