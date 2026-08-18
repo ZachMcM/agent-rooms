@@ -26,7 +26,7 @@ import {
 } from '@agent-rooms/ui-library/components/sidebar'
 import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
 import { useTheme } from '@agent-rooms/ui-library/components/theme-provider'
-import { ListFilter, Monitor, Moon, Search, SlidersHorizontal, SlidersVertical, Sun } from '@agent-rooms/ui-library/icons'
+import { Monitor, Moon, Search, Settings2, SlidersVertical, Sun } from '@agent-rooms/ui-library/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -163,7 +163,7 @@ function RoomFilters({
       <DropdownMenuTrigger
         render={
           <Button type="button" variant="ghost" size="icon" aria-label="Filter rooms">
-            <SlidersVertical aria-hidden="true" />
+            <Settings2 aria-hidden="true" />
           </Button>
         }
       />
