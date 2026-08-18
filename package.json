@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
+    "publish:cli": "pnpm run check && turbo run build --filter=agent-rooms && pnpm --filter agent-rooms publish",
     "dev": "turbo run dev",
     "dashboard:seed": "pnpm --filter @agent-rooms/db dashboard:seed",
     "dashboard:dev": "pnpm dashboard:seed && AGENT_ROOMS_DEVELOPMENT=1 AGENT_ROOMS_DASHBOARD_DATABASE_URL=\"file://$PWD/.agent-rooms/dashboard-dev.sqlite\" pnpm --parallel --filter @agent-rooms/api --filter @agent-rooms/web dev",
+    "hooks:install": "git config core.hooksPath .githooks",
     "clean": "turbo run clean && rm -rf node_modules",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",

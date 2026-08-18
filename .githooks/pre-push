@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo >&2 'pre-push: a clean working tree is required so checks validate the pushed commit.'
+  echo >&2 'Commit or stash your changes, then try again.'
+  exit 1
+fi
+
+echo 'pre-push: running pnpm check'
+pnpm check
