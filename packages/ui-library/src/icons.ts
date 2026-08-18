@@ -1,1 +1,16 @@
-export { ListFilter, SlidersVertical, Monitor, Moon, Search, SlidersHorizontal, Sun, Settings2 } from 'lucide-react'
+export {
+  Activity,
+  Archive,
+  CalendarClock,
+  ChevronRight,
+  ListFilter,
+  MessageSquare,
+  SlidersVertical,
+  Monitor,
+  Moon,
+  Search,
+  SlidersHorizontal,
+  Sun,
+  Settings2,
+  Users,
+} from 'lucide-react'

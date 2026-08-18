@@ -21,7 +21,7 @@ export const defaultSidebarFilters: SidebarFilters = {
   groupBy: 'date',
 }
 
-export function isRoomActive(room: RoomOverview) {
+export function isRoomActive(room: Pick<RoomOverview, 'members'>) {
   return room.members.some((member) => member.status === 'active')
 }
 
