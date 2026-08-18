@@ -8,10 +8,12 @@ import {
   type SearchInput,
 } from './api'
 
+const roomRefetchInterval = 500
+
 export const roomOverviewsQueryOptions = queryOptions({
   queryKey: ['rooms'] as const,
   queryFn: getRoomOverviews,
-  refetchInterval: 1_500,
+  refetchInterval: roomRefetchInterval,
   refetchOnWindowFocus: true,
   refetchOnReconnect: true,
 })
@@ -28,7 +30,7 @@ export function roomDetailQueryOptions(queryClient: QueryClient, roomId: string)
       queryClient.setQueryData<RoomMember[]>(roomMembersQueryKey(roomId), detail.members)
       return detail
     },
-    refetchInterval: 750,
+    refetchInterval: roomRefetchInterval,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   })

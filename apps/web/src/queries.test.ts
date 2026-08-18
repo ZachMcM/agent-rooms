@@ -2,7 +2,12 @@ import { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 
 import { getRoomDetail } from './api'
-import { roomDetailQueryOptions, roomMembersQueryKey, searchQueryOptions } from './queries'
+import {
+  roomDetailQueryOptions,
+  roomMembersQueryKey,
+  roomOverviewsQueryOptions,
+  searchQueryOptions,
+} from './queries'
 
 vi.mock('./api', () => ({
   getRoomDetail: vi.fn(),
@@ -38,5 +43,13 @@ describe('dashboard queries', () => {
   it('disables search until a user submits one', () => {
     expect(searchQueryOptions(undefined).enabled).toBe(false)
     expect(searchQueryOptions({ query: 'launch' }).enabled).toBe(true)
+  })
+
+  it('refreshes room state every 500 milliseconds', () => {
+    const queryClient = new QueryClient()
+
+    expect(roomOverviewsQueryOptions.refetchInterval).toBe(500)
+    expect(roomDetailQueryOptions(queryClient, 'room-1').refetchInterval).toBe(500)
+    expect(searchQueryOptions({ query: 'launch' }).refetchInterval).toBe(5_000)
   })
 })
