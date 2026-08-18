@@ -6,7 +6,12 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { createDatabase } from '../client'
 import { runMigrations } from '../migrator'
-import { getRoomMembers, listRoomOverviews, searchRoomsAndMessages } from '../operations/dashboard'
+import {
+  getRoomMembers,
+  getRoomMessages,
+  listRoomOverviews,
+  searchRoomsAndMessages,
+} from '../operations/dashboard'
 import { listRoomMessages } from '../operations/messages'
 import { seedDashboardDatabase } from './seed'
 
@@ -31,12 +36,12 @@ describe('seedDashboardDatabase', () => {
     await expect(seedDashboardDatabase(db)).resolves.toEqual({
       rooms: 4,
       memberships: 7,
-      messages: 9,
+      messages: 30,
     })
     await expect(seedDashboardDatabase(db)).resolves.toEqual({
       rooms: 4,
       memberships: 7,
-      messages: 9,
+      messages: 30,
     })
 
     const overviews = await listRoomOverviews(db)
@@ -77,32 +82,39 @@ describe('seedDashboardDatabase', () => {
         {
           id: 'membership-launch-codex',
           cursor: 2,
-          messageCounts: { total: 2, decision: 1, answer: 1 },
-          mostRecentMessage: { id: 3, kind: 'answer' },
+          messageCounts: { total: 4, decision: 1, warning: 0, question: 0, answer: 2, status: 1 },
+          mostRecentMessage: { id: 10, kind: 'answer' },
         },
         {
           id: 'membership-launch-claude',
           cursor: 5,
-          messageCounts: { total: 2, question: 1, status: 1 },
-          mostRecentMessage: { id: 5, kind: 'status' },
+          messageCounts: { total: 4, decision: 1, warning: 0, question: 2, answer: 0, status: 1 },
+          mostRecentMessage: { id: 9, kind: 'question' },
         },
         {
           id: 'membership-launch-cursor',
           cursor: 1,
-          messageCounts: { total: 1, warning: 1 },
-          mostRecentMessage: { id: 4, kind: 'warning' },
+          messageCounts: { total: 4, decision: 0, warning: 2, question: 0, answer: 1, status: 1 },
+          mostRecentMessage: { id: 12, kind: 'status' },
         },
       ],
     })
 
     const search = await searchRoomsAndMessages(db, { query: 'dashboard' })
     expect(search.rooms.map((room) => room.id)).toEqual(['room-dashboard-launch'])
-    expect(search.messages.map((hit) => hit.message.id)).toEqual([9, 7, 6, 5, 2, 1])
+    expect(search.messages.map((hit) => hit.message.id)).toEqual([
+      24, 21, 14, 13, 11, 10, 9, 8, 5, 2, 1,
+    ])
 
     const messages = await listRoomMessages(db, { conversationId: 'codex-dashboard-launch' })
     expect(messages?.messages.find((message) => message.id === 3)).toMatchObject({
       kind: 'answer',
       replyTo: { id: 2, kind: 'question' },
     })
+
+    const empty = await getRoomMembers(db, { roomId: 'room-empty-planning' })
+    expect(empty).toMatchObject({ members: [] })
+    const emptyMessages = await getRoomMessages(db, { roomId: 'room-empty-planning' })
+    expect(emptyMessages?.messages).toEqual([])
   })
 })
