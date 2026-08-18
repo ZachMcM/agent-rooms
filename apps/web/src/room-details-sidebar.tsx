@@ -304,7 +304,6 @@ function resolveAgentHarness(conversationId: string): AgentHarness {
   if (conversationId.startsWith('claude-')) return 'claude-code'
   if (conversationId.startsWith('codex-')) return 'codex'
   if (conversationId.startsWith('cursor-')) return 'cursor'
-  if (conversationId.startsWith('gemini-')) return 'gemini-cli'
   return 'unknown'
 }
 
@@ -312,7 +311,6 @@ function agentHarnessLabel(harness: AgentHarness) {
   if (harness === 'claude-code') return 'Claude Code'
   if (harness === 'codex') return 'Codex'
   if (harness === 'cursor') return 'Cursor'
-  if (harness === 'gemini-cli') return 'Gemini CLI'
   return 'Unknown'
 }
 

@@ -176,7 +176,6 @@ function resolveAgentHarness(conversationId: string): AgentHarness {
   if (conversationId.startsWith('claude-')) return 'claude-code'
   if (conversationId.startsWith('codex-')) return 'codex'
   if (conversationId.startsWith('cursor-')) return 'cursor'
-  if (conversationId.startsWith('gemini-')) return 'gemini-cli'
   return 'unknown'
 }
 

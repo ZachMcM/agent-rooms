@@ -41,14 +41,6 @@ export function providerHookConfig(executable: string = hookExecutable): Record<
         stop: [cursorEntry(delivery('cursor', 'stop'))],
       },
     },
-    gemini: {
-      hooks: {
-        SessionStart: [geminiEntry(identity('gemini', 'SessionStart'))],
-        BeforeAgent: [geminiEntry(delivery('gemini', 'BeforeAgent'))],
-        AfterTool: [geminiEntry(delivery('gemini', 'AfterTool'))],
-        AfterAgent: [geminiEntry(delivery('gemini', 'AfterAgent'))],
-      },
-    },
   }
 }
 
@@ -74,9 +66,5 @@ function codexEntry(matcher: string | undefined, command: string): Record<string
 }
 
 function cursorEntry(command: string): Record<string, unknown> {
-  return { command }
-}
-
-function geminiEntry(command: string): Record<string, unknown> {
   return { command }
 }

@@ -32,10 +32,7 @@ describe('hook commands', () => {
   })
 
   it.each([
-    [
-      ['--provider', 'opencode'],
-      'The --provider value must be one of claude, codex, cursor, or gemini.',
-    ],
+    [['--provider', 'opencode'], 'The --provider value must be one of claude, codex, or cursor.'],
   ])('rejects invalid identity before opening the database', async (flags, message) => {
     vi.spyOn(process, 'stdin', 'get').mockReturnValue(
       Readable.from([]) as unknown as typeof process.stdin,

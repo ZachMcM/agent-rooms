@@ -103,15 +103,4 @@ describe('preflight', () => {
       detectExistingClientRoots({ CLAUDE_CONFIG_DIR: join(home, 'linked', '.claude') }, home),
     ).rejects.toThrow('symbolic link')
   })
-
-  it('finds the Gemini configuration below GEMINI_CLI_HOME', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
-    const geminiHome = join(home, 'gemini-home')
-    directories.push(home)
-    await mkdir(join(geminiHome, '.gemini'), { recursive: true })
-
-    await expect(detectExistingClientRoots({ GEMINI_CLI_HOME: geminiHome }, home)).resolves.toEqual(
-      [{ client: 'gemini', path: join(geminiHome, '.gemini') }],
-    )
-  })
 })

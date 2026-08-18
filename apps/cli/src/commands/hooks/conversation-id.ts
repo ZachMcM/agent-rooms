@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream'
 import { CliError } from '../../errors'
 import { readHookSessionId } from './input'
 
-export const PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'] as const
+export const PROVIDERS = ['claude', 'codex', 'cursor'] as const
 
 export type Provider = (typeof PROVIDERS)[number]
 
@@ -36,7 +36,7 @@ export function parseHookProvider(provider: string): Provider {
   if (!isProvider(provider)) {
     throw new CliError(
       'invalid_arguments',
-      'The --provider value must be one of claude, codex, cursor, or gemini.',
+      'The --provider value must be one of claude, codex, or cursor.',
       2,
     )
   }

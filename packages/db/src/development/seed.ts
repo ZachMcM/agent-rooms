@@ -63,9 +63,9 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
         createdAt: new Date('2026-08-17T09:03:00.000Z'),
       },
       {
-        id: 'membership-history-gemini',
+        id: 'membership-history-codex',
         roomId: 'room-history-review',
-        conversationId: 'gemini-history-review',
+        conversationId: 'codex-history-review',
         cursor: 7,
         createdAt: new Date('2026-08-16T10:01:00.000Z'),
       },
@@ -112,17 +112,17 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
         createdAt: new Date('2026-08-17T09:03:00.000Z'),
       },
       {
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'join',
         createdAt: new Date('2026-08-16T10:01:00.000Z'),
       },
       {
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'leave',
         createdAt: new Date('2026-08-16T10:05:00.000Z'),
       },
       {
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'join',
         createdAt: new Date('2026-08-16T10:08:00.000Z'),
       },
@@ -269,9 +269,9 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 14,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'status',
-        body: 'Gemini is continuing the dashboard history review.',
+        body: 'Codex is continuing the dashboard history review.',
         createdAt: new Date('2026-08-16T10:11:00.000Z'),
       },
       {
@@ -285,7 +285,7 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 16,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'answer',
         body: 'Yes, audit history needs the original author and membership state.',
         replyToMessageId: 15,
@@ -294,7 +294,7 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 17,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'warning',
         body: 'A timeline that hides departures makes review misleading.',
         createdAt: new Date('2026-08-16T10:14:00.000Z'),
@@ -310,7 +310,7 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 19,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'decision',
         body: 'Show lifecycle events beside the message history.',
         createdAt: new Date('2026-08-16T10:16:00.000Z'),
@@ -318,7 +318,7 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 20,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'question',
         body: 'Can search surface a discussion from an inactive member?',
         createdAt: new Date('2026-08-16T10:17:00.000Z'),
@@ -326,7 +326,7 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 21,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'answer',
         body: 'Yes, dashboard search includes complete room history.',
         replyToMessageId: 20,
@@ -335,7 +335,7 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
       {
         id: 22,
         roomId: 'room-history-review',
-        membershipId: 'membership-history-gemini',
+        membershipId: 'membership-history-codex',
         kind: 'status',
         body: 'History review fixture is ready for audit UI work.',
         createdAt: new Date('2026-08-16T10:19:00.000Z'),

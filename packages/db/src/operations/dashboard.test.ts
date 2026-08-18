@@ -427,7 +427,7 @@ describe('dashboard operations', () => {
       {
         id: 'second-member',
         roomId: secondRoom.id,
-        conversationId: 'gemini-second-conversation',
+        conversationId: 'cursor-second-conversation',
       },
     ])
     await db.insert(messages).values([

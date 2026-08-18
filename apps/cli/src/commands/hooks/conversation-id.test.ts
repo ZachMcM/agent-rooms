@@ -30,7 +30,7 @@ describe('resolveHookConversation', () => {
       await expect(resolve(provider, '')).rejects.toMatchObject({
         code: 'invalid_arguments',
         exitCode: 2,
-        message: 'The --provider value must be one of claude, codex, cursor, or gemini.',
+        message: 'The --provider value must be one of claude, codex, or cursor.',
       })
     },
   )

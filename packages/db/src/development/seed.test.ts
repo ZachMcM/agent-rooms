@@ -70,8 +70,8 @@ describe('seedDashboardDatabase', () => {
       {
         room: 'room-history-review',
         members: [
+          ['membership-history-codex', 'active'],
           ['membership-history-former-claude', 'inactive'],
-          ['membership-history-gemini', 'active'],
         ],
       },
     ])

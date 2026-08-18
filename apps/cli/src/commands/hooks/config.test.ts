@@ -155,34 +155,6 @@ describe('providerHookConfig', () => {
           ],
         },
       },
-      gemini: {
-        hooks: {
-          SessionStart: [
-            {
-              command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider gemini --event SessionStart',
-            },
-          ],
-          BeforeAgent: [
-            {
-              command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider gemini --event BeforeAgent',
-            },
-          ],
-          AfterTool: [
-            {
-              command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider gemini --event AfterTool',
-            },
-          ],
-          AfterAgent: [
-            {
-              command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider gemini --event AfterAgent',
-            },
-          ],
-        },
-      },
     })
   })
 })

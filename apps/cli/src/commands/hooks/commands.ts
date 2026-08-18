@@ -19,10 +19,7 @@ function addConsumeNewMessagesCommand(hooks: Command): void {
   hooks
     .command('consume-new-messages')
     .description('Writes unread messages from the active room into agent context.')
-    .requiredOption(
-      '--provider <provider>',
-      'Hook transport provider (claude, codex, cursor, or gemini)',
-    )
+    .requiredOption('--provider <provider>', 'Hook transport provider (claude, codex, or cursor)')
     .option('--event <name>')
     .exitOverride()
     .action(async (options: { provider: string; event?: string }) => {
@@ -52,10 +49,7 @@ function addLogConversationIdCommand(hooks: Command): void {
   hooks
     .command('log-conversation-id')
     .description('Writes the normalized conversation ID into agent context.')
-    .requiredOption(
-      '--provider <provider>',
-      'Hook transport provider (claude, codex, cursor, or gemini)',
-    )
+    .requiredOption('--provider <provider>', 'Hook transport provider (claude, codex, or cursor)')
     .option('--event <name>')
     .exitOverride()
     .action(async (options: { provider: string; event?: string }) => {

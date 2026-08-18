@@ -8,7 +8,7 @@ import { assertPathWithin, assertSafeAbsolutePath, type ClientRoot } from './pre
 import { parseInstallState, type InstallState } from './state'
 
 const sha256Schema = z.string().regex(/^[a-f\d]{64}$/)
-const clientSchema = z.enum(['claude', 'codex', 'cursor', 'gemini'])
+const clientSchema = z.enum(['claude', 'codex', 'cursor'])
 
 const manifestRootSchema = z.object({
   client: clientSchema,

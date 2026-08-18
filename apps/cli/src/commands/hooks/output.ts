@@ -44,10 +44,6 @@ function providerOutput(
     return { decision: 'block', reason: context }
   }
 
-  if (provider === 'gemini' && event === 'AfterAgent') {
-    return { decision: 'deny', reason: context }
-  }
-
   return { hookSpecificOutput: { additionalContext: context } }
 }
 

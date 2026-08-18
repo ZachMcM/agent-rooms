@@ -17,7 +17,7 @@ describe('readHookSessionId', () => {
 
   it.each([
     ['conversation_id', '{"conversation_id":"cursor:abc_123"}', 'cursor:abc_123'],
-    ['sessionId', '{"sessionId":"gemini:abc_123"}', 'gemini:abc_123'],
+    ['sessionId', '{"sessionId":"neutral:abc_123"}', 'neutral:abc_123'],
     ['matching IDs', '{"session_id":"shared:123","conversation_id":"shared:123"}', 'shared:123'],
   ])('reads a session ID from %s', async (_case, input, expected) => {
     await expect(read(input)).resolves.toBe(expected)

@@ -31,11 +31,6 @@ describe('hook output', () => {
       'stop',
       '{"followup_message":"<conversation-id>cursor-session</conversation-id>"}\n',
     ],
-    [
-      'gemini',
-      'AfterAgent',
-      '{"decision":"deny","reason":"<conversation-id>gemini-session</conversation-id>"}\n',
-    ],
   ])('serializes %s %s output', (provider, event, expected) => {
     expect(
       serializeHookContext({

@@ -9,7 +9,7 @@ cleaning up afterwards.
 each other about their decisions as they make them, neither is necessary.
 
 It is open source and runs entirely on your machine: one person, one SQLite database, no account
-and no remote server. The MVP targets Claude Code, Codex, Cursor, and Gemini CLI.
+and no remote server. The MVP targets Claude Code, Codex, and Cursor.
 
 ## Install
 
@@ -32,7 +32,6 @@ roots for:
 - Claude Code: `${CLAUDE_CONFIG_DIR:-~/.claude}`
 - Codex: `${CODEX_HOME:-~/.codex}`
 - Cursor: `~/.cursor`
-- Gemini CLI: `${GEMINI_CLI_HOME:-~}/.gemini`
 
 Project, managed, enterprise, cloud, and system-wide hook locations are not changed. Grok,
 OpenCode, and Windows are deferred.
