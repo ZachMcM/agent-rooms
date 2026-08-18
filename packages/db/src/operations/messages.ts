@@ -8,6 +8,7 @@ import {
   NON_ANSWER_MESSAGE_KINDS,
   type MessageKind,
   type MessageRow,
+  type MembershipRow,
   type RoomRow,
 } from '../schema'
 import { findActiveRoomMembership } from './memberships'
@@ -28,6 +29,7 @@ const writeMessageSchema = z.discriminatedUnion('kind', [
 ])
 const writeMessagesSchema = z.array(writeMessageSchema).min(1)
 const replyTargetColumns = { id: true, kind: true, body: true } as const
+const messageMembershipColumns = { id: true, conversationId: true, status: true } as const
 
 export interface ConsumeNewMessagesInput {
   conversationId: string
@@ -52,9 +54,23 @@ export interface ReplyTarget {
 
 export type RoomMessage = MessageRow & { replyTo: ReplyTarget | null }
 
+export type MessageMembership = Pick<MembershipRow, 'id' | 'conversationId' | 'status'>
+
+export type ListedReplyTarget = ReplyTarget & { membership: MessageMembership }
+
+export type ListedRoomMessage = MessageRow & {
+  membership: MessageMembership
+  replyTo: ListedReplyTarget | null
+}
+
 export interface RoomMessages {
   room: RoomRow
   messages: RoomMessage[]
+}
+
+export interface ListedRoomMessages {
+  room: RoomRow
+  messages: ListedRoomMessage[]
 }
 
 export class ActiveMembershipNotFoundError extends Error {
@@ -116,7 +132,7 @@ export async function consumeNewMessages(
 export async function listRoomMessages(
   db: Database,
   input: ListRoomMessagesInput,
-): Promise<RoomMessages | undefined> {
+): Promise<ListedRoomMessages | undefined> {
   const activeMembership = await db.query.memberships.findFirst({
     where: {
       conversationId: input.conversationId,
@@ -128,8 +144,16 @@ export async function listRoomMessages(
           messages: {
             orderBy: { id: 'asc' },
             with: {
+              membership: {
+                columns: messageMembershipColumns,
+              },
               replyTo: {
                 columns: replyTargetColumns,
+                with: {
+                  membership: {
+                    columns: messageMembershipColumns,
+                  },
+                },
               },
             },
           },

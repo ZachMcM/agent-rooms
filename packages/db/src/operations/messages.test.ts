@@ -78,8 +78,24 @@ describe('message operations', () => {
     await expect(listRoomMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
       room: active.room,
       messages: [
-        { ...first, replyTo: null },
-        { ...last, replyTo: null },
+        {
+          ...first,
+          membership: {
+            id: active.membership.id,
+            conversationId: active.membership.conversationId,
+            status: active.membership.status,
+          },
+          replyTo: null,
+        },
+        {
+          ...last,
+          membership: {
+            id: active.membership.id,
+            conversationId: active.membership.conversationId,
+            status: active.membership.status,
+          },
+          replyTo: null,
+        },
       ],
     })
     await expect(
@@ -89,14 +105,28 @@ describe('message operations', () => {
 
   it('hydrates reply targets when listing messages', async () => {
     const { db } = await createTestDatabase()
-    await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
-    const [question] = await writeMessages(db, {
-      conversationId: 'conversation',
-      messages: [{ kind: 'question', body: 'Which database should we use?' }],
+    const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    const historicalMembership = {
+      id: 'historical-membership',
+      conversationId: 'historical-conversation',
+      status: 'inactive' as const,
+    }
+    await db.insert(memberships).values({
+      ...historicalMembership,
+      roomId: active.room.id,
     })
+    const [question] = await db
+      .insert(messages)
+      .values({
+        roomId: active.room.id,
+        membershipId: historicalMembership.id,
+        kind: 'question',
+        body: 'Which database should we use?',
+      })
+      .returning()
 
     if (!question) {
-      throw new Error('Question write did not return an inserted record')
+      throw new Error('Question setup did not return an inserted record')
     }
 
     const [answer] = await writeMessages(db, {
@@ -111,10 +141,32 @@ describe('message operations', () => {
     await expect(listRoomMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
       room: expect.objectContaining({ name: 'build' }),
       messages: [
-        { ...question, replyTo: null },
+        {
+          ...question,
+          membership: {
+            id: historicalMembership.id,
+            conversationId: historicalMembership.conversationId,
+            status: historicalMembership.status,
+          },
+          replyTo: null,
+        },
         {
           ...answer,
-          replyTo: { id: question.id, kind: question.kind, body: question.body },
+          membership: {
+            id: active.membership.id,
+            conversationId: active.membership.conversationId,
+            status: active.membership.status,
+          },
+          replyTo: {
+            id: question.id,
+            kind: question.kind,
+            body: question.body,
+            membership: {
+              id: historicalMembership.id,
+              conversationId: historicalMembership.conversationId,
+              status: historicalMembership.status,
+            },
+          },
         },
       ],
     })
