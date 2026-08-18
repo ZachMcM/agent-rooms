@@ -262,10 +262,10 @@ function ThemeSelector() {
 
 function RoomListSkeleton() {
   return (
-    <div className="space-y-1 px-2 py-1" aria-label="Loading rooms" aria-busy="true">
-      {[1, 2, 3, 4].map((item) => (
+    <div className="space-y-1" aria-label="Loading rooms" aria-busy="true">
+      {[1, 2, 3, 4, 5, 6].map((item) => (
         <div key={item} className="px-2 py-2">
-          <Skeleton className="h-3 w-3/5" />
+          <Skeleton className="h-3 w-full" />
         </div>
       ))}
     </div>
