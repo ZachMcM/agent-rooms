@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dashboard:seed": "pnpm --filter @agent-rooms/db dashboard:seed",
     "clean": "turbo run clean && rm -rf node_modules",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",

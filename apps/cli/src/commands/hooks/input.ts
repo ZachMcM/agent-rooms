@@ -11,7 +11,7 @@ const hookInputSchema = z
     conversation_id: z.string().trim().min(1).regex(sessionIdPattern).optional(),
     sessionId: z.string().trim().min(1).regex(sessionIdPattern).optional(),
   })
-  .passthrough()
+  .loose()
 
 export async function readHookSessionId(stream: Readable): Promise<string> {
   let input = ''

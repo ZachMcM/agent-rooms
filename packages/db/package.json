@@ -14,6 +14,7 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
+    "dashboard:seed": "tsx scripts/seed-dashboard.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -27,6 +28,7 @@
     "@agent-rooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "drizzle-kit": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

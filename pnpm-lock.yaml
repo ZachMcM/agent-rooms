@@ -66,6 +66,9 @@ catalogs:
     tsup:
       specifier: 8.5.1
       version: 8.5.1
+    tsx:
+      specifier: 4.21.1
+      version: 4.21.1
     turbo:
       specifier: 2.10.9
       version: 2.10.9
@@ -329,6 +332,9 @@ importers:
       drizzle-kit:
         specifier: 'catalog:'
         version: 1.0.0-rc.4
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.1
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
