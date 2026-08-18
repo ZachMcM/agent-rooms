@@ -18,7 +18,7 @@ allowBuilds:
 catalog:
   '@libsql/client': 0.17.4
   '@types/express': 5.0.6
-  '@remixicon/react': 4.9.0
+  lucide-react: 1.30.0
   '@tanstack/react-query': 5.90.20
   '@tanstack/react-router': 1.170.29
   '@tanstack/router-plugin': 1.168.32

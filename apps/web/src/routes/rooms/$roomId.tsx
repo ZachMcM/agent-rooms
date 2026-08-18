@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { roomDetailQueryOptions } from '../../queries'
 
@@ -11,15 +11,12 @@ function RoomPage() {
   const room = useQuery(roomDetailQueryOptions(queryClient, roomId))
 
   return (
-    <main className="mx-auto w-full max-w-3xl p-6">
-      <Link to="/" className="text-muted-foreground text-sm hover:underline">
-        Rooms
-      </Link>
-      {room.isPending ? <p className="text-muted-foreground mt-8 text-sm">Loading room…</p> : null}
-      {room.isError ? <p className="text-destructive mt-8 text-sm">Unable to load room.</p> : null}
+    <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col p-6">
+      {room.isPending ? <p className="text-muted-foreground text-sm">Loading room…</p> : null}
+      {room.isError ? <p className="text-destructive text-sm">Unable to load room.</p> : null}
       {room.data ? (
         <>
-          <h1 className="mt-6 border-b pb-4 text-xl font-semibold tracking-tight">
+          <h1 className="border-b pb-4 text-xl font-semibold tracking-tight">
             {room.data.room.name}
           </h1>
           <ol className="divide-border divide-y">
@@ -34,6 +31,6 @@ function RoomPage() {
           </ol>
         </>
       ) : null}
-    </main>
+    </section>
   )
 }

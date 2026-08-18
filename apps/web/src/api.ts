@@ -15,6 +15,7 @@ export interface RoomOverviewMember {
 export interface RoomOverview {
   room: Room
   members: RoomOverviewMember[]
+  lastActivityAt: string
 }
 
 export interface RoomMember extends RoomOverviewMember {

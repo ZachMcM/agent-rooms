@@ -28,7 +28,9 @@ describe('API server', () => {
 
   it('preserves dashboard REST payloads', async () => {
     const createdAt = new Date('2026-08-17T09:00:00.000Z')
-    listRoomOverviews.mockResolvedValue([])
+    listRoomOverviews.mockResolvedValue([
+      { room: { id: 'room-1', name: 'Launch', createdAt }, members: [], lastActivityAt: createdAt },
+    ])
     getRoomDetail.mockResolvedValue({
       room: { id: 'room-1', name: 'Launch', createdAt },
       members: [],
@@ -37,7 +39,16 @@ describe('API server', () => {
     searchRoomsAndMessages.mockResolvedValue({ rooms: [], messages: [] })
 
     await expect(request('/api/health')).resolves.toMatchObject({ status: 200, body: { ok: true } })
-    await expect(request('/api/rooms')).resolves.toMatchObject({ status: 200, body: [] })
+    await expect(request('/api/rooms')).resolves.toMatchObject({
+      status: 200,
+      body: [
+        {
+          room: { id: 'room-1', name: 'Launch', createdAt: createdAt.toISOString() },
+          members: [],
+          lastActivityAt: createdAt.toISOString(),
+        },
+      ],
+    })
     await expect(request('/api/rooms/room-1')).resolves.toMatchObject({
       status: 200,
       body: {

@@ -41,7 +41,7 @@ async function insertRoom(db: Database, id: string, name: string) {
 }
 
 describe('dashboard operations', () => {
-  it('lists every room alphabetically with deterministic minimal members', async () => {
+  it('lists every room alphabetically with deterministic minimal members and created-at fallback', async () => {
     const db = await createTestDatabase()
     const zulu = await insertRoom(db, 'room-zulu', 'zulu')
     const alpha = await insertRoom(db, 'room-alpha', 'Alpha')
@@ -74,11 +74,51 @@ describe('dashboard operations', () => {
           { id: 'member-a', conversationId: 'codex-alpha-a', status: 'inactive' },
           { id: 'member-b', conversationId: 'claude-alpha-b', status: 'active' },
         ],
+        lastActivityAt: alpha.createdAt,
       },
-      { room: empty, members: [] },
+      { room: empty, members: [], lastActivityAt: empty.createdAt },
       {
         room: zulu,
         members: [{ id: 'member-z', conversationId: 'legacy-conversation', status: 'inactive' }],
+        lastActivityAt: zulu.createdAt,
+      },
+    ])
+  })
+
+  it('uses the greatest message timestamp for room activity', async () => {
+    const db = await createTestDatabase()
+    const room = await insertRoom(db, 'room', 'build')
+    await db.insert(memberships).values({
+      id: 'member',
+      roomId: room.id,
+      conversationId: 'codex-build',
+    })
+
+    const latestCreatedAt = new Date('2030-08-17T12:00:00.000Z')
+    await db.insert(messages).values([
+      {
+        id: 100,
+        roomId: room.id,
+        membershipId: 'member',
+        kind: 'decision',
+        body: 'older message with larger id',
+        createdAt: new Date('2030-08-17T10:00:00.000Z'),
+      },
+      {
+        id: 1,
+        roomId: room.id,
+        membershipId: 'member',
+        kind: 'status',
+        body: 'latest message with smaller id',
+        createdAt: latestCreatedAt,
+      },
+    ])
+
+    await expect(listRoomOverviews(db)).resolves.toEqual([
+      {
+        room,
+        members: [{ id: 'member', conversationId: 'codex-build', status: 'active' }],
+        lastActivityAt: latestCreatedAt,
       },
     ])
   })

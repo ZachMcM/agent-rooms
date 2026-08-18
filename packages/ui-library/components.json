@@ -9,7 +9,7 @@
     "baseColor": "neutral",
     "cssVariables": true
   },
-  "iconLibrary": "remixicon",
+  "iconLibrary": "lucide",
   "aliases": {
     "components": "@agent-rooms/ui-library/components",
     "utils": "@agent-rooms/ui-library/lib/utils",

@@ -20,6 +20,7 @@ export interface RoomOverviewMember {
 export interface RoomOverview {
   room: RoomRow
   members: RoomOverviewMember[]
+  lastActivityAt: Date
 }
 
 export interface GetRoomMembersInput {
@@ -98,21 +99,44 @@ export class InvalidSearchLimitError extends Error {
 }
 
 export async function listRoomOverviews(db: Database): Promise<RoomOverview[]> {
-  const roomResults = await db.query.rooms.findMany({
-    orderBy: (room) => [asc(sql`lower(${room.name})`), asc(room.name), asc(room.id)],
-    with: {
-      memberships: {
-        columns: {
-          id: true,
-          conversationId: true,
-          status: true,
-        },
-        orderBy: { id: 'asc' },
-      },
-    },
-  })
+  const roomResults = await db
+    .select({
+      room: rooms,
+      lastActivityAt: sql<Date>`coalesce(max(${messages.createdAt}), ${rooms.createdAt})`.mapWith(
+        rooms.createdAt,
+      ),
+    })
+    .from(rooms)
+    .leftJoin(messages, eq(messages.roomId, rooms.id))
+    .groupBy(rooms.id)
+    .orderBy(asc(sql`lower(${rooms.name})`), asc(rooms.name), asc(rooms.id))
+  const roomIds = roomResults.map(({ room }) => room.id)
+  const memberResults =
+    roomIds.length === 0
+      ? []
+      : await db
+          .select({
+            id: memberships.id,
+            roomId: memberships.roomId,
+            conversationId: memberships.conversationId,
+            status: memberships.status,
+          })
+          .from(memberships)
+          .where(inArray(memberships.roomId, roomIds))
+          .orderBy(asc(memberships.id))
+  const membersByRoomId = new Map<string, RoomOverviewMember[]>()
 
-  return roomResults.map(({ memberships: members, ...room }) => ({ room, members }))
+  for (const { roomId, ...member } of memberResults) {
+    const roomMembers = membersByRoomId.get(roomId) ?? []
+    roomMembers.push(member)
+    membersByRoomId.set(roomId, roomMembers)
+  }
+
+  return roomResults.map(({ room, lastActivityAt }) => ({
+    room,
+    members: membersByRoomId.get(room.id) ?? [],
+    lastActivityAt,
+  }))
 }
 
 export async function getRoomMembers(
