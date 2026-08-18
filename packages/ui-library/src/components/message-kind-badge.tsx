@@ -15,8 +15,8 @@ function MessageKindBadge({ kind, className }: { kind: MessageKind; className?: 
   const { label, indicatorClassName } = messageKindDetails[kind]
 
   return (
-    <Badge variant="outline" className={cn('pr-3', className)}>
-      <span className={cn('size-2.5 rounded-full', indicatorClassName)} aria-hidden="true" />
+    <Badge variant="outline" className={cn(className)}>
+      <span className={cn('size-2.5 rounded-full mr-0.5', indicatorClassName)} aria-hidden="true" />
       {label}
     </Badge>
   )
