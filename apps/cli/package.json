@@ -25,15 +25,16 @@
   "dependencies": {
     "@libsql/client": "catalog:",
     "commander": "15.0.0",
+    "express": "catalog:",
     "jsonc-parser": "3.3.1",
     "semver": "7.8.5",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@agent-rooms/api": "workspace:*",
     "@agent-rooms/core": "workspace:*",
     "@agent-rooms/db": "workspace:*",
     "@agent-rooms/typescript-config": "workspace:*",
-    "@agent-rooms/web": "workspace:*",
     "@types/node": "catalog:",
     "@types/semver": "7.7.1",
     "tsup": "catalog:",

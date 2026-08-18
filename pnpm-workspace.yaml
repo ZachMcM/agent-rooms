@@ -17,7 +17,11 @@ allowBuilds:
 
 catalog:
   '@libsql/client': 0.17.4
+  '@types/express': 5.0.6
   '@remixicon/react': 4.9.0
+  '@tanstack/react-query': 5.90.20
+  '@tanstack/react-router': 1.170.29
+  '@tanstack/router-plugin': 1.168.32
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
   '@types/node': 24.13.3
@@ -26,6 +30,7 @@ catalog:
   '@vitejs/plugin-react': 6.0.5
   drizzle-kit: 1.0.0-rc.4
   drizzle-orm: 1.0.0-rc.4
+  express: 5.2.1
   next: 16.3.0
   nextra: 4.6.1
   nextra-theme-docs: 4.6.1

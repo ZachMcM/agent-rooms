@@ -8,6 +8,7 @@ import { createDatabase, type Database } from '../client'
 import { runMigrations } from '../migrator'
 import { memberships, messages, rooms } from '../schema'
 import {
+  getRoomDetail,
   getRoomMessages,
   getRoomMembers,
   InvalidSearchLimitError,
@@ -208,6 +209,18 @@ describe('dashboard operations', () => {
 
     await expect(getRoomMembers(db, { roomId: room.id })).resolves.toEqual({ room, members: [] })
     await expect(getRoomMembers(db, { roomId: 'missing' })).resolves.toBeUndefined()
+  })
+
+  it('returns members and messages together for one room', async () => {
+    const db = await createTestDatabase()
+    const room = await insertRoom(db, 'detail-room', 'detail')
+
+    await expect(getRoomDetail(db, { roomId: room.id })).resolves.toEqual({
+      room,
+      members: [],
+      messages: [],
+    })
+    await expect(getRoomDetail(db, { roomId: 'missing' })).resolves.toBeUndefined()
   })
 
   it('lists messages from existing rooms without changing member cursors', async () => {

@@ -61,6 +61,10 @@ export interface RoomMembers {
   members: DashboardRoomMember[]
 }
 
+export interface RoomDetail extends RoomMembers {
+  messages: ListedRoomMessages['messages']
+}
+
 export interface SearchRoomsAndMessagesInput {
   query: string
   roomId?: string
@@ -236,6 +240,18 @@ export async function getRoomMessages(
   const { messages: roomMessages, ...room } = roomResult
 
   return { room, messages: roomMessages }
+}
+
+export async function getRoomDetail(
+  db: Database,
+  input: GetRoomMembersInput,
+): Promise<RoomDetail | undefined> {
+  const [roomMembers, roomMessages] = await Promise.all([
+    getRoomMembers(db, input),
+    getRoomMessages(db, input),
+  ])
+  if (!roomMembers || !roomMessages) return undefined
+  return { ...roomMembers, messages: roomMessages.messages }
 }
 
 export async function searchRoomsAndMessages(

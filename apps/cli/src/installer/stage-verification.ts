@@ -169,6 +169,7 @@ async function assertMigrationTree(path: string, base: string): Promise<void> {
 async function assertDashboardAssets(path: string, base: string): Promise<void> {
   await assertOwnedPathComponents(path, base)
   await assertNonEmptyFile(join(path, 'server', 'index.mjs'), base, 'dashboard server entry')
+  await assertMigrationTree(join(path, 'migrations'), base)
   const files = await scanOwnedNonEmptyFileTree(join(path, 'public', 'assets'), base, {
     directoryMessage: 'Staged package dashboard public assets must be an owned directory.',
     symlinkMessage: 'Staged package dashboard public assets must not contain symbolic links.',

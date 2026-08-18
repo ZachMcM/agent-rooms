@@ -969,6 +969,7 @@ async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<
   await mkdir(join(root, 'migrations'), { recursive: true })
   await mkdir(join(root, 'assets', 'agent-rooms'), { recursive: true })
   await mkdir(join(root, 'assets', 'dashboard', 'server'), { recursive: true })
+  await mkdir(join(root, 'assets', 'dashboard', 'migrations'), { recursive: true })
   await mkdir(join(root, 'assets', 'dashboard', 'public', 'assets'), { recursive: true })
   await mkdir(join(root, 'dist'), { recursive: true })
   await writeFile(
@@ -987,6 +988,7 @@ async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<
   await writeFile(join(root, 'migrations', '0000.sql'), 'select 1;')
   await writeFile(join(root, 'assets', 'agent-rooms', 'SKILL.md'), 'skill')
   await writeFile(join(root, 'assets', 'dashboard', 'server', 'index.mjs'), 'export default {}')
+  await writeFile(join(root, 'assets', 'dashboard', 'migrations', '0000.sql'), 'select 1;')
   await writeFile(
     join(root, 'assets', 'dashboard', 'public', 'assets', 'app.js'),
     'export default {}',

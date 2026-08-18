@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 const migrationsFrom = resolve(here, '../../../packages/db/migrations')
 const migrationsTo = resolve(here, '../migrations')
-const dashboardFrom = resolve(here, '../../web/.output')
+const dashboardFrom = resolve(here, '../../api/dist')
 const dashboardTo = resolve(here, '../assets/dashboard')
 
 for (const source of [migrationsFrom, dashboardFrom]) {

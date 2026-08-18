@@ -54,6 +54,7 @@ jobs:
           test -d node_modules/agent-rooms/migrations
           test -f node_modules/agent-rooms/assets/agent-rooms/SKILL.md
           test -f node_modules/agent-rooms/assets/dashboard/server/index.mjs
+          test -d node_modules/agent-rooms/assets/dashboard/migrations
           test -d node_modules/agent-rooms/assets/dashboard/public/assets
           node -e "require('@libsql/client')"
       - name: Smoke test the packaged dashboard

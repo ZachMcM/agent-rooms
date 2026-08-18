@@ -8,31 +8,27 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "build": "vite build && node ./scripts/copy-migrations.mjs && node ./scripts/verify-production.mjs",
+    "build": "vite build",
     "dev": "vite dev --port 3000",
     "preview": "vite preview",
-    "start": "node .output/server/index.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-rooms/core": "workspace:*",
-    "@agent-rooms/db": "workspace:*",
     "@agent-rooms/ui-library": "workspace:*",
-    "@libsql/client": "catalog:",
-    "@tanstack/react-router": "1.170.29",
-    "@tanstack/react-start": "1.168.46",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "devDependencies": {
     "@agent-rooms/typescript-config": "workspace:*",
     "@tailwindcss/vite": "catalog:",
+    "@tanstack/router-plugin": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "nitro": "3.0.260610-beta",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

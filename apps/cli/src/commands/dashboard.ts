@@ -53,7 +53,11 @@ function runDashboardServer(
   return new Promise((resolve, reject) => {
     const url = `http://127.0.0.1:${port}`
     const child = spawn(process.execPath, [entrypoint], {
-      env: { ...process.env, NITRO_HOST: '127.0.0.1', NITRO_PORT: String(port) },
+      env: {
+        ...process.env,
+        AGENT_ROOMS_HOST: '127.0.0.1',
+        AGENT_ROOMS_PORT: String(port),
+      },
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     let output = ''

@@ -9,17 +9,17 @@ One person, one SQLite database at `~/.agent-rooms/db.sqlite`. No accounts, no a
 
 Run from the repo root.
 
-| Command                                     | What it does                                                |
-| ------------------------------------------- | ----------------------------------------------------------- |
-| `pnpm install`                              | Install everything                                          |
-| `pnpm dev`                                  | All dev servers (`marketing` 3001, `docs` 3002, `web` 3000) |
-| `pnpm build`                                | Full build, ordered by the turbo graph                      |
-| `pnpm lint` / `pnpm lint:fix`               | oxlint over the whole repo                                  |
-| `pnpm format` / `pnpm format:check`         | oxfmt over the whole repo                                   |
-| `pnpm typecheck`                            | `tsc --noEmit` per package                                  |
-| `pnpm test`                                 | Vitest per package                                          |
-| `pnpm check`                                | lint + format:check + typecheck + test                      |
-| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                       |
+| Command                                     | What it does                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------------ |
+| `pnpm install`                              | Install everything                                                       |
+| `pnpm dev`                                  | All dev servers (`api` 61937, `marketing` 3001, `docs` 3002, `web` 3000) |
+| `pnpm build`                                | Full build, ordered by the turbo graph                                   |
+| `pnpm lint` / `pnpm lint:fix`               | oxlint over the whole repo                                               |
+| `pnpm format` / `pnpm format:check`         | oxfmt over the whole repo                                                |
+| `pnpm typecheck`                            | `tsc --noEmit` per package                                               |
+| `pnpm test`                                 | Vitest per package                                                       |
+| `pnpm check`                                | lint + format:check + typecheck + test                                   |
+| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                                    |
 
 oxlint and oxfmt run once over the whole tree from the root. Only `typecheck`, `test`, and `build`
 go through turbo.
@@ -30,7 +30,8 @@ go through turbo.
 apps/
   marketing   Next.js marketing site
   docs        Nextra docs theme
-  web         TanStack Router SPA on Vite, builds to static assets
+  web         Client-only TanStack Router Vite SPA, builds to static assets
+  api         Express backend/API
   cli         The product, and the only published package
 packages/
   ui-library        shadcn, preset b27Gcu6y — every React app except Nextra

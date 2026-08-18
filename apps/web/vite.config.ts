@@ -1,11 +1,14 @@
 import tailwindcss from '@tailwindcss/vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
-import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
-  ssr: { external: ['@libsql/client'] },
-  plugins: [tailwindcss(), tanstackStart(), viteReact(), nitro({ preset: 'node-server' })],
+  server: { proxy: { '/api': 'http://127.0.0.1:61937' } },
+  plugins: [
+    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    viteReact(),
+    tailwindcss(),
+  ],
 })

@@ -11,6 +11,7 @@ const requiredFiles = [
 const missing = requiredFiles.filter((path) => !existsSync(resolve(root, path)))
 const migrations = resolve(root, 'migrations')
 const dashboardAssets = resolve(root, 'assets/dashboard/public/assets')
+const dashboardMigrations = resolve(root, 'assets/dashboard/migrations')
 
 if (
   !existsSync(migrations) ||
@@ -28,6 +29,14 @@ if (
   )
 ) {
   missing.push('assets/dashboard/public/assets/*')
+}
+
+if (
+  !existsSync(dashboardMigrations) ||
+  !statSync(dashboardMigrations).isDirectory() ||
+  readdirSync(dashboardMigrations, { recursive: true }).every((path) => !path.endsWith('.sql'))
+) {
+  missing.push('assets/dashboard/migrations/*')
 }
 
 if (missing.length > 0) {

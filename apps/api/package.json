@@ -1,0 +1,30 @@
+{
+  "name": "@agent-rooms/api",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsup && node ./scripts/copy-assets.mjs",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/server/index.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@libsql/client": "catalog:",
+    "express": "catalog:"
+  },
+  "devDependencies": {
+    "@agent-rooms/core": "workspace:*",
+    "@agent-rooms/db": "workspace:*",
+    "@agent-rooms/typescript-config": "workspace:*",
+    "@agent-rooms/web": "workspace:*",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
