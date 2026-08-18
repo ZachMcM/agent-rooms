@@ -300,7 +300,7 @@ function MessageKindProgress({
       trackClassName="col-start-2 row-start-1 h-2"
       indicatorClassName={indicatorClassName}
     >
-      <ProgressLabel className="col-start-1 row-start-1 text-xs font-medium">
+      <ProgressLabel className="col-start-1 row-start-1 text-xs font-normal">
         {label}
       </ProgressLabel>
       <ProgressValue className="col-start-3 row-start-1">
