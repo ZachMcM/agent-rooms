@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 
 export const metadata: Metadata = {
   title: 'agent-rooms',
-  description: 'Pseudo-real-time decision sharing between parallel coding agents.',
+  description: 'Real-time decision sharing between parallel coding agents.',
 }
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

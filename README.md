@@ -5,7 +5,7 @@ a decision from one to the other while it is being made. Today that gets reconci
 writing the contract up front — foresight you usually do not have — or by burning another session
 cleaning up afterwards.
 
-`agent-rooms` tests the hypothesis that if parallel agents communicate in pseudo-real time and tell
+`agent-rooms` tests the hypothesis that if parallel agents communicate in real time and tell
 each other about their decisions as they make them, neither is necessary.
 
 It is open source and runs entirely on your machine: one person, one SQLite database, no account

@@ -19,7 +19,7 @@ const packageVersion = (require('../package.json') as { version: string }).versi
 
 export function createProgram(): Command {
   const program = new Command('agent-rooms')
-    .description('Pseudo-real-time decision sharing between parallel coding agents.')
+    .description('Real-time decision sharing between parallel coding agents.')
     .version(packageVersion)
     .configureOutput({
       writeOut: (message) => process.stdout.write(message),

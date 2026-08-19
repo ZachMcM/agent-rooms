@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: 'agent-rooms',
     template: '%s — agent-rooms',
   },
-  description: 'Pseudo-real-time decision sharing between parallel coding agents.',
+  description: 'Real-time decision sharing between parallel coding agents.',
 }
 
 const navbar = <Navbar logo={<b>agent-rooms</b>} />
