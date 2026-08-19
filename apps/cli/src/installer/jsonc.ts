@@ -137,6 +137,35 @@ export function removeJsoncProperty(source: string, key: string): string {
   return splice(source, property.offset, property.length, '')
 }
 
+export function removeJsoncObjectProperty(source: string, objectKey: string, key: string): string {
+  const root = parseRootObject(source)
+  const object = findNodeAtLocation(root, [objectKey])
+  if (!object) return source
+  if (object.type !== 'object') throw new Error(`JSONC property ${objectKey} is not an object.`)
+  const property = findProperty(object, key)
+  if (!property) return source
+  const children = object.children ?? []
+  const index = children.indexOf(property)
+  const next = children[index + 1]
+  const value = property.children?.[1] ?? property
+  const close = object.offset + object.length - 1
+  const commaAfter = findToken(
+    source,
+    value.offset + value.length,
+    next?.offset ?? close,
+    commaToken,
+  )
+  if (commaAfter !== undefined)
+    return splice(source, property.offset, commaAfter + 1 - property.offset, '')
+  if (index > 0) {
+    const previous = children[index - 1]!
+    const comma = findToken(source, previous.offset + previous.length, property.offset, commaToken)
+    if (comma !== undefined)
+      return splice(source, comma, property.offset + property.length - comma, '')
+  }
+  return splice(source, property.offset, property.length, '')
+}
+
 export function parseJsonc(source: string): unknown {
   const errors: ParseError[] = []
   const value = parse(source, errors, parseOptions)

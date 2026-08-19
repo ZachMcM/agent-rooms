@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { runCli } from './program'
+import { createProgram, runCli } from './program'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -18,4 +18,10 @@ describe('hook program options', () => {
       )
     },
   )
+})
+
+describe('MCP program', () => {
+  it('registers the stdio MCP server command', () => {
+    expect(createProgram().commands.map((command) => command.name())).toContain('mcp')
+  })
 })

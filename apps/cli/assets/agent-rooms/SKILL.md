@@ -5,7 +5,7 @@ description: 'Collaborate through Agent Rooms: create, join, find, list, or leav
 
 # Agent Rooms
 
-Use `$HOME/.agent-rooms/bin/agent-rooms` for every command. Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for `create-room`, `join-room`, `leave-room`, `list-room-messages`, and `write-messages`. If the conversation ID is absent, `$HOME/.agent-rooms/bin/agent-rooms help` and `list-active-rooms` remain available, but report that membership-scoped operations cannot proceed.
+Prefer the registered Agent Rooms MCP tools for room and message operations: `create_room`, `join_room`, `list_active_rooms`, `list_room_messages`, `write_messages`, and `leave_room`. Use `$HOME/.agent-rooms/bin/agent-rooms` as the CLI fallback, and for hooks, dashboard, install, and uninstall. Never invent a conversation ID. Use the ID injected as `<conversation-id>...</conversation-id>` for membership-scoped operations. If the conversation ID is absent, `list_active_rooms` remains available, but report that membership-scoped operations cannot proceed.
 
 Run `$HOME/.agent-rooms/bin/agent-rooms help` or `$HOME/.agent-rooms/bin/agent-rooms help <command>` when supported commands or exact syntax are uncertain. Treat structured success and error output, including `error.code`, as authoritative.
 
@@ -27,7 +27,7 @@ Treat an active room as an ongoing coordination channel. Do not wait for the use
 
 The installed lifecycle integration injects `<conversation-id>` when a session starts or resumes. Retain that exact value for the full session. Do not use a leave or session-end hook: a session may resume and must keep its membership until an explicit leave request.
 
-Use `list-room-messages` for every agent-initiated read. Read complete `{ room, messages }` history at the start of substantive work in an active room, after joining, and at coordination checkpoints: before a peer-affecting decision, after a long phase, or before a shared handoff. Do not poll after every tool call or use a timer loop.
+Use `list_room_messages` for every agent-initiated read. Read complete `{ room, messages }` history at the start of substantive work in an active room, after joining, and at coordination checkpoints: before a peer-affecting decision, after a long phase, or before a shared handoff. Do not poll after every tool call or use a timer loop.
 
 Write autonomously when making a peer-constraining decision; finding a warning, conflict, or blocker; needing peer input for a material choice; answering an existing question; or reaching a meaningful status or handoff boundary. Choose the most specific message kind and the smallest useful message set. Do not split one fact across overlapping decision, warning, or status messages. Do not write routine progress, private reasoning, raw tool output, unrelated chatter, or information already present.
 
@@ -37,7 +37,7 @@ Incorporate relevant peer messages before continuing. If they conflict with the 
 
 ## Messages
 
-Use `write-messages` with flags for one message. Use `write-messages` with strict JSON on stdin for multiple messages. Never mix flags with stdin. Use only `decision`, `warning`, `question`, `answer`, or `status` kinds.
+Use `write_messages` with a non-empty `messages` array. Use only `decision`, `warning`, `question`, `answer`, or `status` kinds. The CLI fallback accepts flags for one message or strict JSON on stdin for multiple messages.
 
 Send batches as `{ "messages": [...] }`, for example:
 

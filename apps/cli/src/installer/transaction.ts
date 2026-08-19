@@ -7,12 +7,14 @@ import { createDatabase, runMigrations } from '@agent-rooms/db'
 
 import {
   configPath,
+  mcpConfigPath,
   partialInstallError,
   patchClients,
   pathWarning,
   preflightTargets,
   profilePath,
   removeClientHooks,
+  removeClientMcps,
   removeIfUnchanged,
   removeProfileBlockIfUnchanged,
   rollback,
@@ -161,6 +163,7 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
       context,
       skill,
       priorManifest?.hooks ?? [],
+      priorManifest?.mcps ?? [],
       activation,
     )
     try {
@@ -175,6 +178,7 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
           config: configPath(root),
         })),
         hooks: clientResult.hooks,
+        mcps: clientResult.mcps,
         skills: clientResult.skills,
         profiles: clientResult.profiles,
       }
@@ -212,10 +216,11 @@ async function patchClientsAfterActivation(
   context: Context,
   skill: string,
   priorHooks: Parameters<typeof patchClients>[2],
+  priorMcps: Parameters<typeof patchClients>[3],
   activation: RuntimeActivation,
 ): ReturnType<typeof patchClients> {
   try {
-    return await patchClients(context, skill, priorHooks)
+    return await patchClients(context, skill, priorHooks, priorMcps)
   } catch (error) {
     return await restoreRuntimeLinks(activation, error)
   }
@@ -229,6 +234,7 @@ export async function runUninstall(input: UninstallInput): Promise<UninstallResu
   const warnings: string[] = []
 
   await removeClientHooks(manifest.hooks, context.home)
+  warnings.push(...(await removeClientMcps(manifest.mcps, context.home)))
   for (const file of manifest.skills)
     warnings.push(...(await removeIfUnchanged(file, 'skill', context.home)))
   for (const file of manifest.profiles)
@@ -292,6 +298,10 @@ async function installPlan(context: Context, version: string): Promise<Change[]>
   ]
   for (const root of context.roots) {
     changes.push({ path: configPath(root), action: `patch ${root.client} hooks` })
+    changes.push({
+      path: mcpConfigPath(root, context.home),
+      action: `register ${root.client} MCP server`,
+    })
     changes.push({ path: skillPath(root, context.home), action: `install ${root.client} skill` })
   }
   const profile = profilePath(context)
@@ -304,6 +314,10 @@ function uninstallPlan(context: Context, manifest: Manifest, purgeData: boolean)
     ...unique(manifest.hooks.map((hook) => hook.path)).map((path) => ({
       path,
       action: 'remove owned hooks',
+    })),
+    ...unique(manifest.mcps.map((mcp) => mcp.path)).map((path) => ({
+      path,
+      action: 'remove owned MCP server',
     })),
     ...manifest.skills.map(({ path }) => ({ path, action: 'remove unchanged skill' })),
     ...manifest.profiles.map(({ path }) => ({ path, action: 'remove PATH block' })),

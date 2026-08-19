@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto'
 import { dirname, basename, join } from 'node:path'
 
+import { parse as parseToml } from 'smol-toml'
+
 import { providerHookConfig } from '../commands/hooks'
 import {
   ensurePrivateDirectory,
@@ -10,8 +12,13 @@ import {
   removeOwnedPath,
   writeFileAtomically,
 } from './filesystem'
-import { parseJsonc, reconcileJsoncObjectArray } from './jsonc'
-import type { ManagedFile, ManagedHook } from './manifest'
+import {
+  parseJsonc,
+  reconcileJsoncObjectArray,
+  removeJsoncObjectProperty,
+  setJsoncObjectProperty,
+} from './jsonc'
+import type { ManagedFile, ManagedHook, ManagedMcp } from './manifest'
 import { removeManagedPathBlock, upsertManagedPathBlock } from './path'
 import type { ClientRoot } from './preflight'
 
@@ -19,6 +26,7 @@ const skillName = 'agent-rooms'
 const managedBlockPattern = /(^|\n)# >>> agent-rooms >>>\n[\s\S]*?\n# <<< agent-rooms <<</g
 
 type PatchResult = { content: string; hooks: ManagedHook[] }
+type McpPatchResult = { content: string; mcp?: ManagedMcp }
 
 export type ClientContext = {
   home: string
@@ -39,14 +47,17 @@ export async function patchClients(
   context: ClientContext,
   skillContent: string,
   priorHooks: ManagedHook[],
+  priorMcps: ManagedMcp[] = [],
 ): Promise<{
   hooks: ManagedHook[]
+  mcps: ManagedMcp[]
   skills: ManagedFile[]
   profiles: ManagedFile[]
   journal: RollbackJournal
 }> {
   const journal: RollbackJournal = { restore: [], remove: [], directories: [] }
   const hooks: ManagedHook[] = []
+  const mcps: ManagedMcp[] = []
   try {
     for (const root of context.roots) {
       const path = configPath(root)
@@ -63,6 +74,15 @@ export async function patchClients(
       await ensurePrivateDirectoryTracked(dirname(path), context, journal)
       await writeFileAtomically(path, patched.content, context.home)
       hooks.push(...patched.hooks)
+
+      const mcpPath = mcpConfigPath(root, context.home)
+      const mcpBefore = await readOptionalOwnedFile(mcpPath, context.home)
+      if (mcpBefore !== undefined) journal.restore.push({ path: mcpPath, content: mcpBefore })
+      else journal.remove.push(mcpPath)
+      const mcp = patchMcp(mcpBefore, root.client, context.bin, mcpPath, priorMcps)
+      await ensurePrivateDirectoryTracked(dirname(mcpPath), context, journal)
+      await writeFileAtomically(mcpPath, mcp.content, context.home)
+      if (mcp.mcp) mcps.push(mcp.mcp)
 
       const skill = skillPath(root, context.home)
       const current = await readOptionalOwnedFile(skill, context.home)
@@ -102,6 +122,7 @@ export async function patchClients(
     }
     return {
       hooks,
+      mcps,
       skills: await managedSkills(context),
       profiles: await managedProfiles(context),
       journal,
@@ -123,11 +144,40 @@ export async function removeClientHooks(hooks: ManagedHook[], trustedBase: strin
   }
 }
 
+export async function removeClientMcps(mcps: ManagedMcp[], trustedBase: string): Promise<string[]> {
+  const warnings: string[] = []
+  for (const mcp of mcps) {
+    const source = await readOptionalOwnedFile(mcp.path, trustedBase)
+    if (source === undefined) continue
+    let current: unknown
+    try {
+      current = readMcp(source, mcp.client)
+    } catch {
+      warnings.push(`Preserved modified MCP server: ${mcp.path}`)
+      continue
+    }
+    if (!equal(current, { command: mcp.command, args: mcp.args })) {
+      warnings.push(`Preserved modified MCP server: ${mcp.path}`)
+      continue
+    }
+    await writeFileAtomically(mcp.path, removeMcp(source, mcp.client), trustedBase)
+  }
+  return warnings
+}
+
 export function configPath(root: Pick<ClientRoot, 'client' | 'path'>): string {
   return join(
     root.path,
     root.client === 'cursor' || root.client === 'codex' ? 'hooks.json' : 'settings.json',
   )
+}
+
+export function mcpConfigPath(
+  root: Pick<ClientRoot, 'client' | 'path'>,
+  homeDirectory: string,
+): string {
+  if (root.client === 'claude') return join(homeDirectory, '.claude.json')
+  return join(root.path, root.client === 'codex' ? 'config.toml' : 'mcp.json')
 }
 
 export function skillPath(
@@ -199,6 +249,8 @@ export async function preflightTargets(context: ClientContext, skill?: string): 
   for (const root of context.roots) {
     const config = await readOptionalOwnedFile(configPath(root), context.home)
     if (config !== undefined) patchHooks(config, root.client, context.bin, configPath(root))
+    const mcp = await readOptionalOwnedFile(mcpConfigPath(root, context.home), context.home)
+    patchMcp(mcp, root.client, context.bin, mcpConfigPath(root, context.home))
     const path = skillPath(root, context.home)
     const existingSkill = await readOptionalOwnedFile(path, context.home)
     if (
@@ -211,6 +263,53 @@ export async function preflightTargets(context: ClientContext, skill?: string): 
   }
   const profile = profilePath(context)
   if (profile) await readOptionalOwnedFile(profile, context.home)
+}
+
+function patchMcp(
+  source: string | undefined,
+  client: ClientRoot['client'],
+  bin: string,
+  path: string,
+  priorMcps: ManagedMcp[] = [],
+): McpPatchResult {
+  const desired = { command: bin, args: ['mcp'] }
+  const current = source === undefined ? undefined : readMcp(source, client)
+  if (current !== undefined && !equal(current, desired)) {
+    throw new Error(`Refusing to overwrite existing Agent Rooms MCP server: ${path}.`)
+  }
+  if (current !== undefined) {
+    const owned = priorMcps.find((mcp) => mcp.path === path)
+    return { content: source!, ...(owned ? { mcp: owned } : {}) }
+  }
+  const content =
+    client === 'codex' ? addTomlMcp(source ?? '', desired) : addJsonMcp(source ?? '{}\n', desired)
+  return { content, mcp: { path, client, ...desired } }
+}
+
+function readMcp(source: string, client: ClientRoot['client']): unknown {
+  if (client === 'codex') {
+    const parsed = parseToml(source) as Record<string, unknown>
+    const servers = parsed.mcp_servers
+    return isRecord(servers) ? servers['agent-rooms'] : undefined
+  }
+  const parsed = parseJsonc(source) as Record<string, unknown>
+  return isRecord(parsed.mcpServers) ? parsed.mcpServers['agent-rooms'] : undefined
+}
+
+function addJsonMcp(source: string, desired: { command: string; args: string[] }): string {
+  return setJsoncObjectProperty(source, 'mcpServers', 'agent-rooms', desired)
+}
+
+function addTomlMcp(source: string, desired: { command: string; args: string[] }): string {
+  parseToml(source)
+  const separator = source && !source.endsWith('\n') ? '\n\n' : source ? '\n' : ''
+  return `${source}${separator}[mcp_servers.agent-rooms]\ncommand = ${JSON.stringify(desired.command)}\nargs = [${desired.args.map((arg) => JSON.stringify(arg)).join(', ')}]\n`
+}
+
+function removeMcp(source: string, client: ClientRoot['client']): string {
+  if (client !== 'codex') return removeJsoncObjectProperty(source, 'mcpServers', 'agent-rooms')
+  const expression = /(?:^|\n)\[mcp_servers\.agent-rooms\][\s\S]*?(?=\n\[|$)/
+  return source.replace(expression, '').replace(/^\n+/, '')
 }
 
 export async function rollback(journal: RollbackJournal, trustedBase: string): Promise<void> {

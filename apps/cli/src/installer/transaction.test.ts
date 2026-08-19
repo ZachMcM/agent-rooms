@@ -88,6 +88,10 @@ describe('installer transaction', () => {
     ])
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('consume-new-messages')
+    expect(await readFile(join(codex, 'config.toml'), 'utf8')).toContain(
+      '[mcp_servers.agent-rooms]',
+    )
+    expect(await readFile(join(codex, 'config.toml'), 'utf8')).toContain('args = ["mcp"]')
     const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
     await expect(readFile(skill, 'utf8')).resolves.toBe('skill')
     await expect(lstat(join(codex, 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
@@ -158,6 +162,9 @@ describe('installer transaction', () => {
 
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).not.toContain('consume-new-messages')
+    expect(await readFile(join(codex, 'config.toml'), 'utf8')).not.toContain(
+      '[mcp_servers.agent-rooms]',
+    )
     expect(await readFile(join(home, '.zshrc'), 'utf8')).not.toContain('>>> agent-rooms >>>')
     await expect(lstat(skill)).rejects.toMatchObject({ code: 'ENOENT' })
     await expect(lstat(join(home, '.agents', 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
@@ -584,6 +591,123 @@ describe('installer transaction', () => {
     expect(hooks).not.toContain('consume-new-messages')
   })
 
+  it('patches Claude and Cursor MCP configs without disturbing JSONC content', async () => {
+    const home = await temporaryHome()
+    const claude = join(home, '.claude')
+    const cursor = join(home, '.cursor')
+    await mkdir(claude)
+    await mkdir(cursor)
+    await writeFile(join(home, '.claude.json'), '{\n  // keep this\n  "other": true,\n}\n')
+    await writeFile(join(cursor, 'mcp.json'), '{\n  // cursor config\n  "other": true,\n}\n')
+    const roots = [
+      { client: 'claude' as const, path: claude },
+      { client: 'cursor' as const, path: cursor },
+    ]
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots,
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    for (const path of [join(home, '.claude.json'), join(cursor, 'mcp.json')]) {
+      const source = await readFile(path, 'utf8')
+      expect(source).toContain('"other": true')
+      expect(source).toContain('agent-rooms')
+    }
+
+    await runUninstall({ homeDirectory: home, yes: true })
+    await expect(readFile(join(home, '.claude.json'), 'utf8')).resolves.not.toContain('agent-rooms')
+    await expect(readFile(join(cursor, 'mcp.json'), 'utf8')).resolves.not.toContain('agent-rooms')
+  })
+
+  it('preserves commented Codex TOML and leaves preexisting MCP descriptors alone', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    const bin = join(home, '.agent-rooms', 'bin', 'agent-rooms')
+    await mkdir(codex)
+    await writeFile(
+      join(codex, 'config.toml'),
+      `# keep this comment\nmodel = "gpt-5"\n\n[mcp_servers.agent-rooms]\ncommand = ${JSON.stringify(bin)}\nargs = ["mcp"]\n`,
+    )
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as { mcps: unknown[] }
+    expect(manifest.mcps).toEqual([])
+
+    await runUninstall({ homeDirectory: home, yes: true })
+    const config = await readFile(join(codex, 'config.toml'), 'utf8')
+    expect(config).toContain('# keep this comment')
+    expect(config).toContain('[mcp_servers.agent-rooms]')
+  })
+
+  it('rejects conflicting MCP descriptors before install mutations', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    await writeFile(
+      join(codex, 'config.toml'),
+      '[mcp_servers.agent-rooms]\ncommand = "/other/agent-rooms"\nargs = ["mcp"]\n',
+    )
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [{ client: 'codex', path: codex }],
+        shell: '',
+        yes: true,
+        spawn: packageSpawn('1.2.3').spawn,
+        migrate: async (databasePath) => writeFile(databasePath, 'database'),
+      }),
+    ).rejects.toThrow('Refusing to overwrite existing Agent Rooms MCP server')
+    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(readFile(join(codex, 'hooks.json'), 'utf8')).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+  })
+
+  it('preserves a modified owned MCP descriptor during uninstall', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    await mkdir(codex)
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await writeFile(
+      join(codex, 'config.toml'),
+      '[mcp_servers.agent-rooms]\ncommand = "/user/agent-rooms"\nargs = ["mcp"]\n',
+    )
+
+    const result = await runUninstall({ homeDirectory: home, yes: true })
+    expect(result.warnings).toContain(
+      `Preserved modified MCP server: ${join(codex, 'config.toml')}`,
+    )
+    await expect(readFile(join(codex, 'config.toml'), 'utf8')).resolves.toContain(
+      '/user/agent-rooms',
+    )
+  })
+
   it('rolls back newly created config, skill, and profile files after a late failure', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
@@ -607,6 +731,7 @@ describe('installer transaction', () => {
 
     for (const path of [
       join(codex, 'hooks.json'),
+      join(codex, 'config.toml'),
       join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
       join(home, '.zshrc'),
     ]) {

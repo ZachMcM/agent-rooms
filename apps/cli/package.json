@@ -24,12 +24,14 @@
   },
   "dependencies": {
     "@libsql/client": "catalog:",
+    "@modelcontextprotocol/sdk": "catalog:",
     "commander": "15.0.0",
     "express": "catalog:",
     "jsonc-parser": "3.3.1",
     "ora": "8.2.0",
     "picocolors": "1.1.1",
     "semver": "7.8.5",
+    "smol-toml": "1.8.0",
     "zod": "catalog:"
   },
   "devDependencies": {

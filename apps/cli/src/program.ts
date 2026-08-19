@@ -13,6 +13,7 @@ import {
   addListActiveRoomsCommand,
 } from './commands/rooms'
 import { handleCliError } from './errors'
+import { runMcpServer } from './mcp'
 
 const require = createRequire(import.meta.url)
 const packageVersion = (require('../package.json') as { version: string }).version
@@ -36,6 +37,10 @@ export function createProgram(): Command {
   addHooksCommand(program)
   addDashboardCommand(program)
   addInstallCommand(program, packageVersion)
+  program
+    .command('mcp')
+    .description('Runs the Agent Rooms stdio MCP server.')
+    .action(async () => runMcpServer())
 
   return program
 }

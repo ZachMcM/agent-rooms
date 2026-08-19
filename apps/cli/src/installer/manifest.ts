@@ -2,7 +2,7 @@ import { join } from 'node:path'
 
 import { z } from 'zod'
 
-import { configPath, skillPath } from './clients'
+import { configPath, mcpConfigPath, skillPath } from './clients'
 import { readOptionalOwnedFile } from './filesystem'
 import { assertPathWithin, assertSafeAbsolutePath, type ClientRoot } from './preflight'
 import { parseInstallState, type InstallState } from './state'
@@ -27,6 +27,13 @@ const managedFileSchema = z.object({
   hash: sha256Schema,
 })
 
+const managedMcpSchema = z.object({
+  path: z.string(),
+  client: clientSchema,
+  command: z.string(),
+  args: z.array(z.string()),
+})
+
 const manifestSchema = z
   .object({
     version: z.literal(1),
@@ -41,18 +48,21 @@ const manifestSchema = z
     hooks: z.array(managedHookSchema),
     skills: z.array(managedFileSchema),
     profiles: z.array(managedFileSchema),
+    mcps: z.array(managedMcpSchema).optional(),
     backups: z.array(z.string()).optional(),
   })
   .passthrough()
 
 export type ManagedFile = z.infer<typeof managedFileSchema>
 export type ManagedHook = z.infer<typeof managedHookSchema>
+export type ManagedMcp = z.infer<typeof managedMcpSchema>
 export type ManifestRoot = z.infer<typeof manifestRootSchema>
 export type Manifest = InstallState & {
   roots: ManifestRoot[]
   hooks: ManagedHook[]
   skills: ManagedFile[]
   profiles: ManagedFile[]
+  mcps: ManagedMcp[]
   backups?: string[]
 }
 
@@ -95,6 +105,7 @@ function parseManifestSource(source: string, context: ManifestContext): Manifest
     hooks: parsed.hooks,
     skills: parsed.skills,
     profiles: parsed.profiles,
+    mcps: parsed.mcps ?? [],
     ...(parsed.backups === undefined ? {} : { backups: parsed.backups }),
   }
   if (state.package.name !== 'agent-rooms') {
@@ -132,6 +143,13 @@ function validateManifestPaths(manifest: Manifest, context: ManifestContext): vo
   if (manifest.hooks.some((hook) => !configs.has(hook.path))) {
     throw new Error('Install manifest contains invalid hook ownership.')
   }
+  for (const mcp of manifest.mcps) {
+    if (
+      mcp.path !==
+      mcpConfigPath({ client: mcp.client, path: rootForClient(manifest, mcp.client) }, context.home)
+    )
+      throw new Error('Install manifest contains invalid MCP ownership.')
+  }
   if (manifest.skills.some((file) => !skills.has(file.path))) {
     throw new Error('Install manifest contains invalid skill ownership.')
   }
@@ -150,6 +168,12 @@ function validateManifestPaths(manifest: Manifest, context: ManifestContext): vo
   for (const path of manifest.backups ?? []) {
     assertPathWithin(path, backups, 'Manifest backup')
   }
+}
+
+function rootForClient(manifest: Manifest, client: ManifestRoot['client']): string {
+  const root = manifest.roots.find((entry) => entry.client === client)
+  if (!root) throw new Error('Install manifest contains invalid MCP ownership.')
+  return root.path
 }
 
 type ManifestContext = {
