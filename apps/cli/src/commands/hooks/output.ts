@@ -44,6 +44,10 @@ function providerOutput(
     return { decision: 'block', reason: context }
   }
 
+  if (provider === 'codex') {
+    return { hookSpecificOutput: { hookEventName: event, additionalContext: context } }
+  }
+
   return { hookSpecificOutput: { additionalContext: context } }
 }
 

@@ -31,6 +31,24 @@ describe('hook commands', () => {
     )
   })
 
+  it('emits the Codex SessionStart envelope', async () => {
+    vi.spyOn(process, 'stdin', 'get').mockReturnValue(
+      Readable.from(['{"session_id":"session-123"}']) as unknown as typeof process.stdin,
+    )
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    const program = new Command().exitOverride()
+    addHooksCommand(program)
+
+    await program.parseAsync(
+      ['hooks', 'log-conversation-id', '--provider', 'codex', '--event', 'SessionStart'],
+      { from: 'user' },
+    )
+
+    expect(stdout).toHaveBeenCalledWith(
+      '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<conversation-id>codex-session-123</conversation-id>"}}\n',
+    )
+  })
+
   it.each([
     [['--provider', 'opencode'], 'The --provider value must be one of claude, codex, or cursor.'],
   ])('rejects invalid identity before opening the database', async (flags, message) => {

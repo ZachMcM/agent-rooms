@@ -10,16 +10,34 @@ describe('hook output', () => {
     )
   })
 
+  it.each<[string, string]>([
+    [
+      'SessionStart',
+      '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"<conversation-id>codex-session</conversation-id>"}}\n',
+    ],
+    [
+      'UserPromptSubmit',
+      '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"<conversation-id>codex-session</conversation-id>"}}\n',
+    ],
+    [
+      'PostToolUse',
+      '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"<conversation-id>codex-session</conversation-id>"}}\n',
+    ],
+  ])('serializes Codex %s context output', (event, expected) => {
+    expect(
+      serializeHookContext({
+        provider: 'codex',
+        event,
+        context: conversationIdContext('codex-session'),
+      }),
+    ).toBe(expected)
+  })
+
   it.each<[Provider, string, string]>([
     [
       'claude',
       'UserPromptSubmit',
       '{"hookSpecificOutput":{"additionalContext":"<conversation-id>claude-session</conversation-id>"}}\n',
-    ],
-    [
-      'codex',
-      'Stop',
-      '{"decision":"block","reason":"<conversation-id>codex-session</conversation-id>"}\n',
     ],
     [
       'cursor',
@@ -41,9 +59,26 @@ describe('hook output', () => {
     ).toBe(expected)
   })
 
+  it('serializes Codex Stop context output', () => {
+    expect(
+      serializeHookContext({
+        provider: 'codex',
+        event: 'Stop',
+        context: conversationIdContext('codex-session'),
+      }),
+    ).toBe('{"decision":"block","reason":"<conversation-id>codex-session</conversation-id>"}\n')
+  })
+
   it.each(PROVIDERS)('emits an empty object for %s', (provider) => {
     expect(serializeHookContext({ provider })).toBe('{}\n')
   })
+
+  it.each(['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'])(
+    'emits an empty object for Codex %s',
+    (event) => {
+      expect(serializeHookContext({ provider: 'codex', event })).toBe('{}\n')
+    },
+  )
 
   it('escapes the conversation ID in context', () => {
     expect(conversationIdContext('session<&>')).toBe(
