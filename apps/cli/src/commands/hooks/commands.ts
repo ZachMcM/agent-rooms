@@ -21,30 +21,38 @@ function addConsumeNewMessagesCommand(hooks: Command): void {
     .description('Writes unread messages from the active room into agent context.')
     .requiredOption('--provider <provider>', 'Hook transport provider (claude, codex, or cursor)')
     .requiredOption('--event <name>')
+    .option('--include-conversation-id', 'Writes the conversation ID before unread messages.')
     .exitOverride()
-    .action(async (options: { provider: string; event: string }) => {
-      const provider = parseHookProvider(options.provider)
-      const event = parseHookEvent(provider, options.event)
-      const conversation = await resolveHookConversation({
-        provider,
-        stream: process.stdin,
-      })
-      const db = await openDatabase()
-      const roomMessages = await consumeNewMessages(db, {
-        conversationId: conversation.conversationId,
-      })
+    .action(
+      async (options: { provider: string; event: string; includeConversationId?: boolean }) => {
+        const provider = parseHookProvider(options.provider)
+        const event = parseHookEvent(provider, options.event)
+        const conversation = await resolveHookConversation({
+          provider,
+          stream: process.stdin,
+        })
+        const db = await openDatabase()
+        const roomMessages = await consumeNewMessages(db, {
+          conversationId: conversation.conversationId,
+        })
 
-      const output = serializeHookContext({
-        provider: conversation.provider,
-        event,
-        context:
-          roomMessages && roomMessages.messages.length > 0
-            ? messagesContext(roomMessages)
-            : undefined,
-      })
+        const contexts = options.includeConversationId
+          ? [conversationIdContext(conversation.conversationId)]
+          : []
 
-      process.stdout.write(output)
-    })
+        if (roomMessages && roomMessages.messages.length > 0) {
+          contexts.push(messagesContext(roomMessages))
+        }
+
+        const output = serializeHookContext({
+          provider: conversation.provider,
+          event,
+          context: contexts.join('\n'),
+        })
+
+        process.stdout.write(output)
+      },
+    )
 }
 
 function addLogConversationIdCommand(hooks: Command): void {

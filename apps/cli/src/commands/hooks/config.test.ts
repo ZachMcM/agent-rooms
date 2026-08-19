@@ -34,12 +34,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider claude --event SessionStart',
-                },
-                {
-                  type: 'command',
-                  command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event SessionStart',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event SessionStart --include-conversation-id',
                 },
               ],
             },
@@ -98,12 +93,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider codex --event SessionStart',
-                },
-                {
-                  type: 'command',
-                  command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event SessionStart',
+                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event SessionStart --include-conversation-id',
                 },
               ],
             },

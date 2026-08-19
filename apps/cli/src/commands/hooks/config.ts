@@ -8,18 +8,15 @@ export const hookExecutable = join(homedir(), '.agent-rooms', 'bin', 'agent-room
 export function providerHookConfig(executable: string = hookExecutable): Record<string, unknown> {
   const identity = (provider: Provider, event: string) =>
     hookCommand(executable, 'log-conversation-id', provider, event)
-  const delivery = (provider: Provider, event: string) =>
-    hookCommand(executable, 'consume-new-messages', provider, event)
+  const delivery = (provider: Provider, event: string, includeConversationId = false) =>
+    hookCommand(executable, 'consume-new-messages', provider, event, includeConversationId)
 
   return {
     claude: {
       hooks: {
         SessionStart: [
           claudeEntry('startup|resume|clear', identity('claude', 'SessionStart')),
-          claudeEntry('compact', [
-            identity('claude', 'SessionStart'),
-            delivery('claude', 'SessionStart'),
-          ]),
+          claudeEntry('compact', delivery('claude', 'SessionStart', true)),
         ],
         UserPromptSubmit: [claudeEntry(undefined, delivery('claude', 'UserPromptSubmit'))],
         PostToolUse: [claudeEntry(undefined, delivery('claude', 'PostToolUse'))],
@@ -30,10 +27,7 @@ export function providerHookConfig(executable: string = hookExecutable): Record<
       hooks: {
         SessionStart: [
           codexEntry('startup|resume|clear', identity('codex', 'SessionStart')),
-          codexEntry('compact', [
-            identity('codex', 'SessionStart'),
-            delivery('codex', 'SessionStart'),
-          ]),
+          codexEntry('compact', delivery('codex', 'SessionStart', true)),
         ],
         UserPromptSubmit: [codexEntry(undefined, delivery('codex', 'UserPromptSubmit'))],
         PostToolUse: [codexEntry(undefined, delivery('codex', 'PostToolUse'))],
@@ -55,8 +49,9 @@ function hookCommand(
   command: 'log-conversation-id' | 'consume-new-messages',
   provider: Provider,
   event: string,
+  includeConversationId = false,
 ): string {
-  return `${shellQuote(executable)} hooks ${command} --provider ${provider} --event ${event}`
+  return `${shellQuote(executable)} hooks ${command} --provider ${provider} --event ${event}${includeConversationId ? ' --include-conversation-id' : ''}`
 }
 
 function shellQuote(value: string): string {
