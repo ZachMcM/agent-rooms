@@ -18,6 +18,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { providerHookConfig } from '../commands/hooks'
 import { parseJsonc } from './jsonc'
+import { detectExistingClientRoots } from './preflight'
 import { runInstall, runUninstall } from './transaction'
 
 const directories: string[] = []
@@ -42,6 +43,10 @@ describe('installer transaction', () => {
     })
 
     expect(result.changes.map((change) => change.action)).toContain('patch codex hooks')
+    expect(result.changes).toContainEqual({
+      path: join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
+      action: 'install codex skill',
+    })
     await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
@@ -82,12 +87,20 @@ describe('installer transaction', () => {
     ])
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('consume-new-messages')
+    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    await expect(readFile(skill, 'utf8')).resolves.toBe('skill')
+    await expect(lstat(join(codex, 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
     expect(await readFile(join(home, '.zshrc'), 'utf8')).toContain('>>> agent-rooms >>>')
     const manifest = JSON.parse(
       await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
-    ) as { previous?: string; backups?: string[] }
+    ) as {
+      previous?: string
+      backups?: string[]
+      skills: Array<{ path: string }>
+    }
     expect(manifest.previous).toBeUndefined()
     expect(manifest.backups).toBeUndefined()
+    expect(manifest.skills).toEqual([{ path: skill, hash: expect.any(String) }])
     await expect(lstat(join(home, '.agent-rooms', 'backups'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
@@ -145,6 +158,49 @@ describe('installer transaction', () => {
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).not.toContain('consume-new-messages')
     expect(await readFile(join(home, '.zshrc'), 'utf8')).not.toContain('>>> agent-rooms >>>')
+    await expect(lstat(skill)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.agents', 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(readFile(join(home, '.agent-rooms', 'db.sqlite'), 'utf8')).resolves.toBe(
+      'database',
+    )
+  })
+
+  it('keeps a Codex skill under HOME when CODEX_HOME is overridden', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, 'custom-codex')
+    await mkdir(codex)
+    const roots = await detectExistingClientRoots({ CODEX_HOME: codex }, home)
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots,
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    await expect(readFile(join(codex, 'hooks.json'), 'utf8')).resolves.toContain(
+      'consume-new-messages',
+    )
+    await expect(
+      readFile(join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'), 'utf8'),
+    ).resolves.toBe('skill')
+    await expect(lstat(join(codex, 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
+
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as {
+      roots: Array<{ client: string; path: string; config: string }>
+      skills: Array<{ path: string }>
+    }
+    expect(manifest.roots).toEqual([
+      { client: 'codex', path: codex, config: join(codex, 'hooks.json') },
+    ])
+    expect(manifest.skills.map(({ path }) => path)).toEqual([
+      join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
+    ])
   })
 
   it('uses a validated local tarball as the final npm install argument', async () => {
@@ -550,7 +606,7 @@ describe('installer transaction', () => {
 
     for (const path of [
       join(codex, 'hooks.json'),
-      join(codex, 'skills', 'agent-rooms', 'SKILL.md'),
+      join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
       join(home, '.zshrc'),
     ]) {
       await expect(lstat(path)).rejects.toMatchObject({ code: 'ENOENT' })
@@ -956,7 +1012,7 @@ describe('installer transaction', () => {
   it('preserves modified skills and removes the managed block from modified profiles on uninstall', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
-    const skill = join(codex, 'skills', 'agent-rooms', 'SKILL.md')
+    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
     const profile = join(home, '.zshrc')
     await mkdir(codex)
     const { spawn } = packageSpawn('1.2.3')
@@ -986,6 +1042,73 @@ describe('installer transaction', () => {
     await expect(readFile(skill, 'utf8')).resolves.toBe('user modified skill')
     await expect(readFile(profile, 'utf8')).resolves.toContain('export EDITOR=vim\n')
     await expect(readFile(profile, 'utf8')).resolves.not.toContain('>>> agent-rooms >>>')
+  })
+
+  it('refuses to overwrite a modified canonical Codex skill before integration mutation', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    await mkdir(codex)
+    await mkdir(dirname(skill), { recursive: true })
+    await writeFile(skill, 'user skill')
+    const { calls, spawn } = packageSpawn('1.2.3')
+    let migrated = false
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [{ client: 'codex', path: codex }],
+        shell: '',
+        yes: true,
+        spawn,
+        migrate: async () => {
+          migrated = true
+        },
+      }),
+    ).rejects.toThrow(`Refusing to overwrite modified skill: ${skill}.`)
+
+    expect(migrated).toBe(false)
+    await expect(readFile(skill, 'utf8')).resolves.toBe('user skill')
+    await expect(lstat(join(codex, 'hooks.json'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(1)
+  })
+
+  it('rejects noncanonical Codex skill ownership in the manifest before uninstall mutation', async () => {
+    const home = await temporaryHome()
+    const codex = join(home, '.codex')
+    const installRoot = join(home, '.agent-rooms')
+    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    await mkdir(codex)
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'codex', path: codex }],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    const manifestPath = join(installRoot, 'install-state.json')
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
+      skills: Array<{ path: string; hash: string }>
+    }
+    manifest.skills[0]!.path = join(home, '.agents', 'skills', 'other', 'SKILL.md')
+    await writeFile(manifestPath, JSON.stringify(manifest))
+
+    await expect(runUninstall({ homeDirectory: home, yes: true })).rejects.toThrow(
+      'invalid skill ownership',
+    )
+    await expect(readFile(skill, 'utf8')).resolves.toBe('skill')
+    await expect(readFile(join(codex, 'hooks.json'), 'utf8')).resolves.toContain(
+      'consume-new-messages',
+    )
+    await expect(lstat(join(installRoot, 'current'))).resolves.toBeDefined()
   })
 
   it('shows the complete plan in one interactive confirmation', async () => {

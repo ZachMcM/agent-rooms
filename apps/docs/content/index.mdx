@@ -29,9 +29,11 @@ npx agent-rooms@latest install
 bootstrap paths. Interactive installs preview all changes and ask once; non-interactive installs
 require `--yes`. `--dry-run` previews without writing.
 
-The installer configures only existing user-level roots for Claude Code, Codex, and Cursor.
-Environment overrides are respected for `CLAUDE_CONFIG_DIR` and `CODEX_HOME`. Project, managed,
-enterprise, cloud, and system-level roots are out of scope.
+The installer configures hooks only in existing user-level roots for Claude Code, Codex, and
+Cursor. `CLAUDE_CONFIG_DIR` and `CODEX_HOME` override those configuration roots. The Codex skill
+installs at `$HOME/.agents/skills/agent-rooms/SKILL.md` regardless of `CODEX_HOME`; Claude Code and
+Cursor skills follow their configuration roots. Project, managed, enterprise, cloud, and
+system-level roots are out of scope.
 Grok, OpenCode, Windows, and automatic project-hook installation are deferred.
 
 ## Dashboard

@@ -64,7 +64,7 @@ export async function patchClients(
       await writeFileAtomically(path, patched.content, context.home)
       hooks.push(...patched.hooks)
 
-      const skill = skillPath(root)
+      const skill = skillPath(root, context.home)
       const current = await readOptionalOwnedFile(skill, context.home)
       if (current !== undefined && sha256(current) !== sha256(skillContent)) {
         throw new Error(`Refusing to overwrite modified skill: ${skill}.`)
@@ -130,8 +130,12 @@ export function configPath(root: Pick<ClientRoot, 'client' | 'path'>): string {
   )
 }
 
-export function skillPath(root: Pick<ClientRoot, 'client' | 'path'>): string {
-  return join(root.path, 'skills', skillName, 'SKILL.md')
+export function skillPath(
+  root: Pick<ClientRoot, 'client' | 'path'>,
+  homeDirectory: string,
+): string {
+  const skillRoot = root.client === 'codex' ? join(homeDirectory, '.agents') : root.path
+  return join(skillRoot, 'skills', skillName, 'SKILL.md')
 }
 
 export function profilePath(context: {
@@ -195,13 +199,14 @@ export async function preflightTargets(context: ClientContext, skill?: string): 
   for (const root of context.roots) {
     const config = await readOptionalOwnedFile(configPath(root), context.home)
     if (config !== undefined) patchHooks(config, root.client, context.bin, configPath(root))
-    const existingSkill = await readOptionalOwnedFile(skillPath(root), context.home)
+    const path = skillPath(root, context.home)
+    const existingSkill = await readOptionalOwnedFile(path, context.home)
     if (
       skill !== undefined &&
       existingSkill !== undefined &&
       sha256(existingSkill) !== sha256(skill)
     ) {
-      throw new Error(`Refusing to overwrite modified skill: ${skillPath(root)}.`)
+      throw new Error(`Refusing to overwrite modified skill: ${path}.`)
     }
   }
   const profile = profilePath(context)
@@ -290,7 +295,9 @@ function quoteFish(value: string): string {
 }
 
 async function managedSkills(context: ClientContext): Promise<ManagedFile[]> {
-  return Promise.all(context.roots.map(async (root) => managedFile(skillPath(root), context.home)))
+  return Promise.all(
+    context.roots.map(async (root) => managedFile(skillPath(root, context.home), context.home)),
+  )
 }
 
 async function managedProfiles(context: ClientContext): Promise<ManagedFile[]> {

@@ -285,7 +285,7 @@ async function installPlan(context: Context, version: string): Promise<Change[]>
   ]
   for (const root of context.roots) {
     changes.push({ path: configPath(root), action: `patch ${root.client} hooks` })
-    changes.push({ path: skillPath(root), action: `install ${root.client} skill` })
+    changes.push({ path: skillPath(root, context.home), action: `install ${root.client} skill` })
   }
   const profile = profilePath(context)
   if (profile) changes.push({ path: profile, action: 'add PATH block' })

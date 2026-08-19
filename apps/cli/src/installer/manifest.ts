@@ -126,7 +126,7 @@ function validateManifestPaths(manifest: Manifest, context: ManifestContext): vo
     if (root.config !== expectedConfig)
       throw new Error('Install manifest contains an invalid config path.')
     configs.add(expectedConfig)
-    skills.add(skillPath(root))
+    skills.add(skillPath(root, context.home))
   }
 
   if (manifest.hooks.some((hook) => !configs.has(hook.path))) {

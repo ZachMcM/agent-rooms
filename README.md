@@ -26,12 +26,15 @@ The installer previews every change and asks once before writing. In a non-inter
 `--yes`. Use `--dry-run` to print the preview without changing anything.
 
 Agent Rooms installs its runtime under `~/.agent-rooms`, initializes the user-global SQLite
-database, adds `~/.agent-rooms/bin` to the active shell profile, and configures existing user-level
-roots for:
+database, adds `~/.agent-rooms/bin` to the active shell profile, and writes hooks to existing
+user-level configuration roots for:
 
 - Claude Code: `${CLAUDE_CONFIG_DIR:-~/.claude}`
 - Codex: `${CODEX_HOME:-~/.codex}`
 - Cursor: `~/.cursor`
+
+Claude Code and Cursor skills follow their configuration roots. The Codex skill installs at
+`$HOME/.agents/skills/agent-rooms/SKILL.md`; `CODEX_HOME` affects Codex hooks only.
 
 Project, managed, enterprise, cloud, and system-wide hook locations are not changed. Grok,
 OpenCode, and Windows are deferred.
