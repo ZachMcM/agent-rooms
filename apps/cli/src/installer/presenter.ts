@@ -54,6 +54,8 @@ export function createInstallerPresenter(): Presenter {
       spinner.stop()
       if (dryRun) {
         status(`Previewed ${result.changes.length} changes; no files were modified.`)
+        for (const change of result.changes)
+          process.stdout.write(`  - ${change.action}: ${change.path}\n`)
       } else {
         status(`Installed Agent Rooms ${result.version}.`)
         const profile = result.changes.find((change) => change.action === 'add PATH block')?.path
@@ -62,16 +64,28 @@ export function createInstallerPresenter(): Presenter {
           process.stdout.write(
             `Run source ${shellQuote(profile)} to use agent-rooms in this terminal, or open a new terminal.\n`,
           )
+        } else {
+          process.stdout.write('Agent Rooms is ready to use.\n')
         }
       }
+      if (result.warnings.length)
+        process.stdout.write(
+          `Completed with ${result.warnings.length} warning${result.warnings.length === 1 ? '' : 's'}.\n`,
+        )
       for (const message of result.warnings) warning(message)
     },
     uninstall(result, purgeData) {
       spinner.stop()
-      status('Removed Agent Rooms runtime and integrations.')
+      status(`Removed ${result.changes.length} managed changes.`)
       process.stdout.write(
         `${purgeData ? 'Removed Agent Rooms data.' : 'Kept Agent Rooms data.'}\n`,
       )
+      if (!purgeData)
+        process.stdout.write('To remove it later, run agent-rooms uninstall --yes --purge-data.\n')
+      if (result.warnings.length)
+        process.stdout.write(
+          `Completed with ${result.warnings.length} warning${result.warnings.length === 1 ? '' : 's'}.\n`,
+        )
       for (const message of result.warnings) warning(message)
     },
   }

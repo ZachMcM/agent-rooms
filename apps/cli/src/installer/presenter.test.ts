@@ -51,7 +51,11 @@ describe('installer presenter', () => {
       false,
     )
 
-    expect(stdout).toEqual(['✔ Installed Agent Rooms 1.2.3.\n'])
+    expect(stdout).toEqual([
+      '✔ Installed Agent Rooms 1.2.3.\n',
+      'Agent Rooms is ready to use.\n',
+      'Completed with 1 warning.\n',
+    ])
     expect(stderr).toEqual(['Warning: Add /tmp/bin to PATH manually.\n'])
     expect(`${stdout.join('')}${stderr.join('')}`).not.toContain('\u001B')
   })
@@ -92,5 +96,40 @@ describe('installer presenter', () => {
     process.env.NO_COLOR = '1'
     createInstallerPresenter().start('Installing Agent Rooms...')
     expect(ora).toHaveBeenCalledWith(expect.objectContaining({ isEnabled: false }))
+  })
+
+  it('lists dry-run changes and uninstall data handling', () => {
+    const stdout: string[] = []
+    Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: false })
+    Object.defineProperty(process.stderr, 'isTTY', { configurable: true, value: false })
+    process.stdout.write = ((message: string | Uint8Array) => {
+      stdout.push(String(message))
+      return true
+    }) as typeof process.stdout.write
+
+    const presenter = createInstallerPresenter()
+    presenter.install(
+      {
+        version: '1.2.3',
+        changes: [{ action: 'install verified runtime', path: '/tmp/runtime/1.2.3' }],
+        warnings: [],
+      },
+      true,
+    )
+    presenter.uninstall(
+      {
+        changes: [{ action: 'remove runtime and manifest', path: '/tmp/agent-rooms' }],
+        warnings: [],
+      },
+      false,
+    )
+
+    expect(stdout).toEqual([
+      '✔ Previewed 1 changes; no files were modified.\n',
+      '  - install verified runtime: /tmp/runtime/1.2.3\n',
+      '✔ Removed 1 managed changes.\n',
+      'Kept Agent Rooms data.\n',
+      'To remove it later, run agent-rooms uninstall --yes --purge-data.\n',
+    ])
   })
 })
