@@ -16,7 +16,10 @@ export function providerHookConfig(executable: string = hookExecutable): Record<
       hooks: {
         SessionStart: [
           claudeEntry('startup|resume|clear', identity('claude', 'SessionStart')),
-          claudeEntry('compact', delivery('claude', 'SessionStart')),
+          claudeEntry('compact', [
+            identity('claude', 'SessionStart'),
+            delivery('claude', 'SessionStart'),
+          ]),
         ],
         UserPromptSubmit: [claudeEntry(undefined, delivery('claude', 'UserPromptSubmit'))],
         PostToolUse: [claudeEntry(undefined, delivery('claude', 'PostToolUse'))],
@@ -27,7 +30,10 @@ export function providerHookConfig(executable: string = hookExecutable): Record<
       hooks: {
         SessionStart: [
           codexEntry('startup|resume|clear', identity('codex', 'SessionStart')),
-          codexEntry('compact', delivery('codex', 'SessionStart')),
+          codexEntry('compact', [
+            identity('codex', 'SessionStart'),
+            delivery('codex', 'SessionStart'),
+          ]),
         ],
         UserPromptSubmit: [codexEntry(undefined, delivery('codex', 'UserPromptSubmit'))],
         PostToolUse: [codexEntry(undefined, delivery('codex', 'PostToolUse'))],
@@ -57,12 +63,30 @@ function shellQuote(value: string): string {
   return /^[A-Za-z0-9_./:-]+$/.test(value) ? value : `'${value.replaceAll("'", `'"'"'`)}'`
 }
 
-function claudeEntry(matcher: string | undefined, command: string): Record<string, unknown> {
-  return { ...(matcher ? { matcher } : {}), hooks: [{ type: 'command', command }] }
+function claudeEntry(
+  matcher: string | undefined,
+  command: string | string[],
+): Record<string, unknown> {
+  return {
+    ...(matcher ? { matcher } : {}),
+    hooks: (Array.isArray(command) ? command : [command]).map((command) => ({
+      type: 'command',
+      command,
+    })),
+  }
 }
 
-function codexEntry(matcher: string | undefined, command: string): Record<string, unknown> {
-  return { ...(matcher ? { matcher } : {}), hooks: [{ type: 'command', command }] }
+function codexEntry(
+  matcher: string | undefined,
+  command: string | string[],
+): Record<string, unknown> {
+  return {
+    ...(matcher ? { matcher } : {}),
+    hooks: (Array.isArray(command) ? command : [command]).map((command) => ({
+      type: 'command',
+      command,
+    })),
+  }
 }
 
 function cursorEntry(command: string): Record<string, unknown> {

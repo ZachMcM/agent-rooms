@@ -142,6 +142,36 @@ describe('JSONC patches', () => {
     expect(forced.match(/"command": "same"/g)).toHaveLength(2)
   })
 
+  it('replaces a managed hook without retaining its blank line', () => {
+    const source = `{
+  "hooks": {
+    "SessionStart": [
+      { "command": "old" },
+    ],
+  },
+}
+`
+    const result = reconcileJsoncObjectArray(
+      source,
+      'hooks',
+      'SessionStart',
+      [{ command: 'old' }],
+      [],
+      [{ command: 'new' }],
+    )
+
+    expect(result).toBe(`{
+  "hooks": {
+    "SessionStart": [
+      {
+        "command": "new"
+      }
+    ],
+  },
+}
+`)
+  })
+
   it('creates missing arrays and rejects non-array hook events', () => {
     expect(
       reconcileJsoncObjectArray('{\n}\n', 'hooks', 'UserPromptSubmit', [], ['added']),

@@ -16,16 +16,15 @@ function shellQuote(value: string): string {
 }
 
 export function createInstallerPresenter(): Presenter {
-  const enabled =
-    process.stdout.isTTY === true &&
-    process.stderr.isTTY === true &&
-    !process.env.NO_COLOR &&
-    !process.env.CI
-  const colors = pc.createColors(enabled)
+  const interactive =
+    process.stdout.isTTY === true && process.stderr.isTTY === true && !process.env.CI
+  const colors = pc.createColors(
+    interactive && !process.env.NO_COLOR && process.env.TERM !== 'dumb',
+  )
   const spinner = ora({
-    color: 'cyan',
+    color: colors.isColorSupported ? 'cyan' : false,
     discardStdin: false,
-    isEnabled: enabled,
+    isEnabled: interactive,
     spinner: 'dots',
     stream: process.stderr,
   })
@@ -36,7 +35,7 @@ export function createInstallerPresenter(): Presenter {
   }
 
   function warning(message: string): void {
-    process.stderr.write(`${enabled ? colors.yellow('!') : 'Warning:'} ${message}\n`)
+    process.stderr.write(`${interactive ? colors.yellow('!') : 'Warning:'} ${message}\n`)
   }
 
   return {

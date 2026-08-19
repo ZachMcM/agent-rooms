@@ -271,7 +271,9 @@ function removeArrayIndex(source: string, path: Array<string | number>, index: n
   const close = array.offset + array.length - 1
   const commaAfter = findToken(source, node.offset + node.length, next?.offset ?? close, commaToken)
   if (commaAfter !== undefined) {
-    return splice(source, node.offset, commaAfter + 1 - node.offset, '')
+    const start = whitespaceBeforeNode(source, node)
+    const end = lineBreakAfter(source, commaAfter + 1)
+    return splice(source, start, end - start, '')
   }
   const previous = children[index - 1]
   if (previous) {
@@ -286,6 +288,17 @@ function removeArrayIndex(source: string, path: Array<string | number>, index: n
     }
   }
   return splice(source, node.offset, node.length, '')
+}
+
+function whitespaceBeforeNode(source: string, node: Node): number {
+  const start = lineStart(source, node.offset)
+  return /^[ \t]*$/.test(source.slice(start, node.offset)) ? start : node.offset
+}
+
+function lineBreakAfter(source: string, offset: number): number {
+  const lineEnd = source.indexOf('\n', offset)
+  if (lineEnd === -1 || !/^[ \t\r]*$/.test(source.slice(offset, lineEnd))) return offset
+  return lineEnd + 1
 }
 
 function findProperty(object: Node, key: string): Node | undefined {

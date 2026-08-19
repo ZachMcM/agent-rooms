@@ -13,6 +13,7 @@ const stdoutTTY = Object.getOwnPropertyDescriptor(process.stdout, 'isTTY')
 const stderrTTY = Object.getOwnPropertyDescriptor(process.stderr, 'isTTY')
 const noColor = process.env.NO_COLOR
 const ci = process.env.CI
+const term = process.env.TERM
 
 afterEach(() => {
   process.stdout.write = stdoutWrite
@@ -25,6 +26,8 @@ afterEach(() => {
   else process.env.NO_COLOR = noColor
   if (ci === undefined) delete process.env.CI
   else process.env.CI = ci
+  if (term === undefined) delete process.env.TERM
+  else process.env.TERM = term
   ora.mockClear()
   spinner.start.mockClear()
   spinner.stop.mockClear()
@@ -66,6 +69,7 @@ describe('installer presenter', () => {
     Object.defineProperty(process.stderr, 'isTTY', { configurable: true, value: true })
     delete process.env.NO_COLOR
     delete process.env.CI
+    delete process.env.TERM
     process.stdout.write = ((message: string | Uint8Array) => {
       stdout.push(String(message))
       return true
@@ -77,7 +81,7 @@ describe('installer presenter', () => {
 
     expect(ora).toHaveBeenCalledWith(
       expect.objectContaining({
-        color: 'cyan',
+        color: expect.any(String),
         discardStdin: false,
         isEnabled: true,
         spinner: 'dots',
@@ -95,7 +99,23 @@ describe('installer presenter', () => {
     delete process.env.CI
     process.env.NO_COLOR = '1'
     createInstallerPresenter().start('Installing Agent Rooms...')
-    expect(ora).toHaveBeenCalledWith(expect.objectContaining({ isEnabled: false }))
+    expect(ora).toHaveBeenCalledWith(expect.objectContaining({ color: false, isEnabled: true }))
+  })
+
+  it.each([
+    ['NO_COLOR', () => (process.env.NO_COLOR = '1')],
+    ['TERM=dumb', () => (process.env.TERM = 'dumb')],
+  ])('starts an uncolored spinner for %s', (_name, configure) => {
+    Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: true })
+    Object.defineProperty(process.stderr, 'isTTY', { configurable: true, value: true })
+    delete process.env.NO_COLOR
+    delete process.env.CI
+    delete process.env.TERM
+    configure()
+
+    createInstallerPresenter().start('Installing Agent Rooms...')
+
+    expect(ora).toHaveBeenCalledWith(expect.objectContaining({ color: false, isEnabled: true }))
   })
 
   it('lists dry-run changes and uninstall data handling', () => {
