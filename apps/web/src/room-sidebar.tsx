@@ -11,7 +11,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@agent-rooms/ui-library/components/dropdown-menu'
-import { Kbd, KbdGroup } from '@agent-rooms/ui-library/components/kbd'
+import { Kbd } from '@agent-rooms/ui-library/components/kbd'
 import {
   Sidebar,
   SidebarContent,
@@ -118,10 +118,7 @@ export function RoomSidebar() {
             <Search aria-hidden="true" />
             Search...
           </div>
-          <KbdGroup>
-            <Kbd>⌘</Kbd>
-            <Kbd>K</Kbd>
-          </KbdGroup>
+          <Kbd>⌘K</Kbd>
         </Button>
         <RoomSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
       </SidebarHeader>
