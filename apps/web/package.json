@@ -20,7 +20,8 @@
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-icons": "catalog:"
+    "react-icons": "catalog:",
+    "react-markdown": "catalog:"
   },
   "devDependencies": {
     "@agent-rooms/typescript-config": "workspace:*",

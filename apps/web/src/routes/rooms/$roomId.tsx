@@ -18,6 +18,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useLocation } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { RiCornerDownRightLine } from 'react-icons/ri'
+import ReactMarkdown from 'react-markdown'
 
 import type { RoomDetail } from '../../api'
 import { roomDetailQueryOptions } from '../../queries'
@@ -142,12 +143,19 @@ function MessageItem({
         {message.kind === 'answer' && message.replyTo ? (
           <div className="bg-secondary text-muted-foreground mt-2 flex items-start gap-2 rounded-md px-2.5 py-1.5 text-xs">
             <RiCornerDownRightLine className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 wrap-anywhere whitespace-pre-wrap">
-              answers #{message.replyTo.id} {message.replyTo.body}
-            </span>
+            <Link
+              to="/rooms/$roomId"
+              params={{ roomId }}
+              hash={messageFragment(message.replyTo.id)}
+              hashScrollIntoView={false}
+              resetScroll={false}
+              className="hover:text-foreground focus-visible:text-foreground min-w-0 wrap-anywhere underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
+            >
+              answers #{message.replyTo.id}: {message.replyTo.body}
+            </Link>
           </div>
         ) : null}
-        <p className="mt-2 min-w-0 text-sm leading-6 wrap-anywhere whitespace-pre-wrap">
+        <div className="message-content [&_a]:text-foreground [&_code]:bg-secondary [&_pre]:bg-secondary/70 mt-2 min-w-0 text-sm leading-6 wrap-anywhere [&_a]:underline-offset-2 [&_a:hover]:underline [&_code]:rounded-sm [&_code]:px-1 [&_code]:py-px [&_code]:font-mono [&_code]:text-[0.85em] [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_p:last-child]:mb-0 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:px-3 [&_pre]:py-2 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-[0.9em] [&_pre_code]:leading-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&>p:first-of-type]:m-0 [&>p:first-of-type]:inline">
           <Link
             to="/rooms/$roomId"
             params={{ roomId }}
@@ -157,10 +165,10 @@ function MessageItem({
             aria-label={`Link to message ${message.id}`}
             className="text-muted-foreground hover:text-foreground focus-visible:text-foreground rounded-sm underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
           >
-            #{message.id}
+            #{message.id}:
           </Link>{' '}
-          {message.body}
-        </p>
+          <ReactMarkdown>{message.body}</ReactMarkdown>
+        </div>
       </div>
     </li>
   )

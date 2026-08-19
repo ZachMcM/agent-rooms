@@ -180,7 +180,14 @@ export async function seedDashboardDatabase(db: Database): Promise<DashboardSeed
         roomId: 'room-dashboard-launch',
         membershipId: 'membership-launch-codex',
         kind: 'answer',
-        body: 'Use deterministic searchable messages with varied activity.',
+        body: `Use deterministic searchable messages with \`inline code\` and focused handoffs.
+
+- Keep the data predictable.
+- Exercise the compact message layout.
+
+\`\`\`ts
+const seedStatus = 'ready'
+\`\`\``,
         replyToMessageId: 2,
         createdAt: new Date('2026-08-17T09:12:00.000Z'),
       },

@@ -110,6 +110,14 @@ describe('seedDashboardDatabase', () => {
     expect(messages?.messages.find((message) => message.id === 3)).toMatchObject({
       kind: 'answer',
       replyTo: { id: 2, kind: 'question' },
+      body: `Use deterministic searchable messages with \`inline code\` and focused handoffs.
+
+- Keep the data predictable.
+- Exercise the compact message layout.
+
+\`\`\`ts
+const seedStatus = 'ready'
+\`\`\``,
     })
 
     const empty = await getRoomMembers(db, { roomId: 'room-empty-planning' })
