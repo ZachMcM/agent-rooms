@@ -12,9 +12,10 @@ import {
 } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { PassThrough } from 'node:stream'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { providerHookConfig } from '../commands/hooks'
 import { parseJsonc } from './jsonc'
@@ -1133,6 +1134,64 @@ describe('installer transaction', () => {
     for (const change of result.changes)
       expect(message).toContain(`${change.action}: ${change.path}`)
     expect(message).toMatch(/Continue\?$/)
+  })
+
+  it('pauses stdin after an interactive cancellation', async () => {
+    const home = await temporaryHome()
+    const stdin = new PassThrough()
+    Object.defineProperty(stdin, 'isTTY', { value: true })
+    const stdinDescriptor = Object.getOwnPropertyDescriptor(process, 'stdin')
+    Object.defineProperty(process, 'stdin', { configurable: true, value: stdin })
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation((message) => {
+      if (String(message).includes('Continue? [y/N] ')) stdin.write('n\n')
+      return true
+    })
+
+    try {
+      await expect(
+        runInstall({
+          version: '1.2.3',
+          homeDirectory: home,
+          roots: [],
+          shell: '',
+          spawn: packageSpawn('1.2.3').spawn,
+          migrate: async (databasePath) => writeFile(databasePath, 'database'),
+        }),
+      ).rejects.toThrow('Installation cancelled.')
+      expect(stdin.isPaused()).toBe(true)
+    } finally {
+      stdout.mockRestore()
+      if (stdinDescriptor) Object.defineProperty(process, 'stdin', stdinDescriptor)
+    }
+  })
+
+  it('pauses stdin after an interactive confirmation', async () => {
+    const home = await temporaryHome()
+    const stdin = new PassThrough()
+    Object.defineProperty(stdin, 'isTTY', { value: true })
+    const stdinDescriptor = Object.getOwnPropertyDescriptor(process, 'stdin')
+    Object.defineProperty(process, 'stdin', { configurable: true, value: stdin })
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation((message) => {
+      if (String(message).includes('Continue? [y/N] ')) stdin.write('y\n')
+      return true
+    })
+
+    try {
+      await expect(
+        runInstall({
+          version: '1.2.3',
+          homeDirectory: home,
+          roots: [],
+          shell: '',
+          spawn: packageSpawn('1.2.3').spawn,
+          migrate: async (databasePath) => writeFile(databasePath, 'database'),
+        }),
+      ).resolves.toMatchObject({ version: '1.2.3' })
+      expect(stdin.isPaused()).toBe(true)
+    } finally {
+      stdout.mockRestore()
+      if (stdinDescriptor) Object.defineProperty(process, 'stdin', stdinDescriptor)
+    }
   })
 
   it('uninstalls from the manifest without detecting newly malformed client roots', async () => {
