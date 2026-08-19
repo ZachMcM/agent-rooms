@@ -1,41 +1,59 @@
 import { CommanderError } from 'commander'
 
-import { writeError } from './output'
+import { writeError, writeHumanError } from './output'
 
 export class CliError extends Error {
   readonly code: string
   readonly exitCode: number
   readonly retryable: boolean
+  readonly output: 'json' | 'human'
 
-  constructor(code: string, message: string, exitCode: number, retryable: boolean = false) {
+  constructor(
+    code: string,
+    message: string,
+    exitCode: number,
+    retryable: boolean = false,
+    output: 'json' | 'human' = 'json',
+  ) {
     super(message)
     this.name = 'CliError'
     this.code = code
     this.exitCode = exitCode
     this.retryable = retryable
+    this.output = output
   }
 }
 
-export function handleCliError(error: unknown): number {
+export function handleCliError(error: unknown, human: boolean = false): number {
   if (isSuccessfulCommanderExit(error)) {
     return 0
   }
 
   if (error instanceof CommanderError || isCommanderError(error)) {
+    if (human) {
+      writeHumanError(error.message)
+      return 2
+    }
     writeError({ code: 'invalid_arguments', message: error.message, retryable: false })
     return 2
   }
 
   if (error instanceof CliError) {
+    if (error.output === 'human') {
+      writeHumanError(error.message)
+      return error.exitCode
+    }
     writeError({ code: error.code, message: error.message, retryable: error.retryable })
     return error.exitCode
   }
 
-  writeError({
-    code: 'internal_error',
-    message: 'An unexpected error occurred.',
-    retryable: false,
-  })
+  if (human) writeHumanError('An unexpected error occurred.')
+  else
+    writeError({
+      code: 'internal_error',
+      message: 'An unexpected error occurred.',
+      retryable: false,
+    })
   return 1
 }
 

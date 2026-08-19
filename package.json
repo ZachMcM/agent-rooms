@@ -24,8 +24,10 @@
     "@agent-rooms/oxfmt-config": "workspace:*",
     "@agent-rooms/oxlint-config": "workspace:*",
     "@agent-rooms/typescript-config": "workspace:*",
+    "ora": "8.2.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "picocolors": "1.1.1",
     "turbo": "catalog:",
     "typescript": "catalog:"
   },

@@ -28,6 +28,15 @@ describe('handleCliError', () => {
     ])
   })
 
+  it('writes plain install errors when JSON is disabled', () => {
+    const output = captureStderr()
+
+    expect(
+      handleCliError(new CliError('install_failed', 'Installation failed.', 1, false, 'human')),
+    ).toBe(1)
+    expect(output).toEqual(['Error: Installation failed.\n'])
+  })
+
   it('maps invalid Commander usage to invalid_arguments', () => {
     const output = captureStderr()
 
@@ -39,6 +48,18 @@ describe('handleCliError', () => {
     expect(output).toEqual([
       '{"ok":false,"error":{"code":"invalid_arguments","message":"error: unknown option \'--unknown\'","retryable":false}}\n',
     ])
+  })
+
+  it('writes plain command usage errors for lifecycle commands', () => {
+    const output = captureStderr()
+
+    expect(
+      handleCliError(
+        new CommanderError(2, 'commander.unknownOption', "error: unknown option '--unknown'"),
+        true,
+      ),
+    ).toBe(2)
+    expect(output).toEqual(["Error: error: unknown option '--unknown'\n"])
   })
 
   it('returns zero without error output for successful Commander exits', () => {

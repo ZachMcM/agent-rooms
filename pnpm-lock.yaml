@@ -42,6 +42,9 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: 6.0.5
       version: 6.0.5
+    cmdk:
+      specifier: 1.1.1
+      version: 1.1.1
     drizzle-kit:
       specifier: 1.0.0-rc.4
       version: 1.0.0-rc.4
@@ -123,12 +126,18 @@ importers:
       '@agent-rooms/typescript-config':
         specifier: workspace:*
         version: link:packages/typescript-config
+      ora:
+        specifier: 8.2.0
+        version: 8.2.0
       oxfmt:
         specifier: 'catalog:'
         version: 0.62.0
       oxlint:
         specifier: 'catalog:'
         version: 1.77.0
+      picocolors:
+        specifier: 1.1.1
+        version: 1.1.1
       turbo:
         specifier: 'catalog:'
         version: 2.10.9
@@ -190,6 +199,12 @@ importers:
       jsonc-parser:
         specifier: 3.3.1
         version: 3.3.1
+      ora:
+        specifier: 8.2.0
+        version: 8.2.0
+      picocolors:
+        specifier: 1.1.1
+        version: 1.1.1
       semver:
         specifier: 7.8.5
         version: 7.8.5

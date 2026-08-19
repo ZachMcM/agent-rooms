@@ -41,10 +41,11 @@ export function createProgram(): Command {
 }
 
 export async function runCli(argv: string[]): Promise<number> {
+  const human = (argv[0] === 'install' || argv[0] === 'uninstall') && !argv.includes('--json')
   try {
     await createProgram().parseAsync(argv, { from: 'user' })
     return 0
   } catch (error) {
-    return handleCliError(error)
+    return handleCliError(error, human)
   }
 }

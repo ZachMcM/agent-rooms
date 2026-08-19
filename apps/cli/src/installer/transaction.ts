@@ -68,6 +68,8 @@ export type TransactionDependencies = {
   isTTY?: boolean
   migrate?: (databasePath: string) => Promise<void>
   now?: () => Date
+  beforeConfirm?: () => void
+  afterConfirm?: () => void
 }
 
 export type InstallInput = TransactionDependencies & {
@@ -82,9 +84,9 @@ export type UninstallInput = TransactionDependencies & {
   purgeData?: boolean
 }
 
-type Change = { path: string; action: string }
-type InstallResult = { version: string; changes: Change[]; warnings: string[] }
-type UninstallResult = { changes: Change[]; warnings: string[] }
+export type Change = { path: string; action: string }
+export type InstallResult = { version: string; changes: Change[]; warnings: string[] }
+export type UninstallResult = { changes: Change[]; warnings: string[] }
 
 export async function runInstall(input: InstallInput): Promise<InstallResult> {
   assertInstallPreflight(input.version, {
@@ -112,7 +114,7 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
   await preflightTargets(context)
   await runForOutput(context.spawn, 'npm', ['--version'])
   const warnings = pathWarning(context)
-  await confirm(plan, input.yes, input.dryRun, context.prompt, context.isTTY)
+  await confirm(plan, input.yes, input.dryRun, context)
   if (input.dryRun) return { version: input.version, changes: plan, warnings }
 
   const stage = join(context.root, `.stage-${input.version}`)
@@ -223,7 +225,7 @@ export async function runUninstall(input: UninstallInput): Promise<UninstallResu
   const context = await makeContext({ ...input, roots: input.roots ?? [] })
   const manifest = await readManifest(join(context.root, 'install-state.json'), context)
   const plan = uninstallPlan(context, manifest, input.purgeData ?? false)
-  await confirm(plan, input.yes, false, context.prompt, context.isTTY)
+  await confirm(plan, input.yes, false, context)
   const warnings: string[] = []
 
   await removeClientHooks(manifest.hooks, context.home)
@@ -244,7 +246,10 @@ export async function runUninstall(input: UninstallInput): Promise<UninstallResu
 }
 
 type Context = Required<
-  Pick<TransactionDependencies, 'spawn' | 'prompt' | 'migrate' | 'now' | 'isTTY'>
+  Pick<
+    TransactionDependencies,
+    'spawn' | 'prompt' | 'migrate' | 'now' | 'isTTY' | 'beforeConfirm' | 'afterConfirm'
+  >
 > & {
   home: string
   root: string
@@ -274,6 +279,8 @@ async function makeContext(dependencies: TransactionDependencies): Promise<Conte
         await runMigrations(createDatabase(`file:${databasePath}`))
       }),
     now: dependencies.now ?? (() => new Date()),
+    beforeConfirm: dependencies.beforeConfirm ?? (() => {}),
+    afterConfirm: dependencies.afterConfirm ?? (() => {}),
   }
 }
 
@@ -318,15 +325,18 @@ async function confirm(
   changes: Change[],
   yes: boolean | undefined,
   dryRun: boolean | undefined,
-  ask: Prompt,
-  isTTY: boolean,
+  context: Pick<Context, 'prompt' | 'isTTY' | 'beforeConfirm' | 'afterConfirm'>,
 ) {
   if (dryRun) return
   if (yes) return
-  if (!isTTY) throw new Error('Noninteractive install and uninstall require --yes.')
+  if (!context.isTTY) throw new Error('Noninteractive install and uninstall require --yes.')
   const preview = changes.map((change) => `- ${change.action}: ${change.path}`).join('\n')
-  if (!(await ask(`The following changes will be made:\n${preview}\nContinue?`)))
-    throw new Error('Installation cancelled.')
+  context.beforeConfirm()
+  const accepted = await context.prompt(
+    `The following changes will be made:\n${preview}\nContinue?`,
+  )
+  if (!accepted) throw new Error('Installation cancelled.')
+  context.afterConfirm()
 }
 
 async function readSkill(packageRoot: string, trustedBase: string): Promise<string> {

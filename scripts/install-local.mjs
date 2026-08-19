@@ -1,21 +1,55 @@
-import { spawnSync } from 'node:child_process'
-import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
-import { homedir, tmpdir } from 'node:os'
+import { spawn } from 'node:child_process'
+import { mkdtemp, readdir, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import ora from 'ora'
+import pc from 'picocolors'
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-function run(command, arguments_) {
-  const result = spawnSync(command, arguments_, { cwd: root, stdio: 'inherit' })
+function complete(message) {
+  const color = process.stderr.isTTY && !process.env.NO_COLOR && !process.env.CI
+  process.stderr.write(`${pc.createColors(color).green('✔')} ${message}\n`)
+}
 
-  if (result.error) {
-    throw new Error(`failed to start ${command}: ${result.error.message}`)
-  }
-
-  if (result.status !== 0) {
-    throw new Error(`${command} failed with exit code ${result.status ?? 'unknown'}`)
-  }
+export function run(command, arguments_, { label, inherit = false } = {}) {
+  const enabled =
+    process.stdout.isTTY === true &&
+    process.stderr.isTTY === true &&
+    !process.env.NO_COLOR &&
+    !process.env.CI
+  const spinner = label
+    ? ora({ color: 'cyan', isEnabled: enabled, spinner: 'dots', stream: process.stderr }).start(
+        label,
+      )
+    : undefined
+  return new Promise((resolveRun, reject) => {
+    const child = spawn(command, arguments_, { cwd: root, stdio: inherit ? 'inherit' : 'pipe' })
+    const stdout = []
+    const stderr = []
+    child.stdout?.on('data', (chunk) => stdout.push(String(chunk)))
+    child.stderr?.on('data', (chunk) => stderr.push(String(chunk)))
+    child.once('error', (error) => {
+      spinner?.stop()
+      reject(new Error(`failed to start ${command}: ${error.message}`))
+    })
+    child.once('exit', (status) => {
+      spinner?.stop()
+      if (status !== 0) {
+        const output = [...stdout, ...stderr].join('').trim()
+        reject(
+          new Error(
+            `${command} failed with exit code ${status ?? 'unknown'}${output ? `\n${output}` : ''}`,
+          ),
+        )
+        return
+      }
+      if (label) complete(label)
+      resolveRun()
+    })
+  })
 }
 
 export function forwardedInstallArguments(arguments_) {
@@ -26,22 +60,21 @@ export function forwardedInstallArguments(arguments_) {
   return forwarded
 }
 
-export function completionMessage(arguments_, cliPackage, homeDirectory) {
-  if (arguments_.includes('--help') || arguments_.includes('-h')) return undefined
-  if (arguments_.includes('--dry-run')) {
-    return `Previewed managed ${cliPackage.name}@${cliPackage.version}; no changes were installed.`
-  }
-  return `Installed managed ${cliPackage.name}@${cliPackage.version}. Start a new shell and run agent-rooms --help, or run ${join(homeDirectory, '.agent-rooms', 'bin', 'agent-rooms')} --help now.`
-}
-
 export async function main(arguments_ = process.argv.slice(2)) {
   const forwardedArguments = forwardedInstallArguments(arguments_)
-  const cliPackage = JSON.parse(await readFile(resolve(root, 'apps/cli/package.json'), 'utf8'))
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'agent-rooms-'))
 
   try {
-    run('pnpm', ['exec', 'turbo', 'run', 'build', '--filter=agent-rooms'])
-    run('pnpm', ['--filter', 'agent-rooms', 'pack', '--pack-destination', temporaryDirectory])
+    await run('pnpm', ['exec', 'turbo', 'run', 'build', '--filter=agent-rooms'], {
+      label: 'Building Agent Rooms...',
+    })
+    await run(
+      'pnpm',
+      ['--filter', 'agent-rooms', 'pack', '--pack-destination', temporaryDirectory],
+      {
+        label: 'Packing Agent Rooms...',
+      },
+    )
 
     const tarballs = (await readdir(temporaryDirectory, { withFileTypes: true }))
       .filter((entry) => entry.isFile() && entry.name.endsWith('.tgz'))
@@ -51,20 +84,22 @@ export async function main(arguments_ = process.argv.slice(2)) {
       throw new Error(`expected one package tarball, found ${tarballs.length}`)
     }
 
-    run('npm', [
-      'exec',
-      '--yes',
-      '--package',
-      tarballs[0],
-      '--',
-      'agent-rooms',
-      'install',
-      '--package',
-      tarballs[0],
-      ...forwardedArguments,
-    ])
-    const message = completionMessage(forwardedArguments, cliPackage, homedir())
-    if (message) console.log(message)
+    await run(
+      'npm',
+      [
+        'exec',
+        '--yes',
+        '--package',
+        tarballs[0],
+        '--',
+        'agent-rooms',
+        'install',
+        '--package',
+        tarballs[0],
+        ...forwardedArguments,
+      ],
+      { inherit: true },
+    )
   } finally {
     await rm(temporaryDirectory, { force: true, recursive: true })
   }
