@@ -72,7 +72,12 @@ describe('installer presenter', () => {
     presenter.install({ version: '1.2.3', changes: [], warnings: [] }, false)
 
     expect(ora).toHaveBeenCalledWith(
-      expect.objectContaining({ color: 'cyan', isEnabled: true, spinner: 'dots' }),
+      expect.objectContaining({
+        color: 'cyan',
+        discardStdin: false,
+        isEnabled: true,
+        spinner: 'dots',
+      }),
     )
     expect(spinner.start).toHaveBeenCalledWith('Installing Agent Rooms...')
     expect(stdout.join('')).toContain('\u001B[32m✔\u001B[39m')

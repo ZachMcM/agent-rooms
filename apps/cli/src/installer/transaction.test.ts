@@ -1168,6 +1168,7 @@ describe('installer transaction', () => {
   it('pauses stdin after an interactive confirmation', async () => {
     const home = await temporaryHome()
     const stdin = new PassThrough()
+    stdin.pause()
     Object.defineProperty(stdin, 'isTTY', { value: true })
     const stdinDescriptor = Object.getOwnPropertyDescriptor(process, 'stdin')
     Object.defineProperty(process, 'stdin', { configurable: true, value: stdin })

@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
+import { realpath } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import test from 'node:test'
 
-import { forwardedInstallArguments, run } from './install-local.mjs'
+import { forwardedInstallArguments, run, spinnerOptions } from './install-local.mjs'
 
 test('normalizes the package-manager separator and forwards installer options', () => {
   assert.deepEqual(forwardedInstallArguments(['--', '--yes', '--dry-run']), ['--yes', '--dry-run'])
@@ -10,6 +12,10 @@ test('normalizes the package-manager separator and forwards installer options', 
 test('rejects forwarded package overrides', () => {
   assert.throws(() => forwardedInstallArguments(['--package', '/tmp/other.tgz']), /controls/)
   assert.throws(() => forwardedInstallArguments(['--package=/tmp/other.tgz']), /controls/)
+})
+
+test('keeps stdin available while local progress is active', () => {
+  assert.equal(spinnerOptions(true).discardStdin, false)
 })
 
 test('includes captured build output when a quiet command fails', async () => {
@@ -54,4 +60,13 @@ test('does not color progress when stderr is not a TTY', async () => {
     if (stderrTTY) Object.defineProperty(process.stderr, 'isTTY', stderrTTY)
     else delete process.stderr.isTTY
   }
+})
+
+test('runs commands from an explicit working directory', async () => {
+  const cwd = await realpath(tmpdir())
+  await run(
+    process.execPath,
+    ['-e', 'if (process.cwd() !== process.argv[1]) process.exit(1)', cwd],
+    { cwd },
+  )
 })

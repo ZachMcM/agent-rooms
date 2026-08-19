@@ -24,6 +24,7 @@ export function createInstallerPresenter(): Presenter {
   const colors = pc.createColors(enabled)
   const spinner = ora({
     color: 'cyan',
+    discardStdin: false,
     isEnabled: enabled,
     spinner: 'dots',
     stream: process.stderr,

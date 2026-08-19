@@ -371,10 +371,11 @@ function spawn(command: string, args: string[], options?: { cwd?: string }): Pro
 
 function prompt(message: string): Promise<boolean> {
   process.stdout.write(`${message} [y/N] `)
-  return new Promise((resolveAnswer) =>
+  return new Promise((resolveAnswer) => {
     process.stdin.once('data', (data) => {
       process.stdin.pause()
       resolveAnswer(/^y(?:es)?\s*$/i.test(String(data)))
-    }),
-  )
+    })
+    process.stdin.resume()
+  })
 }

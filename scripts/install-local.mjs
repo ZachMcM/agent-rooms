@@ -14,19 +14,25 @@ function complete(message) {
   process.stderr.write(`${pc.createColors(color).green('✔')} ${message}\n`)
 }
 
-export function run(command, arguments_, { label, inherit = false } = {}) {
+export function spinnerOptions(enabled) {
+  return {
+    color: 'cyan',
+    discardStdin: false,
+    isEnabled: enabled,
+    spinner: 'dots',
+    stream: process.stderr,
+  }
+}
+
+export function run(command, arguments_, { cwd = root, label, inherit = false } = {}) {
   const enabled =
     process.stdout.isTTY === true &&
     process.stderr.isTTY === true &&
     !process.env.NO_COLOR &&
     !process.env.CI
-  const spinner = label
-    ? ora({ color: 'cyan', isEnabled: enabled, spinner: 'dots', stream: process.stderr }).start(
-        label,
-      )
-    : undefined
+  const spinner = label ? ora(spinnerOptions(enabled)).start(label) : undefined
   return new Promise((resolveRun, reject) => {
-    const child = spawn(command, arguments_, { cwd: root, stdio: inherit ? 'inherit' : 'pipe' })
+    const child = spawn(command, arguments_, { cwd, stdio: inherit ? 'inherit' : 'pipe' })
     const stdout = []
     const stderr = []
     child.stdout?.on('data', (chunk) => stdout.push(String(chunk)))
@@ -98,7 +104,7 @@ export async function main(arguments_ = process.argv.slice(2)) {
         tarballs[0],
         ...forwardedArguments,
       ],
-      { inherit: true },
+      { cwd: temporaryDirectory, inherit: true },
     )
   } finally {
     await rm(temporaryDirectory, { force: true, recursive: true })
