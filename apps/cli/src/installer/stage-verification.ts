@@ -113,7 +113,7 @@ async function assertLoadableLibsqlClient(
       [
         '--input-type=module',
         '--eval',
-        'const resolved=import.meta.resolve("@libsql/client");const {createClient}=await import(resolved);const client=createClient({url:process.argv[1]});try{const result=await client.execute("SELECT 1");if(String(result.rows[0]?.[0])!=="1")throw new Error("Unexpected SELECT 1 result");process.stdout.write(resolved)}finally{await client.close()}',
+        'const resolved=import.meta.resolve("@libsql/client");const {createClient}=await import(resolved);const client=createClient({url:process.argv[1]});try{await client.execute("CREATE TABLE agent_rooms_verify (value INTEGER NOT NULL)");const result=await client.execute("SELECT 1");if(String(result.rows[0]?.[0])!=="1")throw new Error("Unexpected SELECT 1 result");process.stdout.write(resolved)}finally{await client.close()}',
         pathToFileURL(databasePath).href,
       ],
       { cwd: packageRoot },

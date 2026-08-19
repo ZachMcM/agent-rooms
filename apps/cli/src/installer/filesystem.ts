@@ -65,8 +65,8 @@ export async function assertOwnedDirectory(
 export async function assertOwnedRegularFile(
   path: string,
   uid: number | undefined = process.getuid?.(),
-): Promise<void> {
-  await ownedStat(path, 'regular file', uid)
+): Promise<Stats> {
+  return await ownedStat(path, 'regular file', uid)
 }
 
 export async function assertOwnedPathComponents(
@@ -191,21 +191,6 @@ export async function removeEmptyDirectory(path: string, base: string): Promise<
   } catch (error) {
     if (!isNotFound(error) && !isDirectoryNotEmpty(error)) throw error
   }
-}
-
-export async function renameOwnedDirectory(
-  source: string,
-  destination: string,
-  base: string,
-): Promise<void> {
-  await assertOwnedPathComponents(source, base)
-  await assertOwnedDirectory(source)
-  if (await ownedPathExists(destination, base)) {
-    throw new Error(`Refusing to replace existing runtime path: ${destination}.`)
-  }
-  await assertOwnedPathComponents(source, base)
-  await assertOwnedPathComponents(dirname(destination), base)
-  await rename(source, destination)
 }
 
 export async function replaceLink(path: string, target: string, base: string): Promise<void> {

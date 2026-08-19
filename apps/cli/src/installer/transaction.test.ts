@@ -5,6 +5,7 @@ import {
   readFile,
   readdir,
   readlink,
+  rename,
   rm,
   symlink,
   writeFile,
@@ -44,7 +45,7 @@ describe('installer transaction', () => {
     await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
-  it('uses exact npm argv, installs owned integrations, and uninstalls them', async () => {
+  it('uses exact registry npm argv, installs owned integrations, and uninstalls them', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
     await mkdir(codex)
@@ -144,6 +145,214 @@ describe('installer transaction', () => {
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).not.toContain('consume-new-messages')
     expect(await readFile(join(home, '.zshrc'), 'utf8')).not.toContain('>>> agent-rooms >>>')
+  })
+
+  it('uses a validated local tarball as the final npm install argument', async () => {
+    const home = await temporaryHome()
+    const tarball = join(home, 'agent-rooms-1.2.3.tgz')
+    const stage = join(home, '.agent-rooms', '.stage-1.2.3')
+    const snapshot = join(stage, '.agent-rooms-package.tgz')
+    await writeFile(tarball, 'package')
+    const { calls, spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      source: tarball,
+      homeDirectory: home,
+      roots: [],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    expect(calls[1]).toEqual([
+      'npm',
+      'install',
+      '--prefix',
+      stage,
+      '--omit=dev',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--package-lock=false',
+      snapshot,
+    ])
+    await expect(
+      lstat(join(home, '.agent-rooms', 'runtime', '1.2.3', '.agent-rooms-package.tgz')),
+    ).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it.each([
+    ['a relative path', 'agent-rooms-1.2.3.tgz'],
+    ['a URL', 'https://registry.example/agent-rooms-1.2.3.tgz'],
+    ['a package spec', 'agent-rooms@1.2.3'],
+  ])('rejects %s before mutation', async (_name, source) => {
+    const home = await temporaryHome()
+    const calls: string[] = []
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        source,
+        homeDirectory: home,
+        roots: [],
+        yes: true,
+        spawn: async (command) => {
+          calls.push(command)
+        },
+        migrate: async () => {
+          calls.push('migrate')
+        },
+      }),
+    ).rejects.toThrow('Local package must be a normalized absolute path')
+    expect(calls).toEqual([])
+    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('rejects a non-normalized absolute package path before mutation', async () => {
+    const home = await temporaryHome()
+    const source = `${home}/nested/../agent-rooms-1.2.3.tgz`
+    await writeFile(join(home, 'agent-rooms-1.2.3.tgz'), 'package')
+
+    await expect(
+      runInstall({ version: '1.2.3', source, homeDirectory: home, roots: [], yes: true }),
+    ).rejects.toThrow('Local package must be a normalized absolute path')
+    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('rejects a local package replaced after preflight validation', async () => {
+    const home = await temporaryHome()
+    const source = join(home, 'agent-rooms-1.2.3.tgz')
+    const replacement = join(home, 'replacement.tgz')
+    await writeFile(source, 'original package')
+    await writeFile(replacement, 'replacement package')
+    const { calls, spawn } = packageSpawn('1.2.3')
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        source,
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        isTTY: true,
+        prompt: async () => {
+          await rename(replacement, source)
+          return true
+        },
+        spawn,
+      }),
+    ).rejects.toThrow(`Local package changed after validation: ${source}`)
+    expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(0)
+    await expect(lstat(join(home, '.agent-rooms', '.stage-1.2.3'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+  })
+
+  it('rejects a local package with another extension before mutation', async () => {
+    const home = await temporaryHome()
+    const source = join(home, 'agent-rooms-1.2.3.tar.gz')
+    await writeFile(source, 'package')
+
+    await expect(
+      runInstall({ version: '1.2.3', source, homeDirectory: home, roots: [], yes: true }),
+    ).rejects.toThrow('Local package must be a .tgz tarball')
+    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('rejects local package directories and symlinks before mutation', async () => {
+    const home = await temporaryHome()
+    const directory = join(home, 'directory.tgz')
+    const target = join(home, 'target.tgz')
+    const link = join(home, 'link.tgz')
+    await mkdir(directory)
+    await writeFile(target, 'package')
+    await symlink(target, link)
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        source: directory,
+        homeDirectory: home,
+        roots: [],
+        yes: true,
+      }),
+    ).rejects.toThrow('regular file')
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        source: link,
+        homeDirectory: home,
+        roots: [],
+        yes: true,
+      }),
+    ).rejects.toThrow('symbolic link')
+    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+
+  it('refuses to reuse an existing same-version runtime for a local package', async () => {
+    const home = await temporaryHome()
+    const tarball = join(home, 'agent-rooms-1.2.3.tgz')
+    const runtime = join(home, '.agent-rooms', 'runtime', '1.2.3')
+    await writeFile(tarball, 'package')
+    await mkdir(runtime, { recursive: true })
+    const calls: string[] = []
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        source: tarball,
+        homeDirectory: home,
+        roots: [],
+        yes: true,
+        spawn: async (command) => {
+          calls.push(command)
+        },
+        migrate: async () => {
+          calls.push('migrate')
+        },
+      }),
+    ).rejects.toThrow(
+      'Local package install cannot reuse existing runtime 1.2.3. Run agent-rooms uninstall and retry.',
+    )
+    expect(calls).toEqual([])
+  })
+
+  it('refuses a local runtime destination created during staging', async () => {
+    const home = await temporaryHome()
+    const tarball = join(home, 'agent-rooms-1.2.3.tgz')
+    const runtime = join(home, '.agent-rooms', 'runtime', '1.2.3')
+    await writeFile(tarball, 'package')
+    const packageProcess = packageSpawn('1.2.3')
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        source: tarball,
+        homeDirectory: home,
+        roots: [],
+        shell: '',
+        yes: true,
+        spawn: async (command, args, options) => {
+          const result = await packageProcess.spawn(command, args, options)
+          if (command === 'npm' && args[0] === 'install') {
+            await mkdir(runtime, { recursive: true })
+          }
+          return result
+        },
+        migrate: async (databasePath) => writeFile(databasePath, 'database'),
+      }),
+    ).rejects.toThrow(`Refusing to replace existing runtime path: ${runtime}`)
+
+    expect((await lstat(runtime)).isDirectory()).toBe(true)
+    await expect(readdir(runtime)).resolves.toEqual([])
+    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    await expect(lstat(join(home, '.agent-rooms', '.stage-1.2.3'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
   })
 
   it('records only inserted hooks and preserves an identical preexisting hook on uninstall', async () => {
@@ -469,12 +678,12 @@ describe('installer transaction', () => {
     expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(0)
   })
 
-  it('publishes the verified stage by rename', async () => {
+  it('publishes the verified node_modules tree by rename into a claimed destination', async () => {
     const home = await temporaryHome()
-    let stagedInode: bigint | undefined
+    let stagedNodeModulesInode: bigint | undefined
     const { spawn } = packageSpawn('1.2.3', {
       mutate: async (packageRoot) => {
-        stagedInode = (await lstat(dirname(dirname(packageRoot)), { bigint: true })).ino
+        stagedNodeModulesInode = (await lstat(dirname(packageRoot), { bigint: true })).ino
       },
     })
 
@@ -488,10 +697,12 @@ describe('installer transaction', () => {
       migrate: async (databasePath) => writeFile(databasePath, 'database'),
     })
 
-    const runtimeInode = (
-      await lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'), { bigint: true })
+    const runtimeNodeModulesInode = (
+      await lstat(join(home, '.agent-rooms', 'runtime', '1.2.3', 'node_modules'), {
+        bigint: true,
+      })
     ).ino
-    expect(runtimeInode).toBe(stagedInode)
+    expect(runtimeNodeModulesInode).toBe(stagedNodeModulesInode)
   })
 
   it('cleans legacy previous links and backup directories on successful install', async () => {
@@ -965,6 +1176,7 @@ function packageSpawn(
 async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<string> {
   const root = join(stage, 'node_modules', 'agent-rooms')
   const client = join(stage, 'node_modules', '@libsql', 'client')
+  await writeFile(join(stage, 'package.json'), JSON.stringify({ private: true }))
   await mkdir(client, { recursive: true })
   await mkdir(join(root, 'migrations'), { recursive: true })
   await mkdir(join(root, 'assets', 'agent-rooms'), { recursive: true })

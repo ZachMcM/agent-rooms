@@ -22,6 +22,7 @@ import {
   assertOwnedDirectory,
   assertOwnedPathComponents,
   ensurePrivateDirectory,
+  ownedPathExists,
   removeEmptyDirectory,
   removeOwnedPath,
   readOwnedFile,
@@ -34,6 +35,7 @@ import {
   type Manifest,
   type NewManifest,
 } from './manifest'
+import { resolveInstallSource, snapshotLocalPackage } from './package-source'
 import { assertInstallPreflight, detectExistingClientRoots, type ClientRoot } from './preflight'
 import {
   existingRuntimePublication,
@@ -72,6 +74,7 @@ export type InstallInput = TransactionDependencies & {
   version: string
   yes?: boolean
   dryRun?: boolean
+  source?: string
 }
 
 export type UninstallInput = TransactionDependencies & {
@@ -88,7 +91,16 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
     homeDirectory: input.homeDirectory,
     platform: input.platform,
   })
+  const source = await resolveInstallSource(input.version, input.source)
   const context = await makeContext(input)
+  if (
+    input.source !== undefined &&
+    (await ownedPathExists(join(context.root, 'runtime', input.version), context.home))
+  ) {
+    throw new Error(
+      `Local package install cannot reuse existing runtime ${input.version}. Run agent-rooms uninstall and retry.`,
+    )
+  }
   const priorManifest = await readPriorManifest(context)
   const installed = await currentVersion(context.root, context.home)
   if (installed && compareVersions(input.version, installed) < 0) {
@@ -106,24 +118,32 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
   const stage = join(context.root, `.stage-${input.version}`)
   await removeOwnedPath(stage, context.home)
   try {
-    let publication: RuntimePublication | undefined = await existingRuntimePublication(
-      context,
-      input.version,
-    )
+    let publication: RuntimePublication | undefined =
+      source.kind === 'registry'
+        ? await existingRuntimePublication(context, input.version)
+        : undefined
     let packageRoot = stagedPackageRoot(join(context.root, 'runtime', input.version))
     if (!publication) {
       await ensurePrivateDirectory(stage, context.home, { tightenExisting: true })
-      await runForOutput(context.spawn, 'npm', [
-        'install',
-        '--prefix',
-        stage,
-        '--omit=dev',
-        '--ignore-scripts',
-        '--no-audit',
-        '--no-fund',
-        '--package-lock=false',
-        `${packageName}@${input.version}`,
-      ])
+      const npmSource =
+        source.kind === 'local'
+          ? await snapshotLocalPackage(source, stage, context.home)
+          : source.value
+      try {
+        await runForOutput(context.spawn, 'npm', [
+          'install',
+          '--prefix',
+          stage,
+          '--omit=dev',
+          '--ignore-scripts',
+          '--no-audit',
+          '--no-fund',
+          '--package-lock=false',
+          npmSource,
+        ])
+      } finally {
+        if (source.kind === 'local') await removeOwnedPath(npmSource, context.home)
+      }
       publication = {
         kind: 'staged',
         executable: await verifyRuntimeTree(stage, context.home, input.version, context.spawn),

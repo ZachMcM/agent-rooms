@@ -10,14 +10,16 @@ export function addInstallCommand(program: Command, version?: string): void {
     .description('Installs the managed Agent Rooms runtime and integrations.')
     .option('--yes')
     .option('--dry-run')
+    .option('--package <absolute-path.tgz>')
     .exitOverride()
-    .action(async (options: { yes?: boolean; dryRun?: boolean }) => {
+    .action(async (options: { yes?: boolean; dryRun?: boolean; package?: string }) => {
       try {
         writeSuccess(
           await runInstall({
             version: version ?? '0.0.0',
             yes: options.yes,
             dryRun: options.dryRun,
+            source: options.package,
           }),
         )
       } catch (error) {

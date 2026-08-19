@@ -1,13 +1,13 @@
-import { chmod, lstat, readlink, readdir } from 'node:fs/promises'
+import { chmod, lstat, mkdir, readlink, readdir, rename, rmdir } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
 import {
+  assertOwnedDirectory,
   assertOwnedPathComponents,
   assertOwnedRegularFile,
   ensurePrivateDirectory,
   ownedPathExists,
   removeOwnedPath,
-  renameOwnedDirectory,
   replaceLink,
 } from './filesystem'
 import type { Spawn } from './stage-verification'
@@ -97,8 +97,44 @@ async function publishRuntime(
 ): Promise<string> {
   if (publication.kind === 'existing') return publication.executable
   await assertOwnedPathComponents(stage, context.home)
-  await renameOwnedDirectory(stage, destination, context.home)
+  await assertOwnedDirectory(stage)
+  const entries = (await readdir(stage)).sort()
+  if (entries.length !== 2 || entries[0] !== 'node_modules' || entries[1] !== 'package.json') {
+    throw new Error(`Staged runtime has an unexpected publication shape: ${stage}.`)
+  }
+  const nodeModules = join(stage, 'node_modules')
+  const packageJson = join(stage, 'package.json')
+  await assertOwnedPathComponents(nodeModules, context.home)
+  await assertOwnedDirectory(nodeModules)
+  await assertOwnedPathComponents(packageJson, context.home)
+  await assertOwnedRegularFile(packageJson)
+
+  let claimed = false
+  try {
+    await assertOwnedPathComponents(dirname(destination), context.home)
+    await mkdir(destination, { mode: 0o700 })
+    claimed = true
+    await assertOwnedPathComponents(nodeModules, context.home)
+    await assertOwnedDirectory(nodeModules)
+    await rename(nodeModules, join(destination, 'node_modules'))
+  } catch (error) {
+    if (!claimed && isAlreadyExists(error)) {
+      throw new Error(`Refusing to replace existing runtime path: ${destination}.`, {
+        cause: error,
+      })
+    }
+    if (claimed) await releaseEmptyClaim(destination)
+    throw error
+  }
   return publication.executable
+}
+
+async function releaseEmptyClaim(path: string): Promise<void> {
+  try {
+    await rmdir(path)
+  } catch (error) {
+    if (!isNotFound(error) && !isDirectoryNotEmpty(error)) throw error
+  }
 }
 
 async function captureLinkState(path: string, trustedBase: string): Promise<LinkState> {
@@ -161,4 +197,17 @@ type LinkState =
 
 function isNotFound(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT'
+}
+
+function isAlreadyExists(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EEXIST'
+}
+
+function isDirectoryNotEmpty(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error.code === 'ENOTEMPTY' || error.code === 'EEXIST')
+  )
 }

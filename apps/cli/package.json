@@ -4,7 +4,7 @@
   "description": "Pseudo-real-time decision sharing between parallel coding agents.",
   "license": "MIT",
   "bin": {
-    "agent-rooms": "./dist/index.js"
+    "agent-rooms": "dist/index.js"
   },
   "files": [
     "assets",

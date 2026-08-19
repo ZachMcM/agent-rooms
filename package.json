@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
+    "install:local": "node ./scripts/install-local.mjs",
     "publish:cli": "pnpm run check && turbo run build --filter=agent-rooms && pnpm --filter agent-rooms publish",
     "dev": "turbo run dev",
     "dashboard:seed": "pnpm --filter @agent-rooms/db dashboard:seed",
@@ -15,7 +16,8 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "test": "turbo run test && pnpm run test:install-local",
+    "test:install-local": "node --test scripts/install-local.test.mjs",
     "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run test"
   },
   "devDependencies": {
