@@ -9,6 +9,12 @@ export type Provider = (typeof PROVIDERS)[number]
 
 const providers = new Set<string>(PROVIDERS)
 
+const providerEvents = {
+  claude: ['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'],
+  codex: ['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'],
+  cursor: ['sessionStart', 'postToolUse', 'stop'],
+} as const satisfies Record<Provider, readonly string[]>
+
 export function isProvider(value: string): value is Provider {
   return providers.has(value)
 }
@@ -42,4 +48,18 @@ export function parseHookProvider(provider: string): Provider {
   }
 
   return provider
+}
+
+export function parseHookEvent(provider: Provider, event: string): string {
+  const events: readonly string[] = providerEvents[provider]
+
+  if (!events.includes(event)) {
+    throw new CliError(
+      'invalid_arguments',
+      `The --event value must be one of ${events.join(', ')} for ${provider}.`,
+      2,
+    )
+  }
+
+  return event
 }

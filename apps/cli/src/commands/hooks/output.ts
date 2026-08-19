@@ -8,7 +8,7 @@ export function serializeHookContext({
   context,
 }: {
   provider: Provider
-  event?: string
+  event: string
   context?: string
 }): string {
   if (!context) {
@@ -27,11 +27,7 @@ export function messagesContext(roomMessages: unknown): string {
   return `<new-messages>${escapeXml(JSON.stringify(roomMessages))}</new-messages>`
 }
 
-function providerOutput(
-  provider: Provider,
-  event: string | undefined,
-  context: string,
-): HookOutput {
+function providerOutput(provider: Provider, event: string, context: string): HookOutput {
   if (provider === 'cursor') {
     if (event === 'stop') {
       return { followup_message: context }
@@ -48,7 +44,7 @@ function providerOutput(
     return { hookSpecificOutput: { hookEventName: event, additionalContext: context } }
   }
 
-  return { hookSpecificOutput: { additionalContext: context } }
+  return { hookSpecificOutput: { hookEventName: event, additionalContext: context } }
 }
 
 function escapeXml(value: string): string {

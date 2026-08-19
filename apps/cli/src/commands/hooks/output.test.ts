@@ -37,7 +37,7 @@ describe('hook output', () => {
     [
       'claude',
       'UserPromptSubmit',
-      '{"hookSpecificOutput":{"additionalContext":"<conversation-id>claude-session</conversation-id>"}}\n',
+      '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"<conversation-id>claude-session</conversation-id>"}}\n',
     ],
     [
       'cursor',
@@ -70,7 +70,7 @@ describe('hook output', () => {
   })
 
   it.each(PROVIDERS)('emits an empty object for %s', (provider) => {
-    expect(serializeHookContext({ provider })).toBe('{}\n')
+    expect(serializeHookContext({ provider, event: 'SessionStart' })).toBe('{}\n')
   })
 
   it.each(['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'])(
