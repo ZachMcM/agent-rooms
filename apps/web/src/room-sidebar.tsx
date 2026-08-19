@@ -118,7 +118,7 @@ export function RoomSidebar() {
             <Search aria-hidden="true" />
             Search...
           </div>
-          <Kbd>⌘K</Kbd>
+          <Kbd>⌘ K</Kbd>
         </Button>
         <RoomSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
       </SidebarHeader>
