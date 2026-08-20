@@ -18,10 +18,10 @@ import {
   DialogTrigger,
 } from '@agent-rooms/ui-library/components/dialog'
 import {
-  MessageKindBadge,
+  MessageKindPill,
   messageKindDetails,
   type MessageKind,
-} from '@agent-rooms/ui-library/components/message-kind-badge'
+} from '@agent-rooms/ui-library/components/message-kind-pill'
 import { Progress, ProgressLabel, ProgressValue } from '@agent-rooms/ui-library/components/progress'
 import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
 import { Activity, Archive, ChevronRight, Clock, Send, Users } from '@agent-rooms/ui-library/icons'
@@ -261,7 +261,7 @@ function RoomMemberDialog({ member, messageIds }: { member: RoomMember; messageI
           <h2 className="text-sm font-medium">Most recent message</h2>
           {member.mostRecentMessage ? (
             <div className="bg-muted/50 space-y-2 rounded-xl p-4">
-              <MessageKindBadge kind={member.mostRecentMessage.kind} />
+              <MessageKindPill kind={member.mostRecentMessage.kind} />
               <p className="text-sm leading-6 whitespace-pre-wrap">
                 {member.mostRecentMessage.body}
               </p>

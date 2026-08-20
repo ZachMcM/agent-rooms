@@ -6,7 +6,7 @@ import {
   CommandItem,
   CommandList,
 } from '@agent-rooms/ui-library/components/command'
-import { MessageKindBadge } from '@agent-rooms/ui-library/components/message-kind-badge'
+import { MessageKindPill } from '@agent-rooms/ui-library/components/message-kind-pill'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
@@ -108,7 +108,7 @@ export function RoomSearch({ open, onOpenChange }: RoomSearchProps) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="truncate font-medium">{room.name}</span>
-                          <MessageKindBadge kind={message.kind} />
+                          <MessageKindPill kind={message.kind} />
                         </div>
                         <div className="text-muted-foreground mt-1 flex gap-2 text-xs">
                           <span className="shrink-0">{member.conversationId}</span>

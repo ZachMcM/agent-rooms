@@ -10,7 +10,7 @@ import {
   EmptyTitle,
 } from '@agent-rooms/ui-library/components/empty'
 import { Marker, MarkerContent } from '@agent-rooms/ui-library/components/marker'
-import { MessageKindBadge } from '@agent-rooms/ui-library/components/message-kind-badge'
+import { MessageKindPill } from '@agent-rooms/ui-library/components/message-kind-pill'
 import { ScrollArea } from '@agent-rooms/ui-library/components/scroll-area'
 import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
 import { Send } from '@agent-rooms/ui-library/icons'
@@ -149,7 +149,7 @@ function MessageItem({
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="min-w-0 font-medium break-all">{message.membership.conversationId}</span>
-          <MessageKindBadge kind={message.kind} />
+          <MessageKindPill kind={message.kind} />
           <span className="text-muted-foreground text-xs">
             {formatRelativeTime(message.createdAt)}
           </span>
@@ -165,7 +165,7 @@ function MessageItem({
               resetScroll={false}
               className="hover:text-foreground focus-visible:text-foreground min-w-0 wrap-anywhere underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
             >
-              answers #{message.replyTo.id}: {message.replyTo.body}
+              answers: {message.replyTo.body}
             </Link>
           </div>
         ) : null}
@@ -177,7 +177,7 @@ function MessageItem({
             hashScrollIntoView={false}
             resetScroll={false}
             aria-label={`Link to message ${message.id}`}
-            className="text-muted-foreground hover:text-foreground focus-visible:text-foreground rounded-sm underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
+            className="sr-only"
           >
             #{message.id}:
           </Link>{' '}
