@@ -45,6 +45,7 @@ function RoomPage() {
 function RoomDetailContent({ room }: { room: RoomDetail }) {
   const hash = useLocation({ select: (location) => location.hash })
   const handledHash = useRef<string | null>(null)
+  const previousMessages = useRef<{ roomId: string; ids: Set<number> } | null>(null)
   const timeline = getRoomTimeline(room.room, room.messages, room.events)
   const messageIds = room.messages.map((message) => message.id).join(',')
 
@@ -65,6 +66,22 @@ function RoomDetailContent({ room }: { room: RoomDetail }) {
     })
     handledHash.current = hash
   }, [hash, messageIds])
+
+  useEffect(() => {
+    const currentIds = new Set(room.messages.map((message) => message.id))
+    const previous = previousMessages.current
+    previousMessages.current = { roomId: room.room.id, ids: currentIds }
+
+    if (!previous || previous.roomId !== room.room.id || parseMessageFragment(hash) !== null) return
+
+    const latestNewMessage = room.messages.findLast((message) => !previous.ids.has(message.id))
+    if (!latestNewMessage) return
+
+    document.getElementById(messageFragment(latestNewMessage.id))?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'center',
+    })
+  }, [hash, messageIds, room.messages, room.room.id])
 
   return (
     <>
