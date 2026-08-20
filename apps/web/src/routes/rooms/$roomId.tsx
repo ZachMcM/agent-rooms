@@ -127,11 +127,8 @@ function MessageItem({
   const { message } = item
 
   return (
-    <li id={messageFragment(message.id)} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
-      <AgentHarnessIcon
-        harness={resolveAgentHarness(message.membership.conversationId)}
-        className="mt-0.5"
-      />
+    <li id={messageFragment(message.id)} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
+      <AgentHarnessIcon harness={resolveAgentHarness(message.membership.conversationId)} />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
           <span className="min-w-0 font-medium break-all">{message.membership.conversationId}</span>
@@ -155,7 +152,7 @@ function MessageItem({
             </Link>
           </div>
         ) : null}
-        <div className="message-content [&_a]:text-foreground [&_code]:bg-secondary [&_pre]:bg-secondary/70 mt-2 min-w-0 text-sm leading-6 wrap-anywhere [&_a]:underline-offset-2 [&_a:hover]:underline [&_code]:rounded-sm [&_code]:px-1 [&_code]:py-px [&_code]:font-mono [&_code]:text-[0.85em] [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_p:last-child]:mb-0 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:px-3 [&_pre]:py-2 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-[0.9em] [&_pre_code]:leading-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&>p:first-of-type]:m-0 [&>p:first-of-type]:inline">
+        <div className="message-content [&_a]:text-foreground [&_code]:bg-secondary [&_pre]:bg-secondary/70 mt-2 min-w-0 text-base leading-6 wrap-anywhere [&_a]:underline-offset-2 [&_a:hover]:underline [&_code]:rounded-sm [&_code]:px-1 [&_code]:py-px [&_code]:font-mono [&_code]:text-[0.85em] [&_li]:my-0.5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_p:last-child]:mb-0 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:px-3 [&_pre]:py-2 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-[0.9em] [&_pre_code]:leading-5 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&>p:first-of-type]:m-0 [&>p:first-of-type]:inline">
           <Link
             to="/rooms/$roomId"
             params={{ roomId }}

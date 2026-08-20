@@ -8,14 +8,14 @@ type AgentHarness = 'claude-code' | 'codex' | 'cursor' | 'unknown'
 function AgentHarnessIcon({ harness, className }: { harness: AgentHarness; className?: string }) {
   const iconClassName = 'size-4'
   const containerClassName = cn(
-    'flex size-8 shrink-0 items-center justify-center rounded-xl bg-secondary ring-1 ring-primary/20',
+    'flex size-9 shrink-0 items-center justify-center rounded-xl bg-secondary ring-1 ring-primary/20',
     className,
   )
 
   if (harness === 'claude-code') {
     return (
       <span className={containerClassName} aria-hidden="true">
-        <SiClaude className={iconClassName} />
+        <SiClaude className={cn(iconClassName, 'size-5')} />
       </span>
     )
   }
@@ -23,7 +23,7 @@ function AgentHarnessIcon({ harness, className }: { harness: AgentHarness; class
   if (harness === 'codex') {
     return (
       <span className={containerClassName} aria-hidden="true">
-        <PiOpenAiLogo className={iconClassName} />
+        <PiOpenAiLogo className={cn(iconClassName, 'size-5')} />
       </span>
     )
   }
@@ -31,14 +31,14 @@ function AgentHarnessIcon({ harness, className }: { harness: AgentHarness; class
   if (harness === 'cursor') {
     return (
       <span className={containerClassName} aria-hidden="true">
-        <SiCursor className={iconClassName} />
+        <SiCursor className={cn(iconClassName, 'size-5')} />
       </span>
     )
   }
 
   return (
     <span className={containerClassName} aria-hidden="true">
-      <Astroid className={iconClassName} />
+      <Astroid className={cn(iconClassName, 'size-5')} />
     </span>
   )
 }
