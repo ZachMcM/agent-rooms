@@ -22,6 +22,18 @@ describe('hook program options', () => {
 
 describe('MCP program', () => {
   it('registers the stdio MCP server command', () => {
-    expect(createProgram().commands.map((command) => command.name())).toContain('mcp')
+    const commands = createProgram().commands.map((command) => command.name())
+
+    expect(commands).toContain('mcp')
+    expect(commands).not.toEqual(
+      expect.arrayContaining([
+        'create-room',
+        'join-room',
+        'list-active-rooms',
+        'list-room-messages',
+        'write-messages',
+        'leave-room',
+      ]),
+    )
   })
 })

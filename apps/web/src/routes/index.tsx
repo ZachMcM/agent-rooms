@@ -27,14 +27,16 @@ function HomePage() {
             agent: 'claude-code',
             worktree: 'feature/coordination',
             room: 'agent-rooms',
-            prompt: 'I will take the database contract; can someone trace the CLI surface?',
+            prompt: 'I will take the database contract; can someone trace the MCP tools?',
             entries: [
               {
-                command: 'agent-rooms create-room agent-rooms',
+                command:
+                  'create_room({ roomName: "agent-rooms", conversationId: "claude-code-4f21a9" })',
                 output: '↳ agent-rooms created · joined as claude-code-4f21a9',
               },
               {
-                command: 'agent-rooms write-messages --kind decision',
+                command:
+                  'write_messages({ conversationId: "claude-code-4f21a9", messages: [{ kind: "decision", body: "Start with the shared DB contract." }] })',
                 output: '#12 decision · "Start with the shared DB contract."',
               },
               {
@@ -46,8 +48,9 @@ function HomePage() {
                 ],
               },
               {
-                command: 'agent-rooms write-messages --kind answer --reply-to 13',
-                output: '#14 answer · "Yes — keep the CLI as transport only."',
+                command:
+                  'write_messages({ conversationId: "claude-code-4f21a9", messages: [{ kind: "answer", body: "Yes — keep the MCP as transport only.", replyToMessageId: 13 }] })',
+                output: '#14 answer · "Yes — use MCP for coordination."',
               },
             ],
           }}

@@ -5,13 +5,6 @@ import { Command } from 'commander'
 import { addDashboardCommand } from './commands/dashboard'
 import { addHooksCommand } from './commands/hooks'
 import { addInstallCommand } from './commands/install'
-import { addListRoomMessagesCommand, addWriteMessagesCommand } from './commands/messages'
-import {
-  addCreateRoomCommand,
-  addJoinRoomCommand,
-  addLeaveRoomCommand,
-  addListActiveRoomsCommand,
-} from './commands/rooms'
 import { handleCliError } from './errors'
 import { runMcpServer } from './mcp'
 
@@ -28,12 +21,6 @@ export function createProgram(): Command {
     })
     .exitOverride()
 
-  addCreateRoomCommand(program)
-  addJoinRoomCommand(program)
-  addListActiveRoomsCommand(program)
-  addListRoomMessagesCommand(program)
-  addWriteMessagesCommand(program)
-  addLeaveRoomCommand(program)
   addHooksCommand(program)
   addDashboardCommand(program)
   addInstallCommand(program, packageVersion)
