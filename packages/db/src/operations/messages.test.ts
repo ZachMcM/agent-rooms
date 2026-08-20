@@ -338,22 +338,25 @@ describe('message operations', () => {
     })
   })
 
-  it('returns active-room messages in ascending order and advances the cursor', async () => {
+  it('delivers only peer messages and advances the cursor through an interleaved batch', async () => {
     const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'active', conversationId: 'conversation' })
-    const other = await createRoom(db, { roomName: 'other', conversationId: 'other-conversation' })
-    const first = await addMessage(db, active.room.id, active.membership.id)
-    await addMessage(db, other.room.id, other.membership.id)
+    const peerMembership = {
+      id: 'peer-membership',
+      roomId: active.room.id,
+      conversationId: 'peer-conversation',
+      status: 'active' as const,
+    }
+    await db.insert(memberships).values(peerMembership)
+    await addMessage(db, active.room.id, active.membership.id)
+    const second = await addMessage(db, active.room.id, peerMembership.id)
     const last = await addMessage(db, active.room.id, active.membership.id)
 
     const consumed = await consumeNewMessages(db, { conversationId: 'conversation' })
 
     expect(consumed).toEqual({
       room: active.room,
-      messages: [
-        { ...first, replyTo: null },
-        { ...last, replyTo: null },
-      ],
+      messages: [{ ...second, replyTo: null }],
     })
     await expect(
       db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
@@ -364,12 +367,19 @@ describe('message operations', () => {
     })
   })
 
-  it('delivers each message once when two consumers race for the same conversation', async () => {
+  it('delivers each peer message once when two consumers race for the same conversation', async () => {
     const { db, url } = await createTestDatabase()
     const concurrentDb = createDatabase(url)
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
-    const first = await addMessage(db, active.room.id, active.membership.id)
-    const second = await addMessage(db, active.room.id, active.membership.id)
+    const peerMembership = {
+      id: 'peer-membership',
+      roomId: active.room.id,
+      conversationId: 'peer-conversation',
+      status: 'active' as const,
+    }
+    await db.insert(memberships).values(peerMembership)
+    const first = await addMessage(db, active.room.id, peerMembership.id)
+    const second = await addMessage(db, active.room.id, peerMembership.id)
 
     const results = await Promise.allSettled([
       consumeNewMessages(db, { conversationId: 'conversation' }),
@@ -392,6 +402,12 @@ describe('message operations', () => {
   it('hydrates reply targets outside the new-message batch', async () => {
     const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
+    await db.insert(memberships).values({
+      id: 'peer-membership',
+      roomId: active.room.id,
+      conversationId: 'peer-conversation',
+      status: 'active',
+    })
     const [question] = await writeMessages(db, {
       conversationId: 'conversation',
       messages: [{ kind: 'question', body: 'Which database should we use?' }],
@@ -405,10 +421,16 @@ describe('message operations', () => {
       .update(memberships)
       .set({ cursor: question.id })
       .where(eq(memberships.id, active.membership.id))
-    const [answer] = await writeMessages(db, {
-      conversationId: 'conversation',
-      messages: [{ kind: 'answer', body: 'SQLite.', replyToMessageId: question.id }],
-    })
+    const [answer] = await db
+      .insert(messages)
+      .values({
+        roomId: active.room.id,
+        membershipId: 'peer-membership',
+        kind: 'answer',
+        body: 'SQLite.',
+        replyToMessageId: question.id,
+      })
+      .returning()
 
     if (!answer) {
       throw new Error('Answer write did not return an inserted record')
@@ -432,7 +454,14 @@ describe('message operations', () => {
     const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const first = await addMessage(db, active.room.id, active.membership.id)
-    const second = await addMessage(db, active.room.id, active.membership.id)
+    const peerMembership = {
+      id: 'peer-membership',
+      roomId: active.room.id,
+      conversationId: 'peer-conversation',
+      status: 'active' as const,
+    }
+    await db.insert(memberships).values(peerMembership)
+    const second = await addMessage(db, active.room.id, peerMembership.id)
     await db
       .update(memberships)
       .set({ cursor: first.id })
@@ -444,14 +473,17 @@ describe('message operations', () => {
     })
   })
 
-  it('includes messages authored by the consuming membership', async () => {
+  it('skips self-authored messages while advancing the cursor', async () => {
     const { db } = await createTestDatabase()
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const selfAuthored = await addMessage(db, active.room.id, active.membership.id)
 
     await expect(consumeNewMessages(db, { conversationId: 'conversation' })).resolves.toEqual({
       room: active.room,
-      messages: [{ ...selfAuthored, replyTo: null }],
+      messages: [],
     })
+    await expect(
+      db.select().from(memberships).where(eq(memberships.id, active.membership.id)),
+    ).resolves.toEqual([{ ...active.membership, cursor: selfAuthored.id }])
   })
 })

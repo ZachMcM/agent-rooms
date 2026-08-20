@@ -123,7 +123,12 @@ export async function consumeNewMessages(
         .set({ cursor: lastMessage.id })
         .where(eq(memberships.id, activeMembership.membership.id))
 
-      return { room: activeMembership.room, messages: newMessages }
+      return {
+        room: activeMembership.room,
+        messages: newMessages.filter(
+          (message) => message.membershipId !== activeMembership.membership.id,
+        ),
+      }
     },
     { behavior: 'immediate' },
   )
