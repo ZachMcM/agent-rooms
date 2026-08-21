@@ -9,17 +9,17 @@ One person, one SQLite database at `~/.agent-rooms/db.sqlite`. No accounts, no a
 
 Run from the repo root.
 
-| Command                                     | What it does                                                             |
-| ------------------------------------------- | ------------------------------------------------------------------------ |
-| `pnpm install`                              | Install everything                                                       |
-| `pnpm dev`                                  | All dev servers (`api` 61937, `marketing` 3001, `docs` 3002, `web` 3000) |
-| `pnpm build`                                | Full build, ordered by the turbo graph                                   |
-| `pnpm lint` / `pnpm lint:fix`               | oxlint over the whole repo                                               |
-| `pnpm format` / `pnpm format:check`         | oxfmt over the whole repo                                                |
-| `pnpm typecheck`                            | `tsc --noEmit` per package                                               |
-| `pnpm test`                                 | Vitest per package                                                       |
-| `pnpm check`                                | lint + format:check + typecheck + test                                   |
-| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                                    |
+| Command                                     | What it does                                           |
+| ------------------------------------------- | ------------------------------------------------------ |
+| `pnpm install`                              | Install everything                                     |
+| `pnpm dev`                                  | All dev servers (`api` 61937, `site` 3001, `web` 3000) |
+| `pnpm build`                                | Full build, ordered by the turbo graph                 |
+| `pnpm lint` / `pnpm lint:fix`               | oxlint over the whole repo                             |
+| `pnpm format` / `pnpm format:check`         | oxfmt over the whole repo                              |
+| `pnpm typecheck`                            | `tsc --noEmit` per package                             |
+| `pnpm test`                                 | Vitest per package                                     |
+| `pnpm check`                                | lint + format:check + typecheck + test                 |
+| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                  |
 
 oxlint and oxfmt run once over the whole tree from the root. Only `typecheck`, `test`, and `build`
 go through turbo.
@@ -28,8 +28,7 @@ go through turbo.
 
 ```
 apps/
-  marketing   Next.js marketing site
-  docs        Nextra docs theme
+  site        Next.js marketing site and Fumadocs documentation
   web         Client-only TanStack Router Vite SPA, builds to static assets
   api         Express backend/API
   cli         The product, and the only published package
@@ -72,9 +71,7 @@ mistakes and aren't:
 
 - **Drizzle `1.0.0-rc.4`.** 1.0 is unreleased and `latest` is still the 0.x line. drizzle-kit's
   libSQL dialect is `turso`, which covers `file:` urls.
-- **TypeScript 7.0.2**, the native port. `twoslash` (via Nextra) needs a `ts.sys` shape TS 7
-  removed, so `apps/docs` pins `typescript@5.9.3` in its own devDependencies.
-- **`nextra` gets `zod@4.1.12` via a pnpm override.** Its `z.custom()` prop schemas fail on 4.4.
+- **TypeScript 7.0.2**, the native port.
 - **Workspace deps of `cli` live in devDependencies.** In `dependencies` they get rewritten to a
   public range at pack time and fail to resolve on the registry; tsup inlines them with
   `noExternal`. `@libsql/client` has native bindings, so it stays a real dependency marked

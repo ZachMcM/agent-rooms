@@ -2,12 +2,6 @@ packages:
   - apps/*
   - packages/*
 
-# Nextra's prop schemas are built on `z.custom()`, whose implicit-optional behaviour changed
-# after zod 4.1. On 4.4 every `<Layout>` render fails validation on its own `children` prop.
-overrides:
-  nextra>zod: 4.1.12
-  nextra-theme-docs>zod: 4.1.12
-
 allowBuilds:
   '@libsql/client': true
   '@tailwindcss/oxide': true
@@ -35,12 +29,13 @@ catalog:
   drizzle-kit: 1.0.0-rc.4
   drizzle-orm: 1.0.0-rc.4
   express: 5.2.1
+  fumadocs-core: 16.14.5
+  fumadocs-mdx: 15.3.0
+  fumadocs-ui: 16.14.5
+  '@types/mdx': 2.0.13
   next: 16.3.0
-  nextra: 4.6.1
-  nextra-theme-docs: 4.6.1
   oxfmt: 0.62.0
   oxlint: 1.77.0
-  pagefind: 1.5.2
   react: 19.2.8
   react-icons: 5.7.0
   react-dom: 19.2.8

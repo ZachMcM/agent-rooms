@@ -68,7 +68,7 @@ backup data, and install metadata. It preserves `~/.agent-rooms/db.sqlite` by de
 
 ```bash
 pnpm install
-pnpm dev      # api :61937, marketing :3001, docs :3002, web :3000
+pnpm dev      # api :61937, site :3001, web :3000
 pnpm check    # lint, format, typecheck, test
 ```
 
