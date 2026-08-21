@@ -154,3 +154,5 @@ apps/cli/migrations/
 apps/cli/assets/dashboard/
 
 .DS_Store
+
+.pnpm-store/
