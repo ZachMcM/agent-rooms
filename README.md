@@ -75,6 +75,25 @@ pnpm check    # lint, format, typecheck, test
 Requires Node 22.12+ and pnpm 11. See [AGENTS.md](./AGENTS.md) for layout, conventions, and
 toolchain notes.
 
+## Contributing
+
+Start by reading [AGENTS.md](./AGENTS.md), then install dependencies and run the checks locally:
+
+```bash
+pnpm install
+pnpm check
+```
+
+Keep changes focused and add tests for business decisions or database invariants. If a schema
+change requires a migration, generate it with:
+
+```bash
+pnpm --filter @agent-rooms/db db:generate
+```
+
+Include the generated migration with your change and describe the behavior you changed in the
+pull request.
+
 ## License
 
 [MIT](./LICENSE)
