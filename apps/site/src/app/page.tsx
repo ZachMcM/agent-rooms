@@ -44,11 +44,11 @@ export default function HomePage() {
             is taking shape. One local database, no account, no coordination server.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button render={<Link href="/docs/getting-started" />}>
+            <Button nativeButton={false} render={<Link href="/docs/getting-started" />}>
               Get started
               <ArrowRight className="size-4" />
             </Button>
-            <Button variant="outline" render={<a href={githubUrl} />}>
+            <Button variant="outline" nativeButton={false} render={<a href={githubUrl} />}>
               <RiGithubFill className="size-4" />
               View source
             </Button>

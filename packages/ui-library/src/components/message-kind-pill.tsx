@@ -1,8 +1,8 @@
 import { cn } from '@agent-rooms/ui-library/lib/utils'
 import {
-  Activity,
   CircleCheck,
   CircleHelp,
+  HeartPulse,
   Lightbulb,
   TriangleAlert,
   type LucideIcon,
@@ -42,7 +42,7 @@ const messageKindDetails: Record<
     label: 'Status',
     indicatorClassName: 'bg-blue-500',
     textClassName: 'text-blue-500',
-    icon: Activity,
+    icon: HeartPulse,
   },
 }
 
