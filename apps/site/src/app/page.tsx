@@ -11,7 +11,7 @@ export default function HomePage() {
     <main>
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         <Link href="/" className="text-sm font-semibold tracking-tight">
-          agent-rooms
+          Agent Rooms
         </Link>
         <nav aria-label="Main navigation" className="flex items-center gap-1">
           <Link
