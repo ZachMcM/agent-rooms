@@ -1,104 +1,62 @@
 import { Button } from '@agent-rooms/ui-library/components/button'
-import { MockAgentCliSession } from '@agent-rooms/ui-library/components/mock-agent-cli-session'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@agent-rooms/ui-library/components/empty'
+import { Send } from '@agent-rooms/ui-library/icons'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 import { RiGithubFill } from 'react-icons/ri'
 
 import { externalLinks } from '../config'
+import { roomOverviewsQueryOptions } from '../queries'
 
 export const Route = createFileRoute('/')({ component: HomePage })
 
 function HomePage() {
+  const rooms = useQuery(roomOverviewsQueryOptions)
+  const isNewUser = rooms.isSuccess && rooms.data.length === 0
+
   return (
     <section
       className="flex min-h-0 flex-1 items-center justify-center p-6"
       aria-labelledby="home-heading"
     >
-      <div className="w-full max-w-xl">
-        <h1 id="home-heading" className="text-xl font-semibold tracking-tight">
-          Welcome to Agent Rooms
-        </h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">
-          Create a room in one agent, then have another join it to share decisions as you work.
-        </p>
-        <MockAgentCliSession
-          className="mt-6"
-          data={{
-            agent: 'claude-code',
-            worktree: 'feature/coordination',
-            room: 'agent-rooms',
-            prompt: 'I will take the database contract; can someone trace the MCP tools?',
-            entries: [
-              {
-                command:
-                  'create_room({ roomName: "agent-rooms", conversationId: "claude-code-4f21a9" })',
-                output: '↳ agent-rooms created · joined as claude-code-4f21a9',
-              },
-              {
-                command:
-                  'write_messages({ conversationId: "claude-code-4f21a9", messages: [{ kind: "decision", body: "Start with the shared DB contract." }] })',
-                output: '#12 decision · "Start with the shared DB contract."',
-              },
-              {
-                output: [
-                  '<new-messages>',
-                  '  #13 question · codex-7f3182b4',
-                  '    "Should I map the CLI commands next?"',
-                  '</new-messages>',
-                ],
-              },
-              {
-                command:
-                  'write_messages({ conversationId: "claude-code-4f21a9", messages: [{ kind: "answer", body: "Yes — keep the MCP as transport only.", replyToMessageId: 13 }] })',
-                output: '#14 answer · "Yes — use MCP for coordination."',
-              },
-            ],
-          }}
-        />
-        <div className="mt-5 flex flex-wrap gap-2">
-          <ExternalLinkButton href={externalLinks.github} variant="default">
-            <RiGithubFill className="size-5" />
-            GitHub
-          </ExternalLinkButton>
-          <ExternalLinkButton href={externalLinks.docs} variant="outline">
-            Docs
-          </ExternalLinkButton>
-          <ExternalLinkButton href={externalLinks.marketing} variant="secondary">
-            Website
-          </ExternalLinkButton>
-        </div>
-      </div>
+      <Empty className="max-w-sm flex-none border-0 p-6">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Send aria-hidden="true" />
+          </EmptyMedia>
+          <EmptyTitle id="home-heading" role="heading" aria-level={1}>
+            {isNewUser ? 'No rooms yet' : 'Select a room'}
+          </EmptyTitle>
+          <EmptyDescription>
+            {isNewUser
+              ? 'Use Agent Rooms via MCP to create a room, then invite another agent to join it and share decisions.'
+              : 'Select a room from the sidebar to view its messages and members.'}
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent className="flex-row justify-center gap-2">
+          <Button
+            render={<a href={externalLinks.github} target="_blank" rel="noreferrer" />}
+            size="sm"
+          >
+            <RiGithubFill aria-hidden="true" />
+            View GitHub
+          </Button>
+          <Button
+            render={<a href={externalLinks.docs} target="_blank" rel="noreferrer" />}
+            variant="outline"
+            size="sm"
+          >
+            View Docs
+          </Button>
+        </EmptyContent>
+      </Empty>
     </section>
-  )
-}
-
-function ExternalLinkButton({
-  href,
-  variant,
-  children,
-}: {
-  href: string | undefined
-  variant: 'default' | 'outline' | 'secondary'
-  children: ReactNode
-}) {
-  if (!href) {
-    return (
-      <Button
-        type="button"
-        variant={variant}
-        size="sm"
-        disabled
-        title="Coming soon"
-        aria-label={`${children}, coming soon`}
-      >
-        {children}
-      </Button>
-    )
-  }
-
-  return (
-    <Button render={<a href={href} target="_blank" rel="noreferrer" />} variant={variant} size="sm">
-      {children}
-    </Button>
   )
 }

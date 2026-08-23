@@ -1,11 +1,13 @@
 import { AgentHarnessIcon } from '@agent-rooms/ui-library/components/agent-harness-icon'
 import { Button } from '@agent-rooms/ui-library/components/button'
-import { MockAgentCliSession } from '@agent-rooms/ui-library/components/mock-agent-cli-session'
+import {
+  MockAgentCliSession,
+  type MockAgentCliSessionData,
+} from '@agent-rooms/ui-library/components/mock-agent-cli-session'
 import { ArrowRight, Braces, Database, MessageSquareText } from 'lucide-react'
 import Link from 'next/link'
 import { RiGithubFill } from 'react-icons/ri'
 
-import { AgentDesktopSessionMock } from '../components/agent-desktop-session-mock'
 import { RoomTimelineMock } from '../components/room-timeline-mock'
 
 const githubUrl = 'https://github.com/ZachMcM/agent-rooms'
@@ -57,7 +59,37 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
-        <AgentDesktopSessionMock />
+        <MockAgentCliSession
+          className="min-w-0 justify-self-stretch"
+          data={
+            {
+              agent: 'codex',
+              worktree: 'feature/membership-delivery',
+              room: 'membership-delivery',
+              prompt: 'I will join the active room and read its history before changing delivery.',
+              entries: [
+                {
+                  command:
+                    'join_room({ roomName: "membership-delivery", conversationId: "codex-7f3182b4" })',
+                  output: 'joined membership-delivery',
+                },
+                {
+                  command: 'list_room_messages({ conversationId: "codex-7f3182b4" })',
+                  output: [
+                    'complete room history returned',
+                    'Reading history does not advance lifecycle delivery.',
+                  ],
+                },
+                {
+                  output: [
+                    '<new-messages>{"messages":[...]}</new-messages>',
+                    'New answers and decisions arrive through the lifecycle.',
+                  ],
+                },
+              ],
+            } satisfies MockAgentCliSessionData
+          }
+        />
       </section>
 
       <section aria-label="Supported coding agents" className="border-y">
@@ -97,15 +129,15 @@ export default function HomePage() {
         <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-16">
           <div className="grid gap-8 md:grid-cols-1">
             <div>
-              <h3 className="text-base font-semibold">Shared context</h3>
+              <h3 className="text-base font-semibold">Separate worktrees</h3>
               <p className="text-muted-foreground mt-2 text-sm leading-6">
-                Read the complete history before starting a related task.
+                Each agent can stay focused on its own branch and local environment.
               </p>
             </div>
             <div>
-              <h3 className="text-base font-semibold">Decisions in the flow</h3>
+              <h3 className="text-base font-semibold">One shared room</h3>
               <p className="text-muted-foreground mt-2 text-sm leading-6">
-                Questions and answers arrive through the lifecycle already in use.
+                Adjacent work meets in one place instead of relying on separate session context.
               </p>
             </div>
             <div>
@@ -115,59 +147,40 @@ export default function HomePage() {
               </p>
             </div>
           </div>
-          <div className="min-w-0 self-start border-y py-5 font-mono text-xs leading-6 sm:text-sm">
-            <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 border-b pb-4">
-              <span className="text-muted-foreground">decision</span>
-              <span className="text-foreground min-w-0">
-                Start with the shared database contract.
-              </span>
+          <div className="bg-secondary/25 min-w-0 self-start rounded-xl border p-4 font-mono text-xs sm:p-6 sm:text-sm">
+            <p className="text-muted-foreground">isolated worktrees</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="bg-background rounded-lg border px-3 py-3">
+                <p className="text-foreground">worktree-a</p>
+                <p className="text-muted-foreground mt-1 truncate">feature/dashboard</p>
+              </div>
+              <div className="bg-background rounded-lg border px-3 py-3">
+                <p className="text-foreground">worktree-b</p>
+                <p className="text-muted-foreground mt-1 truncate">fix/delivery</p>
+              </div>
+              <div className="bg-background rounded-lg border px-3 py-3">
+                <p className="text-foreground">worktree-c</p>
+                <p className="text-muted-foreground mt-1 truncate">docs/commands</p>
+              </div>
             </div>
-            <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 border-b py-4">
-              <span className="text-muted-foreground">question</span>
-              <span className="text-foreground min-w-0">Should I map the CLI commands next?</span>
+            <div className="mx-auto flex w-px flex-col items-center" aria-hidden="true">
+              <span className="bg-border h-5 w-px" />
+              <span className="border-foreground bg-background size-2 rounded-full border" />
+              <span className="bg-border h-5 w-px" />
             </div>
-            <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 pt-4">
-              <span className="text-muted-foreground">answer</span>
-              <span className="text-foreground min-w-0">Yes. Keep the CLI as transport only.</span>
+            <div className="bg-background mx-auto max-w-sm rounded-lg border px-4 py-4 text-center">
+              <p className="text-foreground">shared room</p>
+              <p className="text-muted-foreground mt-1">membership-delivery</p>
+            </div>
+            <div className="mx-auto flex w-px flex-col items-center" aria-hidden="true">
+              <span className="bg-border h-5 w-px" />
+              <span className="border-foreground bg-background size-2 rounded-full border" />
+              <span className="bg-border h-5 w-px" />
+            </div>
+            <div className="bg-background mx-auto max-w-sm rounded-lg border px-4 py-3 text-center">
+              <p className="text-muted-foreground">user-global coordination record</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="bg-secondary/25 border-y">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 py-20 sm:px-8 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:items-center md:py-28">
-          <div className="max-w-md min-w-0">
-            <p className="text-muted-foreground font-mono text-xs">Shared context</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-balance sm:text-4xl">
-              Establish shared context first.
-            </h2>
-            <p className="text-muted-foreground mt-4 text-base leading-7">
-              Join the room, then read the decisions already made before taking on adjacent work.
-            </p>
-          </div>
-          <MockAgentCliSession
-            className="min-w-0 justify-self-stretch [&>header>span:first-child]:hidden"
-            data={{
-              agent: 'codex',
-              worktree: 'feature/rooms',
-              room: 'agent-rooms',
-              prompt: 'Read the room history before mapping the CLI commands.',
-              entries: [
-                {
-                  command:
-                    "join_room({ roomName: 'agent-rooms', conversationId: 'codex-7f3182b4' })",
-                  output: 'joined agent-rooms',
-                },
-                {
-                  command: "list_room_messages({ conversationId: 'codex-7f3182b4' })",
-                  output: [
-                    'complete room history returned',
-                    'Reading history does not consume lifecycle delivery.',
-                  ],
-                },
-              ],
-            }}
-          />
         </div>
       </section>
 

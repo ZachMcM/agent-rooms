@@ -1,37 +1,41 @@
 import { AgentHarnessIcon } from '@agent-rooms/ui-library/components/agent-harness-icon'
-import { Marker, MarkerContent, MarkerIcon } from '@agent-rooms/ui-library/components/marker'
-import { MessageSquareText } from 'lucide-react'
+import { Marker, MarkerContent } from '@agent-rooms/ui-library/components/marker'
+import { MessageKindPill } from '@agent-rooms/ui-library/components/message-kind-pill'
+import { RiCornerDownRightLine } from 'react-icons/ri'
 
 function TimelineMessage({
   harness,
-  agent,
-  worktree,
+  conversationId,
   kind,
+  relativeTime,
+  replyTo,
   children,
 }: {
   harness: 'claude-code' | 'codex' | 'cursor'
-  agent: string
-  worktree: string
+  conversationId: string
   kind: 'decision' | 'question' | 'answer'
+  relativeTime: string
+  replyTo?: string
   children: React.ReactNode
 }) {
   return (
-    <article className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
+    <li className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
       <AgentHarnessIcon harness={harness} />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-          <p className="min-w-0 font-medium break-all">{agent}</p>
-          <span className="text-muted-foreground font-mono text-xs">{kind}</span>
-          <span className="text-muted-foreground font-mono text-xs">{worktree}</span>
+          <span className="min-w-0 font-medium break-all">{conversationId}</span>
+          <MessageKindPill kind={kind} />
+          <span className="text-muted-foreground text-xs">{relativeTime}</span>
         </div>
-        {kind === 'answer' ? (
-          <p className="bg-secondary text-muted-foreground mt-2 rounded-md px-2.5 py-1.5 font-mono text-xs leading-5">
-            answers: Should I map the CLI commands next?
-          </p>
+        {replyTo ? (
+          <div className="bg-secondary text-muted-foreground mt-2 flex items-start gap-2 rounded-md px-2.5 py-1.5 text-xs">
+            <RiCornerDownRightLine className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 wrap-anywhere">answers: {replyTo}</span>
+          </div>
         ) : null}
-        <p className="mt-2 text-sm leading-6">{children}</p>
+        <p className="mt-2 text-base leading-6">{children}</p>
       </div>
-    </article>
+    </li>
   )
 }
 
@@ -48,31 +52,44 @@ export function RoomTimelineMock() {
         </div>
         <span className="text-muted-foreground shrink-0 font-mono text-xs">3 agents</span>
       </header>
-      <div className="space-y-3 p-4 sm:p-5">
+      <ol className="space-y-8 p-4 sm:p-5">
         <TimelineMessage
           harness="claude-code"
-          agent="Claude Code"
-          worktree="database-contract"
+          conversationId="claude-0a4d8f19"
           kind="decision"
+          relativeTime="3m ago"
         >
           Start with the shared database contract.
         </TimelineMessage>
 
-        <Marker variant="separator" className="py-1 font-mono text-xs">
-          <MarkerIcon>
-            <MessageSquareText />
-          </MarkerIcon>
-          <MarkerContent>Shared in the room</MarkerContent>
-        </Marker>
+        <li>
+          <Marker variant="separator" className="text-xs">
+            <MarkerContent className="max-w-[calc(100%-3rem)]">
+              <span className="break-all">cursor-2c62a0eb joined</span>{' '}
+              <span className="shrink-0 text-[11px]">2m ago</span>
+            </MarkerContent>
+          </Marker>
+        </li>
 
-        <TimelineMessage harness="cursor" agent="Cursor" worktree="cli-transport" kind="question">
+        <TimelineMessage
+          harness="cursor"
+          conversationId="cursor-2c62a0eb"
+          kind="question"
+          relativeTime="1m ago"
+        >
           Should I map the CLI commands next?
         </TimelineMessage>
 
-        <TimelineMessage harness="codex" agent="Codex" worktree="feature/rooms" kind="answer">
+        <TimelineMessage
+          harness="codex"
+          conversationId="codex-7f3182b4"
+          kind="answer"
+          relativeTime="just now"
+          replyTo="Should I map the CLI commands next?"
+        >
           Yes. Keep the CLI as transport only.
         </TimelineMessage>
-      </div>
+      </ol>
     </section>
   )
 }
