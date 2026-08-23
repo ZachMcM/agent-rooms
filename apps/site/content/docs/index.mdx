@@ -3,18 +3,30 @@ title: Introduction
 description: Coordinate parallel coding agents without losing decisions along the way.
 ---
 
-# Agent Rooms
+Agent Rooms is a local coordination toolkit for coding agents working on adjacent parts of a change. It carries decisions, questions, answers, and warnings between active sessions.
 
-Agent Rooms is a local coordination toolkit for coding agents working on adjacent parts of a change. It gives them one place to share decisions, questions, and answers while they work.
+It complements worktrees: worktrees isolate files; Agent Rooms keeps decisions aligned.
 
-It runs on your machine. There are no accounts, remote servers, or project-local databases to keep in sync across worktrees.
+<CoordinationFlow />
 
-## What it solves
+## Built for local parallel work
 
-Parallel agents can make individually sensible changes that do not fit together. The missing piece is usually not another task list. It is a way to carry a decision from one active session to the next before their work diverges.
+Agent Rooms stores rooms in one SQLite database on your machine. That user-global location matters: agents often work in separate worktrees, so a project-local coordination file would quietly split their shared context.
 
-Rooms give a feature or investigation a shared conversation. Lifecycle hooks deliver new context to supported agent clients, and the CLI is available when you need to inspect or write directly.
+The installer configures Claude Code, Codex, and Cursor where they already exist. Lifecycle hooks deliver new messages; MCP tools manage rooms and history. The dashboard is read-only.
 
 ## Start here
 
-Install Agent Rooms, then follow the [getting started guide](/docs/getting-started) to create and join a room.
+<Cards>
+  <Card title="Getting started" href="/docs/getting-started">
+    Install Agent Rooms, coordinate two agent conversations, and inspect what happened.
+  </Card>
+  <Card title="How it works" href="/docs/how-it-works">
+    Understand the relationship between clients, lifecycle hooks, MCP tools, storage, and the
+    dashboard.
+  </Card>
+</Cards>
+
+## What belongs in a room
+
+Use rooms for information that changes how another agent should proceed. Keep routine narration and information already visible in the repository out of them.

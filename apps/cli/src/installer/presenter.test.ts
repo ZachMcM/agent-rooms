@@ -152,4 +152,52 @@ describe('installer presenter', () => {
       'To remove it later, run agent-rooms uninstall --yes --purge-data.\n',
     ])
   })
+
+  it('asks users to trust Codex hooks only after patching them', () => {
+    const stdout: string[] = []
+    Object.defineProperty(process.stdout, 'isTTY', { configurable: true, value: false })
+    Object.defineProperty(process.stderr, 'isTTY', { configurable: true, value: false })
+    process.stdout.write = ((message: string | Uint8Array) => {
+      stdout.push(String(message))
+      return true
+    }) as typeof process.stdout.write
+
+    const presenter = createInstallerPresenter()
+    presenter.install(
+      {
+        version: '1.2.3',
+        changes: [{ action: 'patch codex hooks', path: '/tmp/.codex/hooks.json' }],
+        warnings: [],
+      },
+      false,
+    )
+
+    expect(stdout).toContain(
+      "Codex requires you to review and trust the Agent Rooms hooks before they run. In the Codex CLI, run /hooks; in Codex Desktop, open Codex's hook review.\n",
+    )
+
+    stdout.length = 0
+    presenter.install(
+      {
+        version: '1.2.3',
+        changes: [{ action: 'install codex skill', path: '/tmp/.agents/skills/agent-rooms' }],
+        warnings: [],
+      },
+      false,
+    )
+
+    expect(stdout.join('')).not.toContain('review and trust the Agent Rooms hooks')
+
+    stdout.length = 0
+    presenter.install(
+      {
+        version: '1.2.3',
+        changes: [{ action: 'patch codex hooks', path: '/tmp/.codex/hooks.json' }],
+        warnings: [],
+      },
+      true,
+    )
+
+    expect(stdout.join('')).not.toContain('review and trust the Agent Rooms hooks')
+  })
 })

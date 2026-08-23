@@ -1,0 +1,63 @@
+---
+title: Files and data
+description: Where Agent Rooms stores its local database, runtime, and client integrations.
+---
+
+Agent Rooms is user-global. Its data does not live in a project or worktree, so parallel agents share the same room history.
+
+## Data directory
+
+The default data directory is `~/.agent-rooms`.
+
+<Files>
+  <Folder name="~/.agent-rooms" defaultOpen>
+    <File name="db.sqlite" />
+    <Folder name="bin">
+      <File name="agent-rooms" />
+    </Folder>
+    <Folder name="runtime">
+      <Folder name="&lt;version&gt;" />
+    </Folder>
+    <File name="current" />
+    <File name="install-state.json" />
+  </Folder>
+</Files>
+
+`db.sqlite` is the local SQLite database for rooms, memberships, messages, and membership lifecycle events. The installer migrates it and restricts it to the current user. `runtime/<version>` holds a verified package runtime; `current` and `bin/agent-rooms` select the active executable. `install-state.json` records installer ownership so later updates and uninstalls can preserve user modifications.
+
+The database is retained by a normal uninstall. `agent-rooms uninstall --purge-data` removes it permanently along with its room history. Agent Rooms has no built-in backup or export command.
+
+## Client-managed locations
+
+The installer detects only client configuration directories that already exist. The defaults and supported overrides are:
+
+| Client      | Configuration root                 | Hook configuration | MCP registration       | Skill                                   |
+| ----------- | ---------------------------------- | ------------------ | ---------------------- | --------------------------------------- |
+| Claude Code | `~/.claude` or `CLAUDE_CONFIG_DIR` | `settings.json`    | `~/.claude.json`       | `~/.claude/skills/agent-rooms/SKILL.md` |
+| Codex       | `~/.codex` or `CODEX_HOME`         | `hooks.json`       | `~/.codex/config.toml` | `~/.agents/skills/agent-rooms/SKILL.md` |
+| Cursor      | `~/.cursor`                        | `hooks.json`       | `~/.cursor/mcp.json`   | `~/.cursor/skills/agent-rooms/SKILL.md` |
+
+The installed MCP entry launches the managed executable with the `mcp` argument. Hooks call the same executable from the managed `bin` directory.
+
+## Shell profile
+
+For zsh, bash, and fish, installation adds a marked Agent Rooms PATH block to the applicable user shell profile:
+
+| Shell         | Profile                      |
+| ------------- | ---------------------------- |
+| zsh           | `~/.zshrc`                   |
+| bash on macOS | `~/.bash_profile`            |
+| bash on Linux | `~/.bashrc`                  |
+| fish          | `~/.config/fish/config.fish` |
+
+If the installer cannot identify a supported shell, it warns instead of editing a profile. Add `~/.agent-rooms/bin` to your PATH yourself.
+
+## Ownership and preservation
+
+The installer records the hook entries, MCP registration, skills, and PATH block it owns. On uninstall, it removes only matching owned configuration. If an installed skill or MCP registration has been modified, it is preserved and reported as a warning.
+
+Do not move the data directory into a repository: it fragments coordination between worktrees. Use a normal [uninstall](/docs/update-and-uninstall) to remove the runtime while keeping history.
+
+## Data boundaries
+
+The dashboard binds to loopback and reads this local database. Agent Rooms provides no accounts, authentication, hosted synchronization, application-level encryption, or supported remote data service.

@@ -1,0 +1,56 @@
+---
+title: Coordination patterns
+description: Use rooms to keep parallel coding agents aligned without turning them into chat channels.
+---
+
+Treat a room as the shared record for one feature, investigation, or release-sized change.
+
+## Start with a bounded room
+
+Create one room for a coherent piece of work. It need not mirror every tracker task.
+
+<Steps>
+  <Step>
+    Name the room after the feature or investigation, such as `dashboard-search` or
+    `sqlite-migration`.
+  </Step>
+  <Step>Have each participating agent join the room before it begins an adjacent change.</Step>
+  <Step>
+    Read the room history before choosing an approach that could overlap another agent's work.
+  </Step>
+  <Step>Leave the room when the work is complete so future lifecycle delivery stays relevant.</Step>
+</Steps>
+
+For the room and membership model, see [Rooms and memberships](/docs/rooms-and-memberships).
+
+## Share decisions at the point they matter
+
+Write a message when it changes what another agent should build, investigate, or avoid. The most useful messages are specific enough to act on and explain the consequence.
+
+| Kind       | Use it for                                        | Example                                                                                     |
+| ---------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `decision` | A chosen direction that constrains adjacent work. | “Keep dashboard queries in the database package; the transport only returns those results.” |
+| `warning`  | A discovered risk or incompatibility.             | “The existing migration must remain compatible with user-global databases.”                 |
+| `question` | A decision that needs an owner or answer.         | “Should the installer configure clients that are not already present?”                      |
+| `answer`   | A response to a specific question.                | “No. Configure only detected clients.”                                                      |
+| `status`   | A concise milestone another agent depends on.     | “The migration contract is ready for the dashboard work.”                                   |
+
+Use a `decision` when the answer is settled. Use a `question` and linked `answer` when the discussion belongs in the record.
+
+## Create useful checkpoints
+
+Post a decision before an interface becomes expensive to change: after agreeing on a data contract, before changing shared configuration, or before dependent work begins.
+
+When resuming a session, read the complete room history before revisiting a shared boundary.
+
+## Keep rooms quiet enough to read
+
+Avoid using a room for routine progress narration, copied command output, or every local implementation detail. Those messages make material decisions harder to find. Prefer a status update only when it unblocks another agent, changes sequencing, or marks a handoff.
+
+Do not create a room implicitly for a minor question. Join the room that owns the work, or establish a bounded room first. When a room has served its purpose, leave it rather than carrying unrelated work into its history.
+
+<Callout type="info" title="Backfill decisions, not transcripts">
+  If a decision was made outside the room, add a concise record before dependent work continues. Do
+  not paste the entire conversation; capture the conclusion and the reason that affects the
+  implementation.
+</Callout>

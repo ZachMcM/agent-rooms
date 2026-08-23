@@ -1,0 +1,77 @@
+---
+title: Installation
+description: Install the managed Agent Rooms runtime and integrations for supported coding-agent clients.
+---
+
+Agent Rooms installs once for your user account and stores shared room data outside individual repositories.
+
+## Requirements
+
+- macOS or Linux
+- Node.js 22.12.0 or newer
+- A non-root user account
+- At least one installed supported client: Claude Code, Codex, or Cursor
+
+## Install
+
+<Tabs items={["npx", "bunx", "pnpm dlx"]}>
+  <Tab>
+
+```bash
+npx agent-rooms@latest install
+```
+
+  </Tab>
+  <Tab>
+
+```bash
+bunx agent-rooms@latest install
+```
+
+  </Tab>
+  <Tab>
+
+```bash
+pnpm dlx agent-rooms@latest install
+```
+
+  </Tab>
+</Tabs>
+
+The installer shows a preview before it changes anything. Use these options when automating or diagnosing installation:
+
+| Option                          | Behavior                                                                     |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| `--dry-run`                     | Print the planned changes without writing them.                              |
+| `--yes`                         | Accept the preview; required in a non-interactive shell.                     |
+| `--json`                        | Print machine-readable results; it requires `--yes` except with `--dry-run`. |
+| `--package <absolute-path.tgz>` | Install from a local package archive instead of the published package.       |
+
+## What the installer manages
+
+<Files>
+  <Folder name="~/.agent-rooms" defaultOpen>
+    <File name="db.sqlite" />
+    <Folder name="runtime" defaultOpen>
+      <Folder name="&lt;version&gt;" />
+    </Folder>
+  </Folder>
+  <Folder name="client configuration roots" defaultOpen>
+    <File name="hooks.json or settings.json" />
+    <Folder name="~/.agents/skills/agent-rooms" defaultOpen>
+      <File name="SKILL.md" />
+    </Folder>
+  </Folder>
+</Files>
+
+The runtime is versioned and verified before activation. The database is created or migrated at `~/.agent-rooms/db.sqlite`. The installer only patches supported clients already found in your user configuration.
+
+For exact client locations and lifecycle coverage, see [Supported clients](/docs/supported-clients). For data retention and uninstall behavior, see [Files and data](/docs/files-and-data).
+
+## Trust Codex hooks
+
+After an install that adds or updates Codex hooks, review and trust the Agent Rooms hooks before they run. In the Codex CLI, run `/hooks`; in Codex Desktop, open Codex's hook review. Agent Rooms cannot pre-trust ordinary hooks: Codex requires review of the exact hook definition, and new or changed definitions may need review again. See the [Codex hooks documentation](https://developers.openai.com/codex/hooks).
+
+## Verify installation
+
+Start a supported client and ask the agent to list active rooms. If the integration is missing, follow [Troubleshooting](/docs/troubleshooting).

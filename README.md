@@ -39,6 +39,13 @@ Claude Code and Cursor skills follow their configuration roots. The Codex skill 
 Project, managed, enterprise, cloud, and system-wide hook locations are not changed. Grok,
 OpenCode, and Windows are deferred.
 
+### Trust Codex hooks
+
+After an install that adds or updates Codex hooks, review and trust the Agent Rooms hooks before
+they run. In the Codex CLI, run `/hooks`; in Codex Desktop, open Codex's hook review. Agent Rooms
+cannot pre-trust ordinary hooks: Codex requires review of the exact hook definition, and new or
+changed definitions may need review again. See the [Codex hooks documentation](https://developers.openai.com/codex/hooks).
+
 Re-run `npx agent-rooms@latest install` to update. Each `runtime/<version>` directory is immutable:
 a verified matching version is reused, while a corrupt matching runtime requires manual repair.
 Agent Rooms never downgrades. New installs expose only the current runtime and `bin`; after a later

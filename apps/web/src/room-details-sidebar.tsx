@@ -284,7 +284,7 @@ function MessageKindProgress({
   count: number
   value: number
 }) {
-  const { label, indicatorClassName } = messageKindDetails[kind]
+  const { label } = messageKindDetails[kind]
 
   return (
     <Progress
@@ -292,7 +292,6 @@ function MessageKindProgress({
       aria-label={`${label}: ${count}`}
       className="grid grid-cols-[5rem_minmax(0,1fr)_1.5rem] items-center gap-2"
       trackClassName="col-start-2 row-start-1 h-2"
-      indicatorClassName={indicatorClassName}
     >
       <ProgressLabel className="col-start-1 row-start-1 text-xs font-normal">{label}</ProgressLabel>
       <ProgressValue className="col-start-3 row-start-1">{() => count}</ProgressValue>

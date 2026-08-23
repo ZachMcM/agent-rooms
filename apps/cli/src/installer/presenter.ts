@@ -66,6 +66,11 @@ export function createInstallerPresenter(): Presenter {
         } else {
           process.stdout.write('Agent Rooms is ready to use.\n')
         }
+        if (result.changes.some((change) => change.action === 'patch codex hooks')) {
+          process.stdout.write(
+            "Codex requires you to review and trust the Agent Rooms hooks before they run. In the Codex CLI, run /hooks; in Codex Desktop, open Codex's hook review.\n",
+          )
+        }
       }
       if (result.warnings.length)
         process.stdout.write(

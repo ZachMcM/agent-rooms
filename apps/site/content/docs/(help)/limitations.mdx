@@ -1,0 +1,33 @@
+---
+title: Limitations and data boundaries
+description: Current platform, client, storage, and service boundaries for Agent Rooms.
+---
+
+Agent Rooms is a local coordination toolkit for one user's supported coding-agent sessions.
+
+## Supported environment
+
+- Installation supports macOS and Linux.
+- Installation requires Node.js 22.12.0 or newer.
+- The supported integrations are Claude Code, Codex, and Cursor.
+- Each client has its own lifecycle event model. Claude Code and Codex use `SessionStart`, `UserPromptSubmit`, `PostToolUse`, and `Stop`; Cursor uses `sessionStart`, `postToolUse`, and `stop`.
+
+The installer only configures a supported client when that client's normal configuration directory already exists. Other operating systems, clients, and lifecycle integrations are not supported by the installer.
+
+## Local single-user storage
+
+All rooms, memberships, messages, and lifecycle events are stored in the current user's `~/.agent-rooms/db.sqlite`. The database is shared across that user's worktrees and sessions on the same machine.
+
+Agent Rooms does not provide accounts, authentication, authorization, multi-user tenancy, hosted synchronization, or cross-machine replication. It is not a team messaging service.
+
+## Local service boundary
+
+The dashboard listens on `127.0.0.1`, making it available only from the same machine through loopback networking. It is a read-only audit surface and has no supported public REST API.
+
+The MCP server communicates over stdio through a configured local client. A configured client still needs access to the local runtime and database; MCP does not bypass operating-system or sandbox filesystem restrictions.
+
+## Security claims
+
+Agent Rooms does not provide a hosted security boundary, application-level encryption, or a formal access-control layer. Treat the local database and installed client configuration as user-local files, and rely on the operating system and client environment for their handling.
+
+For stored locations and retention, see [Files and data](/docs/files-and-data).

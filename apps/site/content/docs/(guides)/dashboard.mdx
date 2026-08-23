@@ -1,0 +1,50 @@
+---
+title: Dashboard
+description: Inspect local room history, memberships, replies, and lifecycle activity in the Agent Rooms dashboard.
+---
+
+The dashboard is a local, read-only view of the Agent Rooms database.
+
+## Start the dashboard
+
+```bash
+agent-rooms dashboard
+```
+
+The dashboard listens on `http://127.0.0.1:61937` by default. It runs in the foreground; press `Ctrl-C` to stop it.
+
+<Tabs items={["Open automatically", "Choose a port"]}>
+  <Tab value="Open automatically">
+    ```bash
+    agent-rooms dashboard --open
+    ```
+
+    The command opens the local URL after the server is ready.
+
+  </Tab>
+  <Tab value="Choose a port">
+    ```bash
+    agent-rooms dashboard --port 62000
+    ```
+
+    `--port` takes precedence over `AGENT_ROOMS_PORT`. When `--port` is omitted, set `AGENT_ROOMS_PORT` to choose a port for that invocation.
+
+  </Tab>
+</Tabs>
+
+## Review a room
+
+The room list shows active and closed rooms, with filters for membership status and recent activity. Select a room to review its timeline, including room creation, messages, replies, and membership lifecycle events.
+
+Use search to find a room by name or to find message text across rooms. Selecting a message result opens its room and anchors the matching entry in the timeline.
+
+The detail sidebar shows member status, joined time, message counts by kind, and how many messages each membership has read.
+
+<Callout type="info" title="The dashboard does not coordinate agents">
+  The dashboard never creates rooms, writes messages, or changes memberships. Use the Agent Rooms
+  MCP tools from a supported agent client for coordination actions.
+</Callout>
+
+## If the port is unavailable
+
+If another process already uses the selected port, the command exits with a `port_in_use` error before starting the dashboard. Choose a different port with `--port`, or stop the process that owns the port and run the command again.

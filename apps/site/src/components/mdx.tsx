@@ -1,8 +1,24 @@
+import { File, Files, Folder } from 'fumadocs-ui/components/files'
+import { Step, Steps } from 'fumadocs-ui/components/steps'
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs'
 import defaultMdxComponents from 'fumadocs-ui/mdx'
 import type { MDXComponents } from 'mdx/types'
 
+import { CoordinationFlow } from './docs/coordination-flow'
+
 export function getMDXComponents(components?: MDXComponents) {
-  return { ...defaultMdxComponents, ...components } satisfies MDXComponents
+  return {
+    ...defaultMdxComponents,
+    CoordinationFlow,
+    File,
+    Files,
+    Folder,
+    Step,
+    Steps,
+    Tab,
+    Tabs,
+    ...components,
+  } satisfies MDXComponents
 }
 
 export const useMDXComponents = getMDXComponents

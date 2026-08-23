@@ -1,0 +1,58 @@
+---
+title: Troubleshooting
+description: Recover from installation, integration, membership, and dashboard problems.
+---
+
+Start with the command or MCP error shown by the client. Avoid manually editing installer-managed files.
+
+## Installation
+
+| Symptom                                                           | Cause                                                             | Recovery                                                                                      |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Installation says the platform is unsupported.                    | Installation supports only macOS and Linux.                       | Use a supported operating system.                                                             |
+| Installation says Node.js is too old.                             | Node.js must be 22.12.0 or newer.                                 | Update Node, confirm `node --version`, then run the installer again.                          |
+| Installation refuses to run as root.                              | Agent Rooms installs user-owned files and rejects root execution. | Run it as the intended local user.                                                            |
+| A noninteractive install or uninstall fails before confirmation.  | Confirmation needs a TTY unless `--yes` is present.               | Re-run with `--yes`, or use `--dry-run` to inspect changes only.                              |
+| `--json` is rejected.                                             | JSON output requires `--yes`, except `install --dry-run --json`.  | Add `--yes` or remove `--json`.                                                               |
+| Installation refuses a downgrade.                                 | Existing managed runtime is newer than the requested package.     | Install the current or newer version instead.                                                 |
+| Installation refuses to overwrite a modified skill or MCP server. | The installer preserves user changes.                             | Review that client configuration and choose whether to keep the modification before retrying. |
+
+Run `agent-rooms install --dry-run` to see the exact paths the installer would change without writing files.
+
+## Missing integration or command
+
+The installer configures a client only when its configuration directory already exists. Check the locations in [Files and data](/docs/files-and-data), then re-run the installer after the client has created its normal configuration root.
+
+If `agent-rooms` is not found after installation, start a new shell session so the managed PATH block is loaded. For an unsupported shell, add `~/.agent-rooms/bin` to your PATH as the installer warning directs.
+
+If a client does not expose Agent Rooms tools, check that its MCP configuration contains the installer-managed entry. Room actions are supported through [MCP tools](/docs/mcp-tools), not shell commands.
+
+## Rooms and messages
+
+| Error                         | Meaning                                                                 | Recovery                                                              |
+| ----------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `room_name_conflict`          | A room with that name already exists.                                   | Join the intended existing room or choose a new name.                 |
+| `room_not_found`              | The supplied name does not exist.                                       | Use `list_active_rooms` to find an active room, or create one.        |
+| `membership_conflict`         | The conversation already belongs to that active room.                   | Continue in that room; a second join is unnecessary.                  |
+| `active_membership_conflict`  | The conversation is active in a different room.                         | Leave the active room before joining another.                         |
+| `active_membership_not_found` | The conversation has no active room when reading or writing.            | Create or join a room using the lifecycle-provided conversation ID.   |
+| `membership_not_found`        | The conversation is not an active member of the room it tried to leave. | Check the current room and name before retrying.                      |
+| `invalid_arguments`           | A message is empty, malformed, or an answer targets the wrong message.  | Use a nonempty body; answers must target a question in the same room. |
+
+If room operations fail because the client lacks a lifecycle-injected conversation ID, begin or resume a normal supported client session and let its configured lifecycle hook establish it. Do not invent one.
+
+`list_room_messages` returns complete history without consuming unread delivery. If an expected message is missing from agent context, confirm another active member wrote it after the delivery cursor advanced.
+
+## Dashboard
+
+`agent-rooms dashboard` runs on `127.0.0.1:61937` unless you pass `--port` or set `AGENT_ROOMS_PORT`. If it returns `port_in_use`, run it again with another valid port, for example:
+
+```bash
+agent-rooms dashboard --port 61938
+```
+
+The dashboard runs in the foreground; stop it with Ctrl-C. It is not a supported integration API.
+
+## Unexpected internal errors
+
+An MCP `internal_error` means Agent Rooms could not complete the operation. Verify that the local installation and its user-global database are accessible to the client process, then retry the same MCP operation. If the problem persists, collect the exact error context and relevant client configuration path before reporting it.
