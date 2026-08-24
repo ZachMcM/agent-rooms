@@ -54,6 +54,11 @@ export async function verifyRuntimeTree(
     trustedBase,
     'agent-rooms skill',
   )
+  await assertNonEmptyFile(
+    join(packageRoot, 'assets', 'agent-rooms', 'opencode-plugin.ts'),
+    trustedBase,
+    'agent-rooms opencode plugin',
+  )
   await assertDashboardAssets(join(packageRoot, 'assets', 'dashboard'), trustedBase)
 
   const result = await runForOutput(run, 'node', [executablePath, '--version'])

@@ -8,6 +8,7 @@ import { createDatabase, runMigrations } from '@agent-rooms/db'
 import {
   configPath,
   mcpConfigPath,
+  opencodePluginPath,
   partialInstallError,
   patchClients,
   pathWarning,
@@ -155,15 +156,25 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
       packageRoot = stagedPackageRoot(stage)
     }
     const skill = await readSkill(packageRoot, context.home)
-    await preflightTargets(context, skill)
+    const plugin = await readPlugin(packageRoot, context.home)
+    await preflightTargets(
+      context,
+      skill,
+      plugin,
+      priorManifest?.skills ?? [],
+      priorManifest?.plugins ?? [],
+    )
     await migrateDatabase(context)
     const activation = await prepareRuntime(context, stage, input.version, publication)
     await removeOwnedPath(stage, context.home)
     const clientResult = await patchClientsAfterActivation(
       context,
       skill,
+      plugin,
       priorManifest?.hooks ?? [],
       priorManifest?.mcps ?? [],
+      priorManifest?.skills ?? [],
+      priorManifest?.plugins ?? [],
       activation,
     )
     try {
@@ -180,6 +191,7 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
         hooks: clientResult.hooks,
         mcps: clientResult.mcps,
         skills: clientResult.skills,
+        plugins: clientResult.plugins,
         profiles: clientResult.profiles,
       }
       await writePrivateFileAtomically(
@@ -215,12 +227,23 @@ async function restoreRuntimeLinks(activation: RuntimeActivation, error: unknown
 async function patchClientsAfterActivation(
   context: Context,
   skill: string,
-  priorHooks: Parameters<typeof patchClients>[2],
-  priorMcps: Parameters<typeof patchClients>[3],
+  plugin: string,
+  priorHooks: Parameters<typeof patchClients>[3],
+  priorMcps: Parameters<typeof patchClients>[4],
+  priorSkills: Parameters<typeof patchClients>[5],
+  priorPlugins: Parameters<typeof patchClients>[6],
   activation: RuntimeActivation,
 ): ReturnType<typeof patchClients> {
   try {
-    return await patchClients(context, skill, priorHooks, priorMcps)
+    return await patchClients(
+      context,
+      skill,
+      plugin,
+      priorHooks,
+      priorMcps,
+      priorSkills,
+      priorPlugins,
+    )
   } catch (error) {
     return await restoreRuntimeLinks(activation, error)
   }
@@ -237,6 +260,8 @@ export async function runUninstall(input: UninstallInput): Promise<UninstallResu
   warnings.push(...(await removeClientMcps(manifest.mcps, context.home)))
   for (const file of manifest.skills)
     warnings.push(...(await removeIfUnchanged(file, 'skill', context.home)))
+  for (const file of manifest.plugins)
+    warnings.push(...(await removeIfUnchanged(file, 'plugin', context.home)))
   for (const file of manifest.profiles)
     warnings.push(...(await removeProfileBlockIfUnchanged(file, context.home)))
   await removeOwnedPath(context.bin, context.home)
@@ -297,7 +322,11 @@ async function installPlan(context: Context, version: string): Promise<Change[]>
     { path: context.bin, action: 'update executable link' },
   ]
   for (const root of context.roots) {
-    changes.push({ path: configPath(root), action: `patch ${root.client} hooks` })
+    changes.push(
+      root.client === 'opencode'
+        ? { path: opencodePluginPath(root), action: 'install opencode plugin' }
+        : { path: configPath(root), action: `patch ${root.client} hooks` },
+    )
     changes.push({
       path: mcpConfigPath(root, context.home),
       action: `register ${root.client} MCP server`,
@@ -320,6 +349,7 @@ function uninstallPlan(context: Context, manifest: Manifest, purgeData: boolean)
       action: 'remove owned MCP server',
     })),
     ...manifest.skills.map(({ path }) => ({ path, action: 'remove unchanged skill' })),
+    ...manifest.plugins.map(({ path }) => ({ path, action: 'remove unchanged plugin' })),
     ...manifest.profiles.map(({ path }) => ({ path, action: 'remove PATH block' })),
     { path: context.root, action: 'remove runtime and manifest' },
     ...(purgeData ? [{ path: join(context.root, 'db.sqlite'), action: 'remove database' }] : []),
@@ -355,6 +385,13 @@ async function confirm(
 
 async function readSkill(packageRoot: string, trustedBase: string): Promise<string> {
   return await readOwnedFile(join(packageRoot, 'assets', 'agent-rooms', 'SKILL.md'), trustedBase)
+}
+
+async function readPlugin(packageRoot: string, trustedBase: string): Promise<string> {
+  return await readOwnedFile(
+    join(packageRoot, 'assets', 'agent-rooms', 'opencode-plugin.ts'),
+    trustedBase,
+  )
 }
 
 function unique(values: string[]): string[] {

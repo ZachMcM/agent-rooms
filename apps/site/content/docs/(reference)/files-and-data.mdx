@@ -31,11 +31,12 @@ The database is retained by a normal uninstall. `agent-rooms uninstall --purge-d
 
 The installer detects only client configuration directories that already exist. The defaults and supported overrides are:
 
-| Client      | Configuration root                 | Hook configuration | MCP registration       | Skill                                   |
-| ----------- | ---------------------------------- | ------------------ | ---------------------- | --------------------------------------- |
-| Claude Code | `~/.claude` or `CLAUDE_CONFIG_DIR` | `settings.json`    | `~/.claude.json`       | `~/.claude/skills/agent-rooms/SKILL.md` |
-| Codex       | `~/.codex` or `CODEX_HOME`         | `hooks.json`       | `~/.codex/config.toml` | `~/.agents/skills/agent-rooms/SKILL.md` |
-| Cursor      | `~/.cursor`                        | `hooks.json`       | `~/.cursor/mcp.json`   | `~/.cursor/skills/agent-rooms/SKILL.md` |
+| Client      | Configuration root                 | Hook configuration       | MCP registration       | Skill                                            |
+| ----------- | ---------------------------------- | ------------------------ | ---------------------- | ------------------------------------------------ |
+| Claude Code | `~/.claude` or `CLAUDE_CONFIG_DIR` | `settings.json`          | `~/.claude.json`       | `~/.claude/skills/agent-rooms/SKILL.md`          |
+| Codex       | `~/.codex` or `CODEX_HOME`         | `hooks.json`             | `~/.codex/config.toml` | `~/.agents/skills/agent-rooms/SKILL.md`          |
+| Cursor      | `~/.cursor`                        | `hooks.json`             | `~/.cursor/mcp.json`   | `~/.cursor/skills/agent-rooms/SKILL.md`          |
+| OpenCode    | `~/.config/opencode`               | `plugins/agent-rooms.ts` | `opencode.json`        | `~/.config/opencode/skills/agent-rooms/SKILL.md` |
 
 The installed MCP entry launches the managed executable with the `mcp` argument. Hooks call the same executable from the managed `bin` directory.
 
@@ -54,7 +55,7 @@ If the installer cannot identify a supported shell, it warns instead of editing 
 
 ## Ownership and preservation
 
-The installer records the hook entries, MCP registration, skills, and PATH block it owns. On uninstall, it removes only matching owned configuration. If an installed skill or MCP registration has been modified, it is preserved and reported as a warning.
+The installer records the hook entries, MCP registration, skills, plugin files, and PATH block it owns. On uninstall, it removes only matching owned configuration. If an installed skill, plugin file, or MCP registration has been modified, it is preserved and reported as a warning.
 
 Do not move the data directory into a repository: it fragments coordination between worktrees. Use a normal [uninstall](/docs/update-and-uninstall) to remove the runtime while keeping history.
 

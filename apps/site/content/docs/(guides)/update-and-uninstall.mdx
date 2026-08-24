@@ -29,7 +29,7 @@ For a non-interactive update, pass `--yes`. Use `--dry-run` to see the planned c
 agent-rooms uninstall
 ```
 
-Uninstall removes the managed runtime, executable link, integrations, and install state. It removes Agent Rooms hooks and MCP registrations while preserving unrelated client configuration. An unchanged installed skill is removed; a modified skill or MCP registration is preserved and reported as a warning.
+Uninstall removes the managed runtime, executable link, integrations, and install state. It removes Agent Rooms hooks, plugin files, and MCP registrations while preserving unrelated client configuration. An unchanged installed skill or plugin is removed; a modified skill, plugin, or MCP registration is preserved and reported as a warning.
 
 Room history remains in `~/.agent-rooms/db.sqlite` by default, so you can reinstall later without losing existing rooms.
 

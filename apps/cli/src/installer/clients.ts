@@ -46,12 +46,16 @@ export type RollbackJournal = {
 export async function patchClients(
   context: ClientContext,
   skillContent: string,
+  pluginContent: string,
   priorHooks: ManagedHook[],
   priorMcps: ManagedMcp[] = [],
+  priorSkills: ManagedFile[] = [],
+  priorPlugins: ManagedFile[] = [],
 ): Promise<{
   hooks: ManagedHook[]
   mcps: ManagedMcp[]
   skills: ManagedFile[]
+  plugins: ManagedFile[]
   profiles: ManagedFile[]
   journal: RollbackJournal
 }> {
@@ -60,20 +64,22 @@ export async function patchClients(
   const mcps: ManagedMcp[] = []
   try {
     for (const root of context.roots) {
-      const path = configPath(root)
-      const before = await readOptionalOwnedFile(path, context.home)
-      if (before !== undefined) journal.restore.push({ path, content: before })
-      else journal.remove.push(path)
-      const patched = patchHooks(
-        before ?? '{}\n',
-        root.client,
-        context.bin,
-        path,
-        priorHooks.filter((hook) => hook.path === path),
-      )
-      await ensurePrivateDirectoryTracked(dirname(path), context, journal)
-      await writeFileAtomically(path, patched.content, context.home)
-      hooks.push(...patched.hooks)
+      if (root.client !== 'opencode') {
+        const path = configPath(root)
+        const before = await readOptionalOwnedFile(path, context.home)
+        if (before !== undefined) journal.restore.push({ path, content: before })
+        else journal.remove.push(path)
+        const patched = patchHooks(
+          before ?? '{}\n',
+          root.client,
+          context.bin,
+          path,
+          priorHooks.filter((hook) => hook.path === path),
+        )
+        await ensurePrivateDirectoryTracked(dirname(path), context, journal)
+        await writeFileAtomically(path, patched.content, context.home)
+        hooks.push(...patched.hooks)
+      }
 
       const mcpPath = mcpConfigPath(root, context.home)
       const mcpBefore = await readOptionalOwnedFile(mcpPath, context.home)
@@ -84,9 +90,28 @@ export async function patchClients(
       await writeFileAtomically(mcpPath, mcp.content, context.home)
       if (mcp.mcp) mcps.push(mcp.mcp)
 
+      if (root.client === 'opencode') {
+        const plugin = opencodePluginPath(root)
+        const current = await readOptionalOwnedFile(plugin, context.home)
+        if (
+          current !== undefined &&
+          !ownedManagedFile(plugin, current, priorPlugins) &&
+          sha256(current) !== sha256(pluginContent)
+        ) {
+          throw new Error(`Refusing to overwrite modified plugin: ${plugin}.`)
+        }
+        if (current === undefined) journal.remove.push(plugin)
+        await ensurePrivateDirectoryTracked(dirname(plugin), context, journal)
+        await writeFileAtomically(plugin, pluginContent, context.home)
+      }
+
       const skill = skillPath(root, context.home)
       const current = await readOptionalOwnedFile(skill, context.home)
-      if (current !== undefined && sha256(current) !== sha256(skillContent)) {
+      if (
+        current !== undefined &&
+        !ownedManagedFile(skill, current, priorSkills) &&
+        sha256(current) !== sha256(skillContent)
+      ) {
         throw new Error(`Refusing to overwrite modified skill: ${skill}.`)
       }
       if (current === undefined) journal.remove.push(skill)
@@ -124,6 +149,7 @@ export async function patchClients(
       hooks,
       mcps,
       skills: await managedSkills(context),
+      plugins: await managedPlugins(context),
       profiles: await managedProfiles(context),
       journal,
     }
@@ -166,6 +192,7 @@ export async function removeClientMcps(mcps: ManagedMcp[], trustedBase: string):
 }
 
 export function configPath(root: Pick<ClientRoot, 'client' | 'path'>): string {
+  if (root.client === 'opencode') return join(root.path, 'opencode.json')
   return join(
     root.path,
     root.client === 'cursor' || root.client === 'codex' ? 'hooks.json' : 'settings.json',
@@ -177,7 +204,12 @@ export function mcpConfigPath(
   homeDirectory: string,
 ): string {
   if (root.client === 'claude') return join(homeDirectory, '.claude.json')
+  if (root.client === 'opencode') return join(root.path, 'opencode.json')
   return join(root.path, root.client === 'codex' ? 'config.toml' : 'mcp.json')
+}
+
+export function opencodePluginPath(root: Pick<ClientRoot, 'client' | 'path'>): string {
+  return join(root.path, 'plugins', 'agent-rooms.ts')
 }
 
 export function skillPath(
@@ -245,10 +277,18 @@ export async function removeProfileBlockIfUnchanged(
   return []
 }
 
-export async function preflightTargets(context: ClientContext, skill?: string): Promise<void> {
+export async function preflightTargets(
+  context: ClientContext,
+  skill?: string,
+  plugin?: string,
+  priorSkills: ManagedFile[] = [],
+  priorPlugins: ManagedFile[] = [],
+): Promise<void> {
   for (const root of context.roots) {
-    const config = await readOptionalOwnedFile(configPath(root), context.home)
-    if (config !== undefined) patchHooks(config, root.client, context.bin, configPath(root))
+    if (root.client !== 'opencode') {
+      const config = await readOptionalOwnedFile(configPath(root), context.home)
+      if (config !== undefined) patchHooks(config, root.client, context.bin, configPath(root))
+    }
     const mcp = await readOptionalOwnedFile(mcpConfigPath(root, context.home), context.home)
     patchMcp(mcp, root.client, context.bin, mcpConfigPath(root, context.home))
     const path = skillPath(root, context.home)
@@ -256,9 +296,22 @@ export async function preflightTargets(context: ClientContext, skill?: string): 
     if (
       skill !== undefined &&
       existingSkill !== undefined &&
+      !ownedManagedFile(path, existingSkill, priorSkills) &&
       sha256(existingSkill) !== sha256(skill)
     ) {
       throw new Error(`Refusing to overwrite modified skill: ${path}.`)
+    }
+    if (root.client === 'opencode') {
+      const pluginPath = opencodePluginPath(root)
+      const existingPlugin = await readOptionalOwnedFile(pluginPath, context.home)
+      if (
+        plugin !== undefined &&
+        existingPlugin !== undefined &&
+        !ownedManagedFile(pluginPath, existingPlugin, priorPlugins) &&
+        sha256(existingPlugin) !== sha256(plugin)
+      ) {
+        throw new Error(`Refusing to overwrite modified plugin: ${pluginPath}.`)
+      }
     }
   }
   const profile = profilePath(context)
@@ -282,7 +335,11 @@ function patchMcp(
     return { content: source!, ...(owned ? { mcp: owned } : {}) }
   }
   const content =
-    client === 'codex' ? addTomlMcp(source ?? '', desired) : addJsonMcp(source ?? '{}\n', desired)
+    client === 'codex'
+      ? addTomlMcp(source ?? '', desired)
+      : client === 'opencode'
+        ? addOpencodeMcp(source ?? '{}\n', bin)
+        : addJsonMcp(source ?? '{}\n', desired)
   return { content, mcp: { path, client, ...desired } }
 }
 
@@ -293,11 +350,29 @@ function readMcp(source: string, client: ClientRoot['client']): unknown {
     return isRecord(servers) ? servers['agent-rooms'] : undefined
   }
   const parsed = parseJsonc(source) as Record<string, unknown>
+  if (client === 'opencode') {
+    const servers = parsed.mcp
+    const value = isRecord(servers) ? servers['agent-rooms'] : undefined
+    if (!isRecord(value)) return undefined
+    const command = value.command
+    return {
+      command: Array.isArray(command) ? command[0] : '',
+      args: Array.isArray(command) ? command.slice(1) : [],
+    }
+  }
   return isRecord(parsed.mcpServers) ? parsed.mcpServers['agent-rooms'] : undefined
 }
 
 function addJsonMcp(source: string, desired: { command: string; args: string[] }): string {
   return setJsoncObjectProperty(source, 'mcpServers', 'agent-rooms', desired)
+}
+
+function addOpencodeMcp(source: string, bin: string): string {
+  return setJsoncObjectProperty(source, 'mcp', 'agent-rooms', {
+    type: 'local',
+    command: [bin, 'mcp'],
+    enabled: true,
+  })
 }
 
 function addTomlMcp(source: string, desired: { command: string; args: string[] }): string {
@@ -307,6 +382,7 @@ function addTomlMcp(source: string, desired: { command: string; args: string[] }
 }
 
 function removeMcp(source: string, client: ClientRoot['client']): string {
+  if (client === 'opencode') return removeJsoncObjectProperty(source, 'mcp', 'agent-rooms')
   if (client !== 'codex') return removeJsoncObjectProperty(source, 'mcpServers', 'agent-rooms')
   const expression = /(?:^|\n)\[mcp_servers\.agent-rooms\][\s\S]*?(?=\n\[|$)/
   return source.replace(expression, '').replace(/^\n+/, '')
@@ -399,6 +475,14 @@ async function managedSkills(context: ClientContext): Promise<ManagedFile[]> {
   )
 }
 
+async function managedPlugins(context: ClientContext): Promise<ManagedFile[]> {
+  return Promise.all(
+    context.roots
+      .filter((root) => root.client === 'opencode')
+      .map(async (root) => managedFile(opencodePluginPath(root), context.home)),
+  )
+}
+
 async function managedProfiles(context: ClientContext): Promise<ManagedFile[]> {
   const path = profilePath(context)
   return path ? [await managedFile(path, context.home)] : []
@@ -406,6 +490,10 @@ async function managedProfiles(context: ClientContext): Promise<ManagedFile[]> {
 
 async function managedFile(path: string, trustedBase: string): Promise<ManagedFile> {
   return { path, hash: sha256(await readOwnedFile(path, trustedBase)) }
+}
+
+function ownedManagedFile(path: string, content: string, prior: ManagedFile[]): boolean {
+  return prior.some((file) => file.path === path && file.hash === sha256(content))
 }
 
 async function ensurePrivateDirectoryTracked(

@@ -2,13 +2,13 @@ import { join } from 'node:path'
 
 import { z } from 'zod'
 
-import { configPath, mcpConfigPath, skillPath } from './clients'
+import { configPath, mcpConfigPath, opencodePluginPath, skillPath } from './clients'
 import { readOptionalOwnedFile } from './filesystem'
 import { assertPathWithin, assertSafeAbsolutePath, type ClientRoot } from './preflight'
 import { parseInstallState, type InstallState } from './state'
 
 const sha256Schema = z.string().regex(/^[a-f\d]{64}$/)
-const clientSchema = z.enum(['claude', 'codex', 'cursor'])
+const clientSchema = z.enum(['claude', 'codex', 'cursor', 'opencode'])
 
 const manifestRootSchema = z.object({
   client: clientSchema,
@@ -49,6 +49,7 @@ const manifestSchema = z
     skills: z.array(managedFileSchema),
     profiles: z.array(managedFileSchema),
     mcps: z.array(managedMcpSchema).optional(),
+    plugins: z.array(managedFileSchema).optional(),
     backups: z.array(z.string()).optional(),
   })
   .passthrough()
@@ -63,6 +64,7 @@ export type Manifest = InstallState & {
   skills: ManagedFile[]
   profiles: ManagedFile[]
   mcps: ManagedMcp[]
+  plugins: ManagedFile[]
   backups?: string[]
 }
 
@@ -106,6 +108,7 @@ function parseManifestSource(source: string, context: ManifestContext): Manifest
     skills: parsed.skills,
     profiles: parsed.profiles,
     mcps: parsed.mcps ?? [],
+    plugins: parsed.plugins ?? [],
     ...(parsed.backups === undefined ? {} : { backups: parsed.backups }),
   }
   if (state.package.name !== 'agent-rooms') {
@@ -130,6 +133,7 @@ function parseManifestJson(source: string): z.infer<typeof manifestSchema> {
 function validateManifestPaths(manifest: Manifest, context: ManifestContext): void {
   const configs = new Set<string>()
   const skills = new Set<string>()
+  const plugins = new Set<string>()
   for (const root of manifest.roots) {
     assertSafeAbsolutePath(root.path, `${root.client} manifest root`)
     assertPathWithin(root.path, context.home, `${root.client} manifest root`)
@@ -138,6 +142,7 @@ function validateManifestPaths(manifest: Manifest, context: ManifestContext): vo
       throw new Error('Install manifest contains an invalid config path.')
     configs.add(expectedConfig)
     skills.add(skillPath(root, context.home))
+    if (root.client === 'opencode') plugins.add(opencodePluginPath(root))
   }
 
   if (manifest.hooks.some((hook) => !configs.has(hook.path))) {
@@ -152,6 +157,9 @@ function validateManifestPaths(manifest: Manifest, context: ManifestContext): vo
   }
   if (manifest.skills.some((file) => !skills.has(file.path))) {
     throw new Error('Install manifest contains invalid skill ownership.')
+  }
+  if (manifest.plugins.some((file) => !plugins.has(file.path))) {
+    throw new Error('Install manifest contains invalid plugin ownership.')
   }
 
   const profilePaths = new Set([

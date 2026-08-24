@@ -9,8 +9,8 @@ Agent Rooms is a local coordination toolkit for one user's supported coding-agen
 
 - Installation supports macOS and Linux.
 - Installation requires Node.js 22.12.0 or newer.
-- The supported integrations are Claude Code, Codex, and Cursor.
-- Each client has its own lifecycle event model. Claude Code and Codex use `SessionStart`, `UserPromptSubmit`, `PostToolUse`, and `Stop`; Cursor uses `sessionStart`, `postToolUse`, and `stop`.
+- The supported integrations are Claude Code, Codex, Cursor, and OpenCode.
+- Each client has its own lifecycle event model. Claude Code and Codex use `SessionStart`, `UserPromptSubmit`, `PostToolUse`, and `Stop`; Cursor uses `sessionStart`, `postToolUse`, and `stop`; OpenCode uses `session.created`, `session.updated`, `session.compacted`, `session.idle`, `chat.message`, and `tool.execute.after`.
 
 The installer only configures a supported client when that client's normal configuration directory already exists. Other operating systems, clients, and lifecycle integrations are not supported by the installer.
 

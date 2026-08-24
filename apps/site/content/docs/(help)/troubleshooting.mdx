@@ -7,15 +7,15 @@ Start with the command or MCP error shown by the client. Avoid manually editing 
 
 ## Installation
 
-| Symptom                                                           | Cause                                                             | Recovery                                                                                      |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Installation says the platform is unsupported.                    | Installation supports only macOS and Linux.                       | Use a supported operating system.                                                             |
-| Installation says Node.js is too old.                             | Node.js must be 22.12.0 or newer.                                 | Update Node, confirm `node --version`, then run the installer again.                          |
-| Installation refuses to run as root.                              | Agent Rooms installs user-owned files and rejects root execution. | Run it as the intended local user.                                                            |
-| A noninteractive install or uninstall fails before confirmation.  | Confirmation needs a TTY unless `--yes` is present.               | Re-run with `--yes`, or use `--dry-run` to inspect changes only.                              |
-| `--json` is rejected.                                             | JSON output requires `--yes`, except `install --dry-run --json`.  | Add `--yes` or remove `--json`.                                                               |
-| Installation refuses a downgrade.                                 | Existing managed runtime is newer than the requested package.     | Install the current or newer version instead.                                                 |
-| Installation refuses to overwrite a modified skill or MCP server. | The installer preserves user changes.                             | Review that client configuration and choose whether to keep the modification before retrying. |
+| Symptom                                                                    | Cause                                                             | Recovery                                                                                      |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Installation says the platform is unsupported.                             | Installation supports only macOS and Linux.                       | Use a supported operating system.                                                             |
+| Installation says Node.js is too old.                                      | Node.js must be 22.12.0 or newer.                                 | Update Node, confirm `node --version`, then run the installer again.                          |
+| Installation refuses to run as root.                                       | Agent Rooms installs user-owned files and rejects root execution. | Run it as the intended local user.                                                            |
+| A noninteractive install or uninstall fails before confirmation.           | Confirmation needs a TTY unless `--yes` is present.               | Re-run with `--yes`, or use `--dry-run` to inspect changes only.                              |
+| `--json` is rejected.                                                      | JSON output requires `--yes`, except `install --dry-run --json`.  | Add `--yes` or remove `--json`.                                                               |
+| Installation refuses a downgrade.                                          | Existing managed runtime is newer than the requested package.     | Install the current or newer version instead.                                                 |
+| Installation refuses to overwrite a modified skill, plugin, or MCP server. | The installer preserves user changes.                             | Review that client configuration and choose whether to keep the modification before retrying. |
 
 Run `agent-rooms install --dry-run` to see the exact paths the installer would change without writing files.
 
@@ -26,6 +26,8 @@ The installer configures a client only when its configuration directory already 
 If `agent-rooms` is not found after installation, start a new shell session so the managed PATH block is loaded. For an unsupported shell, add `~/.agent-rooms/bin` to your PATH as the installer warning directs.
 
 If a client does not expose Agent Rooms tools, check that its MCP configuration contains the installer-managed entry. Room actions are supported through [MCP tools](/docs/mcp-tools), not shell commands.
+
+If OpenCode does not deliver room context, confirm `~/.config/opencode/plugins/agent-rooms.ts` exists and restart the OpenCode interface so it loads plugins at startup. OpenCode creates a session lazily on its first prompt, so identity and the first delivery arrive in that same turn; a resumed session re-establishes identity on its next prompt.
 
 ## Rooms and messages
 

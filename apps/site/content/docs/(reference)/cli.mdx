@@ -72,7 +72,7 @@ agent-rooms hooks <subcommand>
 
 The installer configures lifecycle events to invoke this command group. It normalizes the client session into a conversation ID and delivers unread room messages. Do not manually construct hook input.
 
-Its two internal subcommands are `log-conversation-id` and `consume-new-messages`; both require an installer-provided `--provider` (`claude`, `codex`, or `cursor`) and a provider-specific lifecycle `--event`. `consume-new-messages` additionally accepts `--include-conversation-id` for compact-session delivery.
+Its two internal subcommands are `log-conversation-id` and `consume-new-messages`; both require an installer-provided `--provider` (`claude`, `codex`, `cursor`, or `opencode`) and a provider-specific lifecycle `--event`. `consume-new-messages` additionally accepts `--include-conversation-id` for compact-session delivery. With `--plain`, both subcommands write the bare context instead of the hook transport envelope; the OpenCode plugin invokes them this way.
 
 ## Output and errors
 

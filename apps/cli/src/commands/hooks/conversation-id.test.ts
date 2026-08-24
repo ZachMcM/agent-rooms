@@ -24,16 +24,20 @@ describe('resolveHookConversation', () => {
     })
   })
 
-  it.each(['', 'Claude', 'opencode', 'claude-code', ' claude'])(
-    'rejects provider %s',
-    async (provider) => {
-      await expect(resolve(provider, '')).rejects.toMatchObject({
-        code: 'invalid_arguments',
-        exitCode: 2,
-        message: 'The --provider value must be one of claude, codex, or cursor.',
-      })
-    },
-  )
+  it('prefixes opencode conversations with the session id', async () => {
+    await expect(resolve('opencode', '{"session_id":"abc123-def456"}')).resolves.toEqual({
+      provider: 'opencode',
+      conversationId: 'opencode-abc123-def456',
+    })
+  })
+
+  it.each(['', 'Claude', 'claude-code', ' claude'])('rejects provider %s', async (provider) => {
+    await expect(resolve(provider, '')).rejects.toMatchObject({
+      code: 'invalid_arguments',
+      exitCode: 2,
+      message: 'The --provider value must be one of claude, codex, cursor, or opencode.',
+    })
+  })
 
   it('propagates invalid hook input', async () => {
     await expect(resolve('codex', 'not json')).rejects.toMatchObject({

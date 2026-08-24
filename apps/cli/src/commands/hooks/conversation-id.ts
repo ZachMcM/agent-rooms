@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream'
 import { CliError } from '../../errors'
 import { readHookSessionId } from './input'
 
-export const PROVIDERS = ['claude', 'codex', 'cursor'] as const
+export const PROVIDERS = ['claude', 'codex', 'cursor', 'opencode'] as const
 
 export type Provider = (typeof PROVIDERS)[number]
 
@@ -13,6 +13,14 @@ const providerEvents = {
   claude: ['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'],
   codex: ['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop'],
   cursor: ['sessionStart', 'postToolUse', 'stop'],
+  opencode: [
+    'session.created',
+    'session.updated',
+    'session.compacted',
+    'session.idle',
+    'chat.message',
+    'tool.execute.after',
+  ],
 } as const satisfies Record<Provider, readonly string[]>
 
 export function isProvider(value: string): value is Provider {
@@ -42,7 +50,7 @@ export function parseHookProvider(provider: string): Provider {
   if (!isProvider(provider)) {
     throw new CliError(
       'invalid_arguments',
-      'The --provider value must be one of claude, codex, or cursor.',
+      'The --provider value must be one of claude, codex, cursor, or opencode.',
       2,
     )
   }

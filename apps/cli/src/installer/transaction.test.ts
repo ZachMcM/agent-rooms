@@ -173,6 +173,162 @@ describe('installer transaction', () => {
     )
   })
 
+  it('installs and uninstalls the OpenCode plugin, MCP, and skill', async () => {
+    const home = await temporaryHome()
+    const opencode = join(home, '.config', 'opencode')
+    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    const skill = join(opencode, 'skills', 'agent-rooms', 'SKILL.md')
+    await mkdir(opencode, { recursive: true })
+    await writeFile(
+      join(opencode, 'opencode.json'),
+      '{\n  "theme": "dark",\n  "mcp": { "other": { "type": "remote", "url": "https://x" } },\n}\n',
+    )
+    const { spawn } = packageSpawn('1.2.3')
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'opencode', path: opencode }],
+      shell: '',
+      yes: true,
+      spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    await expect(readFile(plugin, 'utf8')).resolves.toBe('plugin')
+    await expect(readFile(skill, 'utf8')).resolves.toBe('skill')
+    const source = await readFile(join(opencode, 'opencode.json'), 'utf8')
+    expect(source).toContain('"theme": "dark"')
+    expect(source).toContain('"other"')
+    const config = parseJsonc(source) as {
+      mcp: Record<string, { type: string; command: string[]; enabled: boolean }>
+    }
+    expect(config.mcp['agent-rooms']).toEqual({
+      type: 'local',
+      command: [join(home, '.agent-rooms', 'bin', 'agent-rooms'), 'mcp'],
+      enabled: true,
+    })
+    const manifest = JSON.parse(
+      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+    ) as {
+      roots: Array<{ client: string; config: string }>
+      plugins: Array<{ path: string }>
+    }
+    expect(manifest.roots).toEqual([
+      { client: 'opencode', path: opencode, config: join(opencode, 'opencode.json') },
+    ])
+    expect(manifest.plugins.map(({ path }) => path)).toEqual([plugin])
+
+    await runUninstall({ homeDirectory: home, yes: true })
+
+    await expect(lstat(plugin)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(opencode, 'plugins'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(skill)).rejects.toMatchObject({ code: 'ENOENT' })
+    const uninstalled = await readFile(join(opencode, 'opencode.json'), 'utf8')
+    expect(uninstalled).toContain('"theme": "dark"')
+    expect(uninstalled).toContain('"other"')
+    expect(uninstalled).not.toContain('agent-rooms')
+  })
+
+  it('refuses to overwrite a modified OpenCode plugin before integration mutation', async () => {
+    const home = await temporaryHome()
+    const opencode = join(home, '.config', 'opencode')
+    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    await mkdir(dirname(plugin), { recursive: true })
+    await writeFile(plugin, 'user plugin')
+    const { calls, spawn } = packageSpawn('1.2.3')
+    let migrated = false
+
+    await expect(
+      runInstall({
+        version: '1.2.3',
+        homeDirectory: home,
+        roots: [{ client: 'opencode', path: opencode }],
+        shell: '',
+        yes: true,
+        spawn,
+        migrate: async () => {
+          migrated = true
+        },
+      }),
+    ).rejects.toThrow(`Refusing to overwrite modified plugin: ${plugin}.`)
+
+    expect(migrated).toBe(false)
+    await expect(readFile(plugin, 'utf8')).resolves.toBe('user plugin')
+    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    })
+    expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(1)
+  })
+
+  it('overwrites an installer-owned OpenCode plugin on update', async () => {
+    const home = await temporaryHome()
+    const opencode = join(home, '.config', 'opencode')
+    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    await mkdir(opencode, { recursive: true })
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'opencode', path: opencode }],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await expect(readFile(plugin, 'utf8')).resolves.toBe('plugin')
+
+    await runInstall({
+      version: '1.2.4',
+      homeDirectory: home,
+      roots: [{ client: 'opencode', path: opencode }],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.4', {
+        mutate: async (root) =>
+          writeFile(join(root, 'assets', 'agent-rooms', 'opencode-plugin.ts'), 'plugin-v2'),
+      }).spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+
+    await expect(readFile(plugin, 'utf8')).resolves.toBe('plugin-v2')
+  })
+
+  it('refuses to overwrite a user-modified OpenCode plugin on update', async () => {
+    const home = await temporaryHome()
+    const opencode = join(home, '.config', 'opencode')
+    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    await mkdir(opencode, { recursive: true })
+
+    await runInstall({
+      version: '1.2.3',
+      homeDirectory: home,
+      roots: [{ client: 'opencode', path: opencode }],
+      shell: '',
+      yes: true,
+      spawn: packageSpawn('1.2.3').spawn,
+      migrate: async (databasePath) => writeFile(databasePath, 'database'),
+    })
+    await writeFile(plugin, 'user plugin')
+
+    await expect(
+      runInstall({
+        version: '1.2.4',
+        homeDirectory: home,
+        roots: [{ client: 'opencode', path: opencode }],
+        shell: '',
+        yes: true,
+        spawn: packageSpawn('1.2.4', {
+          mutate: async (root) =>
+            writeFile(join(root, 'assets', 'agent-rooms', 'opencode-plugin.ts'), 'plugin-v2'),
+        }).spawn,
+        migrate: async (databasePath) => writeFile(databasePath, 'database'),
+      }),
+    ).rejects.toThrow(`Refusing to overwrite modified plugin: ${plugin}.`)
+
+    await expect(readFile(plugin, 'utf8')).resolves.toBe('user plugin')
+  })
+
   it('keeps a Codex skill under HOME when CODEX_HOME is overridden', async () => {
     const home = await temporaryHome()
     const codex = join(home, 'custom-codex')
@@ -1507,6 +1663,7 @@ async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<
   await writeFile(join(client, 'index.js'), 'export default {}')
   await writeFile(join(root, 'migrations', '0000.sql'), 'select 1;')
   await writeFile(join(root, 'assets', 'agent-rooms', 'SKILL.md'), 'skill')
+  await writeFile(join(root, 'assets', 'agent-rooms', 'opencode-plugin.ts'), 'plugin')
   await writeFile(join(root, 'assets', 'dashboard', 'server', 'index.mjs'), 'export default {}')
   await writeFile(join(root, 'assets', 'dashboard', 'migrations', '0000.sql'), 'select 1;')
   await writeFile(

@@ -10,7 +10,7 @@ Agent Rooms installs once for your user account and stores shared room data outs
 - macOS or Linux
 - Node.js 22.12.0 or newer
 - A non-root user account
-- At least one installed supported client: Claude Code, Codex, or Cursor
+- At least one installed supported client: Claude Code, Codex, Cursor, or OpenCode
 
 ## Install
 
@@ -58,6 +58,8 @@ The installer shows a preview before it changes anything. Use these options when
   </Folder>
   <Folder name="client configuration roots" defaultOpen>
     <File name="hooks.json or settings.json" />
+    <File name="opencode/opencode.json" />
+    <File name="opencode/plugins/agent-rooms.ts" />
     <Folder name="~/.agents/skills/agent-rooms" defaultOpen>
       <File name="SKILL.md" />
     </Folder>
@@ -71,6 +73,8 @@ For exact client locations and lifecycle coverage, see [Supported clients](/docs
 ## Trust Codex hooks
 
 After an install that adds or updates Codex hooks, review and trust the Agent Rooms hooks before they run. In the Codex CLI, run `/hooks`; in Codex Desktop, open Codex's hook review. Agent Rooms cannot pre-trust ordinary hooks: Codex requires review of the exact hook definition, and new or changed definitions may need review again. See the [Codex hooks documentation](https://developers.openai.com/codex/hooks).
+
+OpenCode needs no hook-trust step: its plugin is a file in the user configuration root that OpenCode loads directly.
 
 ## Verify installation
 

@@ -85,8 +85,8 @@ describe('hook commands', () => {
 
   it.each([
     [
-      ['--provider', 'opencode', '--event', 'SessionStart'],
-      'The --provider value must be one of claude, codex, or cursor.',
+      ['--provider', 'invalid', '--event', 'SessionStart'],
+      'The --provider value must be one of claude, codex, cursor, or opencode.',
     ],
     [
       ['--provider', 'claude', '--event', 'sessionStart'],
@@ -107,6 +107,88 @@ describe('hook commands', () => {
       program.parseAsync(['hooks', 'consume-new-messages', ...flags], { from: 'user' }),
     ).rejects.toMatchObject({ code: 'invalid_arguments', message })
     expect(openDatabase).not.toHaveBeenCalled()
+  })
+
+  it('emits plain opencode identity context', async () => {
+    vi.spyOn(process, 'stdin', 'get').mockReturnValue(
+      Readable.from(['{"session_id":"abc123"}']) as unknown as typeof process.stdin,
+    )
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    const program = new Command().exitOverride()
+    addHooksCommand(program)
+
+    await program.parseAsync(
+      [
+        'hooks',
+        'log-conversation-id',
+        '--provider',
+        'opencode',
+        '--event',
+        'session.created',
+        '--plain',
+      ],
+      { from: 'user' },
+    )
+
+    expect(stdout).toHaveBeenCalledWith('<conversation-id>opencode-abc123</conversation-id>\n')
+  })
+
+  it('emits plain delivery context with the conversation ID', async () => {
+    vi.spyOn(process, 'stdin', 'get').mockReturnValue(
+      Readable.from(['{"session_id":"abc123"}']) as unknown as typeof process.stdin,
+    )
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    const db = {}
+    vi.mocked(openDatabase).mockResolvedValue(db as never)
+    vi.mocked(consumeNewMessages).mockResolvedValue({ messages: [{ body: 'hello' }] } as never)
+    const program = new Command().exitOverride()
+    addHooksCommand(program)
+
+    await program.parseAsync(
+      [
+        'hooks',
+        'consume-new-messages',
+        '--provider',
+        'opencode',
+        '--event',
+        'session.compacted',
+        '--include-conversation-id',
+        '--plain',
+      ],
+      { from: 'user' },
+    )
+
+    expect(consumeNewMessages).toHaveBeenCalledWith(db, { conversationId: 'opencode-abc123' })
+    expect(stdout).toHaveBeenCalledWith(
+      '<conversation-id>opencode-abc123</conversation-id>\n<new-messages>{"messages":[{"body":"hello"}]}</new-messages>\n',
+    )
+  })
+
+  it('emits nothing in plain mode without unread messages', async () => {
+    vi.spyOn(process, 'stdin', 'get').mockReturnValue(
+      Readable.from(['{"session_id":"abc123"}']) as unknown as typeof process.stdin,
+    )
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    const db = {}
+    vi.mocked(openDatabase).mockResolvedValue(db as never)
+    vi.mocked(consumeNewMessages).mockResolvedValue({ messages: [] } as never)
+    const program = new Command().exitOverride()
+    addHooksCommand(program)
+
+    await program.parseAsync(
+      [
+        'hooks',
+        'consume-new-messages',
+        '--provider',
+        'opencode',
+        '--event',
+        'session.idle',
+        '--plain',
+      ],
+      { from: 'user' },
+    )
+
+    expect(stdout).toHaveBeenCalledWith('')
   })
 
   it('requires a hook event', async () => {

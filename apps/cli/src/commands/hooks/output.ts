@@ -19,6 +19,14 @@ export function serializeHookContext({
   return `${JSON.stringify(output)}\n`
 }
 
+export function plainHookContext(context?: string): string {
+  if (!context) {
+    return ''
+  }
+
+  return `${context}\n`
+}
+
 export function conversationIdContext(conversationId: string): string {
   return `<conversation-id>${escapeXml(conversationId)}</conversation-id>`
 }

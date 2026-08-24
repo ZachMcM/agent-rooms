@@ -83,10 +83,12 @@ describe('preflight', () => {
     directories.push(home)
     await mkdir(join(home, '.claude'))
     await mkdir(join(home, '.cursor'))
+    await mkdir(join(home, '.config', 'opencode'), { recursive: true })
 
     await expect(detectExistingClientRoots({}, home)).resolves.toEqual([
       { client: 'claude', path: join(home, '.claude') },
       { client: 'cursor', path: join(home, '.cursor') },
+      { client: 'opencode', path: join(home, '.config', 'opencode') },
     ])
 
     await symlink(join(home, '.claude'), join(home, '.codex'))

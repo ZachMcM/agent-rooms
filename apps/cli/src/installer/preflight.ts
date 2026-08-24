@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { isStrictVersion } from './state'
 
 export type ClientRoot = {
-  client: 'claude' | 'codex' | 'cursor'
+  client: 'claude' | 'codex' | 'cursor' | 'opencode'
   path: string
 }
 
@@ -77,6 +77,7 @@ export async function detectExistingClientRoots(
     { client: 'claude', path: environment.CLAUDE_CONFIG_DIR ?? join(homeDirectory, '.claude') },
     { client: 'codex', path: environment.CODEX_HOME ?? join(homeDirectory, '.codex') },
     { client: 'cursor', path: join(homeDirectory, '.cursor') },
+    { client: 'opencode', path: join(homeDirectory, '.config', 'opencode') },
   ]
 
   const roots: ClientRoot[] = []
