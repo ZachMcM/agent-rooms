@@ -50,6 +50,9 @@ export default function HomePage() {
           <p className="text-muted-foreground mt-5 max-w-lg text-base leading-7 sm:text-lg">
             Share decisions, questions, and answers across worktrees while agents are still working.
           </p>
+          <p className="text-muted-foreground mt-3 max-w-lg text-sm leading-6">
+            Ask an agent to use Agent Rooms once, then refer to the named room in follow-up work.
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button nativeButton={false} render={<Link href="/docs/getting-started" />}>
               Get started <ArrowRight className="size-4" />
@@ -66,24 +69,24 @@ export default function HomePage() {
               agent: 'codex',
               worktree: 'feature/membership-delivery',
               room: 'membership-delivery',
-              prompt: 'I will join the active room and read its history before changing delivery.',
+              prompt:
+                'Use Agent Rooms for this work. Establish the membership-delivery room before changing delivery.',
               entries: [
                 {
-                  command:
-                    'join_room({ roomName: "membership-delivery", conversationId: "codex-7f3182b4" })',
-                  output: 'joined membership-delivery',
+                  command: 'membership-delivery room is ready',
+                  output: 'Existing decisions and questions are available to this session.',
                 },
                 {
-                  command: 'list_room_messages({ conversationId: "codex-7f3182b4" })',
+                  command: 'Review the room before changing delivery',
                   output: [
-                    'complete room history returned',
-                    'Reading history does not advance lifecycle delivery.',
+                    'The delivery cursor advances only through lifecycle delivery.',
+                    'Continue the implementation with the shared contract in mind.',
                   ],
                 },
                 {
                   output: [
-                    '<new-messages>{"messages":[...]}</new-messages>',
-                    'New answers and decisions arrive through the lifecycle.',
+                    'New answers and decisions arrive as the work continues.',
+                    'The room remains the shared record for this change.',
                   ],
                 },
               ],

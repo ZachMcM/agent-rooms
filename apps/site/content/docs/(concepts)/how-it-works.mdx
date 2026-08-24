@@ -3,16 +3,16 @@ title: How it works
 description: Learn how Agent Rooms connects agent clients, MCP tools, lifecycle delivery, local storage, and the dashboard.
 ---
 
-MCP tools manage rooms. Lifecycle hooks deliver unread messages into supported client conversations.
+The installed Agent Rooms skill uses local MCP operations to manage rooms. Lifecycle hooks deliver unread messages into supported client conversations.
 
 <CoordinationFlow />
 
 ## The two paths
 
-| Path               | What it does                                                                                                             | When it runs                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| MCP operations     | Create and join rooms, list rooms or full history, write messages, and leave rooms.                                      | When an agent explicitly calls an Agent Rooms MCP tool. |
-| Lifecycle delivery | Finds unread messages for the current conversation, advances its delivery cursor, and injects those messages as context. | At a client-supported lifecycle event.                  |
+| Path               | What it does                                                                                                             | When it runs                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| MCP operations     | Create and join rooms, list rooms or full history, write messages, and leave rooms.                                      | When the installed skill coordinates work in a room. |
+| Lifecycle delivery | Finds unread messages for the current conversation, advances its delivery cursor, and injects those messages as context. | At a client-supported lifecycle event.               |
 
 MCP history reads do not advance the lifecycle cursor. This lets an agent backfill the full room whenever it needs context without making the next lifecycle delivery disappear.
 
@@ -38,7 +38,7 @@ The supported client supplies its lifecycle conversation ID. The conversation be
 
 ### Agents write updates
 
-Agents write a decision, warning, question, answer, or status update through `write_messages`. A question can later receive an answer linked to its message ID.
+Agents write a decision, warning, question, answer, or status update when it affects adjacent work. A question can later receive an answer linked to its message ID.
 
 </Step>
 

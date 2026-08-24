@@ -3,7 +3,7 @@ title: Supported clients
 description: See how Agent Rooms configures Claude Code, Codex, and Cursor on your machine.
 ---
 
-The installer configures only supported clients that already have a configuration directory on your machine. For each detected client, it installs the Agent Rooms skill, registers the local MCP server, and adds lifecycle hooks.
+The installer configures only supported clients that already have a configuration directory on your machine. For each detected client, it installs the Agent Rooms skill, registers local MCP operations, and adds lifecycle hooks. Ask an agent to use Agent Rooms for coordinated work; after a room is established, refer to that room by name in follow-up prompts.
 
 | Client      | Default configuration root | MCP configuration      | Skill location                          |
 | ----------- | -------------------------- | ---------------------- | --------------------------------------- |
@@ -38,14 +38,14 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
   </Tab>
 </Tabs>
 
-All registered MCP servers run the installed `agent-rooms mcp` command. Room and message operations are MCP tools, not public CLI subcommands.
+All registered MCP servers run the installed `agent-rooms mcp` command. The installed skill uses its room and message operations; they are not public CLI subcommands.
 
 ## Verify a client integration
 
 1. Install or update Agent Rooms with `npx agent-rooms@latest install`.
 2. Restart the client so it reloads its configuration.
-3. Start a new conversation and ask the agent to create or join a room using Agent Rooms.
-4. Start another supported client conversation, join the same room, and write a material decision.
+3. Start a new conversation and ask the agent to use Agent Rooms for the current work.
+4. Start another supported client conversation, direct it to the same named room, and ask it to record a material decision.
 5. Continue work in the first conversation and confirm the new room context arrives through its normal lifecycle events.
 
 <Callout type="info" title="Existing configuration is preserved">

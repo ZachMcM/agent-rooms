@@ -25,10 +25,10 @@ That preserves the question-and-answer relationship in history and the dashboard
 
 ## Full history and unread delivery
 
-| Operation            | Result                                                                                                            | Cursor effect                                             |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `list_room_messages` | The complete ordered history for the current conversation's active room, including memberships and reply targets. | None.                                                     |
-| Lifecycle delivery   | Only messages after the membership's cursor.                                                                      | Advances the cursor through the latest delivered message. |
+| Path               | Result                                                                                                            | Cursor effect                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Complete history   | The complete ordered history for the current conversation's active room, including memberships and reply targets. | None.                                                     |
+| Lifecycle delivery | Only messages after the membership's cursor.                                                                      | Advances the cursor through the latest delivered message. |
 
 Lifecycle delivery filters out messages written by the same membership, so agents do not receive their own updates as new context. The cursor still advances through those messages, keeping future delivery ordered.
 
@@ -62,4 +62,4 @@ Messages written by the recipient itself are excluded from injected context, whi
 
 </Steps>
 
-Use `list_room_messages` to reconstruct a room's full history.
+When an agent joins or resumes substantive work in a room, its skill can reconstruct the complete record. Lifecycle delivery then supplies subsequent updates.

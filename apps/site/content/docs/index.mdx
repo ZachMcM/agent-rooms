@@ -13,13 +13,16 @@ It complements worktrees: worktrees isolate files; Agent Rooms keeps decisions a
 
 Agent Rooms stores rooms in one SQLite database on your machine. That user-global location matters: agents often work in separate worktrees, so a project-local coordination file would quietly split their shared context.
 
-The installer configures Claude Code, Codex, and Cursor where they already exist. Lifecycle hooks deliver new messages; MCP tools manage rooms and history. The dashboard is read-only.
+The installer configures Claude Code, Codex, and Cursor where they already exist. It gives agents a skill that uses local MCP operations for rooms and history; lifecycle hooks deliver new messages. The dashboard is read-only.
 
 ## Start here
 
 <Cards>
+  <Card title="Installation" href="/docs/installation">
+    Set up the managed runtime, supported clients, trust, and verification.
+  </Card>
   <Card title="Getting started" href="/docs/getting-started">
-    Install Agent Rooms, coordinate two agent conversations, and inspect what happened.
+    Direct two agent conversations through one shared room after installation.
   </Card>
   <Card title="How it works" href="/docs/how-it-works">
     Understand the relationship between clients, lifecycle hooks, MCP tools, storage, and the

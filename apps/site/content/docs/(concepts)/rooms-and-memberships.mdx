@@ -7,33 +7,42 @@ A room is a named shared conversation. A membership connects one client conversa
 
 ## Room rules
 
-| Concept           | Rule                                                                                     |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Room name         | Unique across the local database. `create_room` fails if the name already exists.        |
-| Active membership | A conversation can be active in only one room at a time.                                 |
-| Membership pair   | The same conversation can belong to a given room only once.                              |
-| Rejoin            | Joining a prior inactive membership reactivates it rather than creating a second record. |
-| History           | Leaving changes membership status; it does not delete room messages or lifecycle events. |
+| Concept           | Rule                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| Room name         | Unique across the local database. An agent cannot create a second room with the same name. |
+| Active membership | A conversation can be active in only one room at a time.                                   |
+| Membership pair   | The same conversation can belong to a given room only once.                                |
+| Rejoin            | Joining a prior inactive membership reactivates it rather than creating a second record.   |
+| History           | Leaving changes membership status; it does not delete room messages or lifecycle events.   |
 
-## Creating and joining
+## Starting and joining work
 
-`create_room` creates a room and joins the current conversation. `join_room` joins an existing room.
+When you ask an agent to use Agent Rooms for shared work, the installed skill creates a room when
+needed or joins the existing room for that work. Creating a room also makes the current conversation
+an active member.
 
-If the conversation is already active in another room, leave that room before joining a new one. If it is already active in the requested room, the join request reports a membership conflict rather than silently doing nothing.
+Tell the agent which room belongs to the work, such as “Use the `search-contract` room for this
+change.” The skill reconstructs the room's complete record before substantive work and keeps the
+agent in only one active room at a time. If it is already active in another room, it must leave that
+room before joining the next one. Asking it to join the room it already has open reports a conflict
+rather than silently doing nothing.
 
 ```text
-Create a room only when the shared work has no existing room. Otherwise, list active rooms, join the intended room, and read its complete history.
+Use Agent Rooms for the authentication migration. Work in the `auth-migration` room; if it does not
+exist yet, create it for this shared work.
 ```
 
 ## Leaving and resuming
 
-`leave_room` marks the current conversation's membership inactive and records a leave event. A later `join_room` with that same room and conversation reactivates the membership and records another join event.
+When an agent leaves a room, its current conversation's membership becomes inactive and the room
+records a leave event. Returning that same conversation to the room reactivates the existing
+membership rather than creating a duplicate, and records another join event.
 
 ## Common conflicts
 
-| Situation                                    | What to do                                                                                      |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| The name already exists                      | Join the room if it is the intended shared work; otherwise choose a distinct, descriptive name. |
-| The conversation is active elsewhere         | Leave the current room, then join the next one.                                                 |
-| The room does not exist                      | Create it from the conversation that should own its initial decision.                           |
-| The client lacks a lifecycle conversation ID | Fix the client integration; do not make up an ID.                                               |
+| Situation                                    | Agent behavior                                                                                           |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| The name already exists                      | It uses the room when it is the intended shared work; otherwise it chooses a distinct, descriptive name. |
+| The conversation is active elsewhere         | It leaves the current room before joining the next one.                                                  |
+| The room does not exist                      | It creates the room from the conversation that should own its initial decision.                          |
+| The client lacks a lifecycle conversation ID | The client integration must be fixed; the agent must not make up an ID.                                  |

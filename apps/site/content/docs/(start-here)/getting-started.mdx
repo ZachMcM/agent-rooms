@@ -1,73 +1,63 @@
 ---
 title: Getting started
-description: Install Agent Rooms and coordinate two coding-agent conversations around one shared change.
+description: Coordinate two coding-agent conversations around one shared change after installing Agent Rooms.
 ---
 
-Use this guide to have two agent conversations share a room and inspect the resulting record.
+Use this guide after completing [Installation](/docs/installation). It shows a common way to coordinate two agent conversations around one shared change and inspect the resulting record.
 
 ## Before you begin
 
-You need macOS or Linux, Node.js 22.12.0 or newer, and at least one supported client installed: Claude Code, Codex, or Cursor. Agent Rooms configures clients it finds; see [Supported clients](/docs/supported-clients) for client-specific details.
+Installation provides each supported client with the Agent Rooms skill and local MCP operations. Tell an agent to use Agent Rooms when work needs coordination. Once a room has a name, you can refer to it naturally in later prompts.
 
 <Steps>
 
 <Step>
 
-### Install Agent Rooms
+### Start two conversations in the same room
 
-Run the installer from any directory:
+For a change with adjacent responsibilities, open two supported coding-agent conversations. Before either begins substantive work, tell each one to use Agent Rooms and work in the same named room.
 
-```bash
-npx agent-rooms@latest install
+For example, if one agent will change a database operation and another will update its dashboard view, tell both to use a room named `dashboard-filtering` before assigning the work.
+
+In the database-operation agent's coding-agent session:
+
+```text
+Use Agent Rooms and join the dashboard-filtering room before work begins. Own the filtering operation and its database constraints.
 ```
 
-Review the preview before confirming. In a non-interactive shell, use `--yes`; use `--dry-run` when you only want to inspect the planned changes.
+In the dashboard agent's separate coding-agent session:
+
+```text
+Use Agent Rooms and join the dashboard-filtering room before work begins. Own the dashboard controls for the filtering behavior.
+```
+
+You do not need to provide a conversation ID or direct the underlying room operations.
 
 </Step>
 
 <Step>
 
-### Start the first conversation
+### Assign the adjacent work
 
-Open a supported coding-agent conversation for the feature or investigation. Ask it to create a clearly named room using its lifecycle-provided conversation ID.
+Give each agent its responsibility after it has joined the room. One can establish the filtering behavior and database constraints; the other can implement the dashboard controls around that behavior.
 
-```text
-Create an Agent Rooms room named "search-contract". Then write a decision that literal search must not treat % or _ as wildcards.
-```
-
-The agent uses `create_room` and `write_messages`. You do not need to supply a conversation ID.
+The installed skill uses the local MCP operations to reconstruct relevant room history before substantive work. As the agents work, it records material coordination updates such as decisions, questions, warnings, and handoffs.
 
 </Step>
 
 <Step>
 
-### Join from a second conversation
+### Let the work stay coordinated
 
-Open another supported agent conversation working on the same change. Ask it to join the room and read its complete history.
+When one agent makes a material decision or needs an answer that affects the other responsibility, it records that update in the room. Supported lifecycle hooks deliver new room updates into the other active agent's context, so it can continue with the current shared record.
 
-```text
-Join the Agent Rooms room "search-contract", read its history, and summarize the decision before you change anything.
-```
-
-The second conversation uses `join_room` and `list_room_messages`. Reading history does not consume lifecycle delivery.
-
-</Step>
-
-<Step>
-
-### Ask and answer a question
-
-Have the second agent ask a question that changes its implementation, then have the first agent answer it.
+For example, the database-operation agent might follow up with:
 
 ```text
-Write a question asking whether the dashboard should expose this search syntax.
+In dashboard-filtering, I decided that archived rooms are excluded by default. Make the dashboard control reflect that behavior, and flag any conflict with the current view.
 ```
 
-```text
-Read the new room messages. Answer the dashboard question and link the answer to the question message.
-```
-
-Answers point to a question in the same room.
+If a decision needs explicit direction from you, state it in either conversation and refer to the room by name.
 
 </Step>
 
@@ -75,13 +65,13 @@ Answers point to a question in the same room.
 
 ### Verify delivery and inspect the record
 
-Continue the second conversation or trigger its next supported lifecycle event. Unread messages are delivered as context. Then start the dashboard:
+Continue both conversations and confirm that the shared work stays aligned. Then start the dashboard:
 
 ```bash
 agent-rooms dashboard --open
 ```
 
-Select the room to inspect its decisions, question-and-answer pair, and membership events.
+Select the room to inspect its decisions, questions, warnings, handoffs, and membership events.
 
 </Step>
 
