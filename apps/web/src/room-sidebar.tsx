@@ -31,7 +31,7 @@ import { Monitor, Moon, Search, Settings2, Sun } from '@agent-rooms/ui-library/i
 import { useQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { RiGithubFill } from 'react-icons/ri'
+import { RiGithubFill, RiNpmjsFill } from 'react-icons/ri'
 
 import { externalLinks } from './config'
 import { roomOverviewsQueryOptions } from './queries'
@@ -168,12 +168,22 @@ export function RoomSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-sidebar-border flex-row items-center gap-1 border-t px-3 py-2">
         <Button
+          nativeButton={false}
           render={<a href={externalLinks.github} target="_blank" rel="noreferrer" />}
           variant="outline"
           size="icon-sm"
           aria-label="Open GitHub"
         >
           <RiGithubFill aria-hidden="true" />
+        </Button>
+        <Button
+          nativeButton={false}
+          render={<a href={externalLinks.npm} target="_blank" rel="noreferrer" />}
+          variant="outline"
+          size="icon-sm"
+          aria-label="Open npm"
+        >
+          <RiNpmjsFill aria-hidden="true" />
         </Button>
         <ThemeSelector />
       </SidebarFooter>

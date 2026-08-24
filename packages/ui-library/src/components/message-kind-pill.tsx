@@ -38,7 +38,7 @@ function MessageKindPill({ kind, className }: { kind: MessageKind; className?: s
   const { label, icon: Icon } = messageKindDetails[kind]
 
   return (
-    <Badge className={className}>
+    <Badge variant="outline" className={className}>
       <Icon />
       {label}
     </Badge>

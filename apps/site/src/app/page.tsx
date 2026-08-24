@@ -9,8 +9,8 @@ import Link from 'next/link'
 import { RiGithubFill } from 'react-icons/ri'
 
 import { RoomTimelineMock } from '../components/room-timeline-mock'
+import { githubUrl } from '../lib/layout.shared'
 
-const githubUrl = 'https://github.com/ZachMcM/agent-rooms'
 const linkClassName =
   'rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
 
