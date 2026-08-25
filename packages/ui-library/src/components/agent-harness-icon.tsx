@@ -1,9 +1,9 @@
 import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Astroid } from 'lucide-react'
 import { PiOpenAiLogo } from 'react-icons/pi'
-import { SiClaude, SiCursor } from 'react-icons/si'
+import { SiClaude, SiCursor, SiOpencode } from 'react-icons/si'
 
-type AgentHarness = 'claude-code' | 'codex' | 'cursor' | 'unknown'
+type AgentHarness = 'claude-code' | 'codex' | 'cursor' | 'opencode' | 'unknown'
 
 function AgentHarnessIcon({ harness, className }: { harness: AgentHarness; className?: string }) {
   const iconClassName = 'size-4'
@@ -32,6 +32,14 @@ function AgentHarnessIcon({ harness, className }: { harness: AgentHarness; class
     return (
       <span className={containerClassName} aria-hidden="true">
         <SiCursor className={cn(iconClassName, 'size-5')} />
+      </span>
+    )
+  }
+
+  if (harness === 'opencode') {
+    return (
+      <span className={containerClassName} aria-hidden="true">
+        <SiOpencode className={cn(iconClassName, 'size-5')} />
       </span>
     )
   }
