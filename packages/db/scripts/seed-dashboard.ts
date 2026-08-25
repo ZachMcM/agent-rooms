@@ -13,7 +13,7 @@ const databaseUrl = `file:${databasePath}`
 
 await mkdir(databaseDirectory, { recursive: true })
 
-const db = createDatabase(databaseUrl)
+const db = await createDatabase(databaseUrl)
 await runMigrations(db)
 const summary = await seedDashboardDatabase(db)
 

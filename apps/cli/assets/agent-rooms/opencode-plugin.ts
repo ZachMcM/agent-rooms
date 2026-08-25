@@ -1,8 +1,11 @@
 import { spawn } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 const executable = join(homedir(), '.agent-rooms', 'bin', 'agent-rooms')
+const hookTimeoutMs = 10_000
+const retryDelayMs = 250
 
 type PromptClient = {
   session: {
@@ -15,11 +18,23 @@ type PromptClient = {
 
 type HookEvent = { type: string; properties: Record<string, unknown> }
 
-type TextPart = { type?: string; text?: string; synthetic?: boolean }
+type TextPart = {
+  id?: string
+  sessionID?: string
+  messageID?: string
+  type?: string
+  text?: string
+  synthetic?: boolean
+}
+
+type UserMessage = { id: string }
 
 type Hooks = {
   event?: (input: { event: HookEvent }) => Promise<void>
-  'chat.message'?: (input: { sessionID: string }, output: { parts: TextPart[] }) => Promise<void>
+  'chat.message'?: (
+    input: { sessionID: string },
+    output: { message: UserMessage; parts: TextPart[] },
+  ) => Promise<void>
   'tool.execute.after'?: (
     input: { sessionID: string; tool: string; callID: string },
     output: { output?: string },
@@ -64,10 +79,18 @@ function runHook(
     )
     const stdout: Buffer[] = []
     const stderr: Buffer[] = []
+    const timeout = setTimeout(() => {
+      child.kill('SIGKILL')
+      reject(new Error(`${executable} timed out after ${hookTimeoutMs}ms.`))
+    }, hookTimeoutMs)
     child.stdout.on('data', (chunk) => stdout.push(Buffer.from(chunk)))
     child.stderr.on('data', (chunk) => stderr.push(Buffer.from(chunk)))
-    child.once('error', reject)
+    child.once('error', (error) => {
+      clearTimeout(timeout)
+      reject(error)
+    })
     child.once('exit', (code) => {
+      clearTimeout(timeout)
       if (code === 0) {
         resolveResult(Buffer.concat(stdout).toString('utf8').trim())
       } else {
@@ -81,6 +104,25 @@ function runHook(
     })
     child.stdin.end(JSON.stringify({ session_id: sessionID }))
   })
+}
+
+async function runHookWithRetry(
+  command: 'log-conversation-id' | 'consume-new-messages',
+  event: string,
+  sessionID: string,
+  includeConversationId = false,
+): Promise<string> {
+  try {
+    return await runHook(command, event, sessionID, includeConversationId)
+  } catch (error) {
+    if (!isDatabaseLocked(error)) throw error
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
+    return runHook(command, event, sessionID, includeConversationId)
+  }
+}
+
+function isDatabaseLocked(error: unknown): boolean {
+  return error instanceof Error && /database is locked|SQLITE_BUSY/i.test(error.message)
 }
 
 async function injectContext(client: PromptClient, sessionID: string, text: string): Promise<void> {
@@ -101,13 +143,26 @@ async function consume(
     await injectContext(
       client,
       sessionID,
-      await runHook('consume-new-messages', event, sessionID, includeConversationId),
+      await runHookWithRetry('consume-new-messages', event, sessionID, includeConversationId),
     )
   })
 }
 
 function consumeText(sessionID: string, event: string): Promise<string> {
-  return serializeConsume(sessionID, () => runHook('consume-new-messages', event, sessionID))
+  return serializeConsume(sessionID, () =>
+    runHookWithRetry('consume-new-messages', event, sessionID),
+  )
+}
+
+function syntheticPart(sessionID: string, messageID: string, text: string): TextPart {
+  return {
+    id: `prt_agentrooms_${randomUUID().replaceAll('-', '')}`,
+    sessionID,
+    messageID,
+    type: 'text',
+    text,
+    synthetic: true,
+  }
 }
 
 export const AgentRoomsIdentity: Plugin = async ({ client }) => ({
@@ -119,7 +174,7 @@ export const AgentRoomsIdentity: Plugin = async ({ client }) => ({
           await injectContext(
             client,
             info.id,
-            await runHook('log-conversation-id', event.type, info.id),
+            await runHookWithRetry('log-conversation-id', event.type, info.id),
           )
         }
       } else if (event.type === 'session.compacted') {
@@ -149,7 +204,7 @@ export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
     try {
       const text = await consumeText(input.sessionID, 'chat.message')
       if (!text) return
-      output.parts.unshift({ type: 'text', text, synthetic: true })
+      output.parts.unshift(syntheticPart(input.sessionID, output.message.id, text))
     } catch (error) {
       console.error('[agent-rooms] chat.message failed:', error)
     }

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { asc, eq, sql } from 'drizzle-orm'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { createDatabase } from './client'
+import { createDatabase, type Database } from './client'
 import { membershipLifecycleEvents, memberships } from './schema'
 
 const directories: string[] = []
@@ -15,7 +15,7 @@ afterEach(async () => {
   await Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true })))
 })
 
-async function executeMigration(db: ReturnType<typeof createDatabase>, name: string) {
+async function executeMigration(db: Database, name: string) {
   const source = await readFile(
     fileURLToPath(new URL(`../migrations/${name}/migration.sql`, import.meta.url)),
     'utf8',
@@ -24,7 +24,7 @@ async function executeMigration(db: ReturnType<typeof createDatabase>, name: str
   await executeStatements(db, source.split('--> statement-breakpoint'))
 }
 
-async function executeStatements(db: ReturnType<typeof createDatabase>, statements: string[]) {
+async function executeStatements(db: Database, statements: string[]) {
   const [statement, ...remaining] = statements
 
   if (statement === undefined) return
@@ -36,7 +36,7 @@ describe('migrations', () => {
   it('backfills a join event for memberships created before lifecycle events existed', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-migration-'))
     directories.push(directory)
-    const db = createDatabase(`file:${join(directory, 'db.sqlite')}`)
+    const db = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
 
     await executeMigration(db, '20260813043447_white_raza')
     await executeMigration(db, '20260814233630_lucky_screwball')

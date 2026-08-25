@@ -19,7 +19,7 @@ describe('Agent Rooms MCP server', () => {
   it('exposes room coordination tools over MCP', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-mcp-'))
     directories.push(directory)
-    const database = createDatabase(`file:${join(directory, 'db.sqlite')}`)
+    const database = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
     await runMigrations(database)
     const server = createMcpServer(async () => database, '1.2.3')
     const client = new Client({ name: 'test-client', version: '1.0.0' })
@@ -83,6 +83,47 @@ describe('Agent Rooms MCP server', () => {
       arguments: { roomName: 'mcp-test', conversationId: 'conversation-a' },
     })
     expect(left.structuredContent).toMatchObject({ result: { membership: { status: 'inactive' } } })
+
+    await client.close()
+    await server.close()
+  })
+
+  it('opens the database once, retrying after a failed open', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-mcp-'))
+    directories.push(directory)
+    const database = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
+    await runMigrations(database)
+
+    let opens = 0
+    let failOnce = true
+    const open = async () => {
+      opens += 1
+      if (failOnce) {
+        failOnce = false
+        throw new Error('database unavailable')
+      }
+      return database
+    }
+    const server = createMcpServer(open, '1.2.3')
+    const client = new Client({ name: 'test-client', version: '1.0.0' })
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await server.connect(serverTransport)
+    await client.connect(clientTransport)
+
+    const failed = await client.callTool({ name: 'list_active_rooms', arguments: {} })
+    expect(failed.isError).toBe(true)
+    expect(failed.structuredContent).toEqual({
+      code: 'internal_error',
+      message: 'Agent Rooms could not complete this operation.',
+    })
+
+    const recovered = await client.callTool({ name: 'list_active_rooms', arguments: {} })
+    expect(recovered.isError).toBeUndefined()
+
+    const cached = await client.callTool({ name: 'list_active_rooms', arguments: {} })
+    expect(cached.isError).toBeUndefined()
+
+    expect(opens).toBe(2)
 
     await client.close()
     await server.close()

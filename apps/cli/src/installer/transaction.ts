@@ -307,7 +307,7 @@ async function makeContext(dependencies: TransactionDependencies): Promise<Conte
       dependencies.migrate ??
       (async (databasePath) => {
         await ensurePrivateDirectory(dirname(databasePath), home, { tightenExisting: true })
-        await runMigrations(createDatabase(`file:${databasePath}`))
+        await runMigrations(await createDatabase(`file:${databasePath}`))
       }),
     now: dependencies.now ?? (() => new Date()),
     beforeConfirm: dependencies.beforeConfirm ?? (() => {}),

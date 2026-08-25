@@ -28,13 +28,13 @@ async function createTestDatabase() {
   const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-db-'))
   directories.push(directory)
   const url = `file:${join(directory, 'db.sqlite')}`
-  const db = createDatabase(url)
+  const db = await createDatabase(url)
   await runMigrations(db)
   return { db, url }
 }
 
 async function addMessage(
-  db: ReturnType<typeof createDatabase>,
+  db: Awaited<ReturnType<typeof createDatabase>>,
   roomId: string,
   membershipId: string,
 ) {
@@ -369,7 +369,7 @@ describe('message operations', () => {
 
   it('delivers each peer message once when two consumers race for the same conversation', async () => {
     const { db, url } = await createTestDatabase()
-    const concurrentDb = createDatabase(url)
+    const concurrentDb = await createDatabase(url, { busyTimeoutMs: 100 })
     const active = await createRoom(db, { roomName: 'build', conversationId: 'conversation' })
     const peerMembership = {
       id: 'peer-membership',

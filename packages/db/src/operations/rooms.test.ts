@@ -29,7 +29,7 @@ afterEach(async () => {
 async function createTestDatabase() {
   const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-db-'))
   directories.push(directory)
-  const db = createDatabase(`file:${join(directory, 'db.sqlite')}`)
+  const db = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
   await runMigrations(db)
   return db
 }

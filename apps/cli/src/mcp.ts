@@ -4,6 +4,7 @@ import {
   ActiveMembershipConflictError,
   ActiveMembershipNotFoundError,
   createRoom,
+  type Database,
   InvalidMessagesError,
   joinRoom,
   leaveRoom,
@@ -39,6 +40,15 @@ export function createMcpServer(
   open: typeof openDatabase = openDatabase,
   version: string = packageVersion,
 ): McpServer {
+  let opened: Promise<Database> | undefined
+  const openOnce = () => {
+    if (!opened)
+      opened = open().catch((error: unknown) => {
+        opened = undefined
+        throw error
+      })
+    return opened
+  }
   const server = new McpServer(
     {
       name: 'agent-rooms',
@@ -53,7 +63,7 @@ export function createMcpServer(
   server.registerTool(
     'create_room',
     { description: 'Creates a room and joins the supplied conversation.', inputSchema: roomSchema },
-    async (input) => call(async () => createRoom(await open(), input)),
+    async (input) => call(async () => createRoom(await openOnce(), input)),
   )
   server.registerTool(
     'join_room',
@@ -61,7 +71,7 @@ export function createMcpServer(
       description: 'Joins an existing room with the supplied conversation.',
       inputSchema: roomSchema,
     },
-    async (input) => call(async () => joinRoom(await open(), input)),
+    async (input) => call(async () => joinRoom(await openOnce(), input)),
   )
   server.registerTool(
     'list_active_rooms',
@@ -70,7 +80,7 @@ export function createMcpServer(
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
-    async () => call(async () => listActiveRooms(await open())),
+    async () => call(async () => listActiveRooms(await openOnce())),
   )
   server.registerTool(
     'list_room_messages',
@@ -79,7 +89,7 @@ export function createMcpServer(
       inputSchema: conversationSchema,
       annotations: { readOnlyHint: true },
     },
-    async (input) => call(async () => listRoomMessages(await open(), input)),
+    async (input) => call(async () => listRoomMessages(await openOnce(), input)),
   )
   server.registerTool(
     'write_messages',
@@ -87,12 +97,12 @@ export function createMcpServer(
       description: 'Writes messages to the supplied conversation’s active room.',
       inputSchema: { ...conversationSchema, messages: z.array(messageSchema).min(1) },
     },
-    async (input) => call(async () => writeMessages(await open(), input)),
+    async (input) => call(async () => writeMessages(await openOnce(), input)),
   )
   server.registerTool(
     'leave_room',
     { description: 'Leaves a room with the supplied conversation.', inputSchema: roomSchema },
-    async (input) => call(async () => leaveRoom(await open(), input)),
+    async (input) => call(async () => leaveRoom(await openOnce(), input)),
   )
 
   return server

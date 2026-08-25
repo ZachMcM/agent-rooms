@@ -5,7 +5,7 @@ import { createDatabase, runMigrations, type Database } from '@agent-rooms/db'
 
 export async function openDatabase(): Promise<Database> {
   await mkdir(dataDir(), { recursive: true })
-  const db = createDatabase()
+  const db = await createDatabase()
   await runMigrations(db)
   return db
 }

@@ -16,7 +16,7 @@ async function openDatabase(): Promise<Database> {
       ? process.env.AGENT_ROOMS_DASHBOARD_DATABASE_URL
       : undefined
   if (!url) await mkdir(dataDir(), { recursive: true })
-  const db = createDatabase(url)
+  const db = await createDatabase(url)
   await runMigrations(db)
   return db
 }

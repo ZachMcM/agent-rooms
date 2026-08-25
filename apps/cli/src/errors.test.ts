@@ -69,12 +69,12 @@ describe('handleCliError', () => {
     expect(output).toEqual([])
   })
 
-  it('masks unexpected errors as internal_error', () => {
+  it('surfaces unexpected errors as internal_error with their detail', () => {
     const output = captureStderr()
 
     expect(handleCliError(new Error('sensitive failure'))).toBe(1)
     expect(output).toEqual([
-      '{"ok":false,"error":{"code":"internal_error","message":"An unexpected error occurred.","retryable":false}}\n',
+      '{"ok":false,"error":{"code":"internal_error","message":"An unexpected error occurred: sensitive failure","retryable":false}}\n',
     ])
   })
 })

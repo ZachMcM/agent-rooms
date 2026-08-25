@@ -47,11 +47,12 @@ export function handleCliError(error: unknown, human: boolean = false): number {
     return error.exitCode
   }
 
-  if (human) writeHumanError('An unexpected error occurred.')
+  const detail = error instanceof Error ? error.message : String(error)
+  if (human) writeHumanError(`An unexpected error occurred: ${detail}`)
   else
     writeError({
       code: 'internal_error',
-      message: 'An unexpected error occurred.',
+      message: `An unexpected error occurred: ${detail}`,
       retryable: false,
     })
   return 1
