@@ -28,6 +28,19 @@ type Hooks = {
 
 type Plugin = (context: { client: PromptClient }) => Hooks | Promise<Hooks>
 
+const consumeQueues = new Map<string, Promise<unknown>>()
+
+async function serializeConsume<T>(sessionID: string, operation: () => Promise<T>): Promise<T> {
+  const previous = consumeQueues.get(sessionID) ?? Promise.resolve()
+  const current = previous.catch(() => undefined).then(operation)
+  consumeQueues.set(sessionID, current)
+  try {
+    return await current
+  } finally {
+    if (consumeQueues.get(sessionID) === current) consumeQueues.delete(sessionID)
+  }
+}
+
 function runHook(
   command: 'log-conversation-id' | 'consume-new-messages',
   event: string,
@@ -84,11 +97,17 @@ async function consume(
   event: string,
   includeConversationId = false,
 ): Promise<void> {
-  await injectContext(
-    client,
-    sessionID,
-    await runHook('consume-new-messages', event, sessionID, includeConversationId),
-  )
+  await serializeConsume(sessionID, async () => {
+    await injectContext(
+      client,
+      sessionID,
+      await runHook('consume-new-messages', event, sessionID, includeConversationId),
+    )
+  })
+}
+
+function consumeText(sessionID: string, event: string): Promise<string> {
+  return serializeConsume(sessionID, () => runHook('consume-new-messages', event, sessionID))
 }
 
 export const AgentRoomsIdentity: Plugin = async ({ client }) => ({
@@ -128,7 +147,7 @@ export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
   },
   'chat.message': async (input, output) => {
     try {
-      const text = await runHook('consume-new-messages', 'chat.message', input.sessionID)
+      const text = await consumeText(input.sessionID, 'chat.message')
       if (!text) return
       output.parts.unshift({ type: 'text', text, synthetic: true })
     } catch (error) {
@@ -137,7 +156,7 @@ export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
   },
   'tool.execute.after': async (input, output) => {
     try {
-      const text = await runHook('consume-new-messages', 'tool.execute.after', input.sessionID)
+      const text = await consumeText(input.sessionID, 'tool.execute.after')
       if (!text) return
       output.output = `${text}\n\n${output.output ?? ''}`
     } catch (error) {
