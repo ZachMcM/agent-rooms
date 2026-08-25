@@ -3,7 +3,6 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 const executable = join(homedir(), '.agent-rooms', 'bin', 'agent-rooms')
-const identifiedSessions = new Set<string>()
 
 type PromptClient = {
   session: {
@@ -79,12 +78,6 @@ async function injectContext(client: PromptClient, sessionID: string, text: stri
   })
 }
 
-async function identifyOnce(client: PromptClient, sessionID: string, event: string): Promise<void> {
-  if (identifiedSessions.has(sessionID)) return
-  await injectContext(client, sessionID, await runHook('log-conversation-id', event, sessionID))
-  identifiedSessions.add(sessionID)
-}
-
 async function consume(
   client: PromptClient,
   sessionID: string,
@@ -101,13 +94,18 @@ async function consume(
 export const AgentRoomsIdentity: Plugin = async ({ client }) => ({
   event: async ({ event }) => {
     try {
-      if (event.type === 'session.created' || event.type === 'session.updated') {
+      if (event.type === 'session.created') {
         const info = event.properties.info as { id?: unknown } | undefined
-        if (typeof info?.id === 'string') await identifyOnce(client, info.id, event.type)
+        if (typeof info?.id === 'string') {
+          await injectContext(
+            client,
+            info.id,
+            await runHook('log-conversation-id', event.type, info.id),
+          )
+        }
       } else if (event.type === 'session.compacted') {
         const sessionID = event.properties.sessionID
         if (typeof sessionID === 'string') {
-          identifiedSessions.add(sessionID)
           await consume(client, sessionID, event.type, true)
         }
       }

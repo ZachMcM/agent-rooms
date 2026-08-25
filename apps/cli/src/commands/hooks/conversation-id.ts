@@ -15,7 +15,6 @@ const providerEvents = {
   cursor: ['sessionStart', 'postToolUse', 'stop'],
   opencode: [
     'session.created',
-    'session.updated',
     'session.compacted',
     'session.idle',
     'chat.message',

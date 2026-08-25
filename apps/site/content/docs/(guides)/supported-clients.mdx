@@ -40,9 +40,9 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
   <Tab value="OpenCode">
     Agent Rooms writes `plugins/agent-rooms.ts` in the OpenCode configuration root, registers its MCP server in `opencode.json`, and places the skill in the configuration root.
 
-    It records conversation identity on `session.created` and `session.updated`, and again with delivery on `session.compacted`. It delivers unread messages on `chat.message` (a submitted prompt), `tool.execute.after`, and `session.idle` (the end of a turn).
+    It records conversation identity on `session.created`. It delivers unread messages on `session.compacted`, `chat.message` (a submitted prompt), `tool.execute.after`, and `session.idle` (the end of a turn).
 
-    OpenCode loads plugins directly from the plugin directory, so there is no hook-trust step. Because OpenCode is a persistent interface, a session is created lazily on its first prompt, and a resumed session re-establishes identity when it updates in a new OpenCode process. Restart the OpenCode interface after installing so it loads the plugin.
+    OpenCode loads plugins directly from the plugin directory, so there is no hook-trust step. Because OpenCode is a persistent interface, a session is created lazily on its first prompt, where its identity is established. Delivery continues on compaction, submitted prompts, after tool execution, and at the end of a turn. Restart the OpenCode interface after installing so it loads the plugin.
 
   </Tab>
 </Tabs>

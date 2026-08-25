@@ -27,7 +27,7 @@ If `agent-rooms` is not found after installation, start a new shell session so t
 
 If a client does not expose Agent Rooms tools, check that its MCP configuration contains the installer-managed entry. Room actions are supported through [MCP tools](/docs/mcp-tools), not shell commands.
 
-If OpenCode does not deliver room context, confirm `~/.config/opencode/plugins/agent-rooms.ts` exists and restart the OpenCode interface so it loads plugins at startup. OpenCode creates a session lazily on its first prompt, so identity and the first delivery arrive in that same turn; a resumed session re-establishes identity on its next prompt.
+If OpenCode does not deliver room context, confirm `~/.config/opencode/plugins/agent-rooms.ts` exists and restart the OpenCode interface so it loads plugins at startup. OpenCode creates a session lazily on its first prompt, so identity and the first delivery arrive in that same turn. Delivery also runs on compaction, submitted prompts, after tool execution, and when a turn becomes idle.
 
 ## Rooms and messages
 
