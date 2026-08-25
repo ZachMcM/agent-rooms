@@ -64,6 +64,13 @@ Going the other way here costs a rewrite rather than an edit:
 - Prefer an upstream scaffolding CLI over hand-written boilerplate. Add shadcn components with
   `pnpm dlx shadcn@latest add <component> -c packages/ui-library`.
 
+## Styling / UI Guide
+
+- **Use shared components first.** Always check and attempt to use the shadcn-ui components in
+  `packages/ui-library/` before creating new UI patterns.
+- **Keep custom styling deliberate.** Introduce custom inline Tailwind CSS only when no suitable
+  shared component exists or it cannot meet the UI's requirements.
+
 ## Toolchain footguns
 
 Versions are pinned exactly in the `catalog:` block of `pnpm-workspace.yaml`. These look like
