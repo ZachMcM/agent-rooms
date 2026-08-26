@@ -1,6 +1,6 @@
-const startMarker = '# >>> agent-rooms >>>'
-const endMarker = '# <<< agent-rooms <<<'
-const blockPattern = /(^|\n)# >>> agent-rooms >>>\n[\s\S]*?\n# <<< agent-rooms <<</g
+const startMarker = '# >>> coordrooms >>>'
+const endMarker = '# <<< coordrooms <<<'
+const blockPattern = /(^|\n)# >>> coordrooms >>>\n[\s\S]*?\n# <<< coordrooms <<</g
 
 export function renderManagedPathBlock(binDirectory: string): string {
   return `${startMarker}\nexport PATH=${shellQuote(binDirectory)}:$PATH\n${endMarker}\n`

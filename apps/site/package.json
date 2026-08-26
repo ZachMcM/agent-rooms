@@ -1,5 +1,5 @@
 {
-  "name": "@agent-rooms/site",
+  "name": "@coordrooms/site",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -11,7 +11,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@agent-rooms/ui-library": "workspace:*",
+    "@coordrooms/ui-library": "workspace:*",
     "fumadocs-core": "catalog:",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
@@ -22,7 +22,7 @@
     "react-icons": "catalog:"
   },
   "devDependencies": {
-    "@agent-rooms/typescript-config": "workspace:*",
+    "@coordrooms/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@types/mdx": "catalog:",
     "@types/node": "catalog:",

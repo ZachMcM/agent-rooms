@@ -5,8 +5,8 @@ import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Agent Rooms',
-    template: '%s | Agent Rooms',
+    default: 'CoordRooms',
+    template: '%s | CoordRooms',
   },
   description: 'Real-time decision sharing between parallel coding agents.',
 }

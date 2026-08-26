@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-const executable = join(homedir(), '.agent-rooms', 'bin', 'agent-rooms')
+const executable = join(homedir(), '.coordrooms', 'bin', 'coordrooms')
 const hookTimeoutMs = 10_000
 const retryDelayMs = 250
 
@@ -156,7 +156,7 @@ function consumeText(sessionID: string, event: string): Promise<string> {
 
 function syntheticPart(sessionID: string, messageID: string, text: string): TextPart {
   return {
-    id: `prt_agentrooms_${randomUUID().replaceAll('-', '')}`,
+    id: `prt_coordrooms_${randomUUID().replaceAll('-', '')}`,
     sessionID,
     messageID,
     type: 'text',
@@ -165,7 +165,7 @@ function syntheticPart(sessionID: string, messageID: string, text: string): Text
   }
 }
 
-export const AgentRoomsIdentity: Plugin = async ({ client }) => ({
+export const CoordRoomsIdentity: Plugin = async ({ client }) => ({
   event: async ({ event }) => {
     try {
       if (event.type === 'session.created') {
@@ -184,12 +184,12 @@ export const AgentRoomsIdentity: Plugin = async ({ client }) => ({
         }
       }
     } catch (error) {
-      console.error('[agent-rooms] identity failed:', error)
+      console.error('[coordrooms] identity failed:', error)
     }
   },
 })
 
-export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
+export const CoordRoomsDelivery: Plugin = async ({ client }) => ({
   event: async ({ event }) => {
     try {
       if (event.type === 'session.idle') {
@@ -197,7 +197,7 @@ export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
         if (typeof sessionID === 'string') await consume(client, sessionID, event.type)
       }
     } catch (error) {
-      console.error('[agent-rooms] delivery failed:', error)
+      console.error('[coordrooms] delivery failed:', error)
     }
   },
   'chat.message': async (input, output) => {
@@ -206,7 +206,7 @@ export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
       if (!text) return
       output.parts.unshift(syntheticPart(input.sessionID, output.message.id, text))
     } catch (error) {
-      console.error('[agent-rooms] chat.message failed:', error)
+      console.error('[coordrooms] chat.message failed:', error)
     }
   },
   'tool.execute.after': async (input, output) => {
@@ -215,7 +215,7 @@ export const AgentRoomsDelivery: Plugin = async ({ client }) => ({
       if (!text) return
       output.output = `${text}\n\n${output.output ?? ''}`
     } catch (error) {
-      console.error('[agent-rooms] tool.execute.after failed:', error)
+      console.error('[coordrooms] tool.execute.after failed:', error)
     }
   },
 })

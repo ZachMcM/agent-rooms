@@ -1,4 +1,4 @@
-import { consumeNewMessages } from '@agent-rooms/db'
+import { consumeNewMessages } from '@coordrooms/db'
 import type { Command } from 'commander'
 
 import { openDatabase } from '../../database'

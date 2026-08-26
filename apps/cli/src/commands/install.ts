@@ -8,7 +8,7 @@ import { writeSuccess } from '../output'
 export function addInstallCommand(program: Command, version?: string): void {
   program
     .command('install')
-    .description('Installs the managed Agent Rooms runtime and integrations.')
+    .description('Installs the managed CoordRooms runtime and integrations.')
     .option('--yes')
     .option('--dry-run')
     .option('--json', 'Print machine-readable output; requires --yes except with --dry-run.')
@@ -24,7 +24,7 @@ export function addInstallCommand(program: Command, version?: string): void {
           )
         const presenter = options.json ? undefined : createInstallerPresenter()
         presenter?.start(
-          options.dryRun ? 'Preparing installation preview...' : 'Installing Agent Rooms...',
+          options.dryRun ? 'Preparing installation preview...' : 'Installing CoordRooms...',
         )
         try {
           const result = await runInstall({
@@ -54,7 +54,7 @@ export function addInstallCommand(program: Command, version?: string): void {
     )
   program
     .command('uninstall')
-    .description('Removes Agent Rooms integrations and managed runtime files.')
+    .description('Removes CoordRooms integrations and managed runtime files.')
     .option('--yes')
     .option('--purge-data')
     .option('--json', 'Print machine-readable output; requires --yes.')
@@ -63,7 +63,7 @@ export function addInstallCommand(program: Command, version?: string): void {
       if (options.json && !options.yes)
         throw new CliError('invalid_arguments', '--json requires --yes.', 2)
       const presenter = options.json ? undefined : createInstallerPresenter()
-      presenter?.start('Uninstalling Agent Rooms...')
+      presenter?.start('Uninstalling CoordRooms...')
       try {
         const result = await runUninstall({
           yes: options.yes,

@@ -83,10 +83,10 @@ describe('dashboard command', () => {
     presenter.start()
     presenter.ready('http://127.0.0.1:61937')
 
-    expect(spinner.start).toHaveBeenCalledWith('Starting Agent Rooms dashboard...')
+    expect(spinner.start).toHaveBeenCalledWith('Starting CoordRooms dashboard...')
     expect(spinner.stop).toHaveBeenCalledOnce()
     expect(stdout.join('')).toContain('\u001B[32m✔\u001B[39m')
-    expect(stdout.join('')).toContain('Agent Rooms dashboard is running')
+    expect(stdout.join('')).toContain('CoordRooms dashboard is running')
     expect(stdout.join('')).toContain('http://127.0.0.1:61937')
     expect(stdout.join('')).toContain('Ctrl-C')
   })
@@ -112,8 +112,8 @@ describe('dashboard command', () => {
     presenter.ready('http://127.0.0.1:61937')
 
     expect(ora).toHaveBeenCalledWith(expect.objectContaining({ color: false, isEnabled: true }))
-    expect(spinner.start).toHaveBeenCalledWith('Starting Agent Rooms dashboard...')
-    expect(stdout.join('')).toContain('Agent Rooms dashboard is running')
+    expect(spinner.start).toHaveBeenCalledWith('Starting CoordRooms dashboard...')
+    expect(stdout.join('')).toContain('CoordRooms dashboard is running')
     expect(stdout.join('')).toContain('http://127.0.0.1:61937')
     expect(stdout.join('')).toContain('Ctrl-C')
     expect(stdout.join('')).not.toContain('\u001B')

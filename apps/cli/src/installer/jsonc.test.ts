@@ -20,9 +20,9 @@ describe('JSONC patches', () => {
   })
 
   it('appends uniquely and removes only managed array values', () => {
-    const appended = appendJsoncArrayValue(source, 'skills', 'agent-rooms')
-    expect(appendJsoncArrayValue(appended, 'skills', 'agent-rooms')).toBe(appended)
-    expect(removeJsoncArrayValue(appended, 'skills', 'agent-rooms')).toContain('"existing"')
+    const appended = appendJsoncArrayValue(source, 'skills', 'coordrooms')
+    expect(appendJsoncArrayValue(appended, 'skills', 'coordrooms')).toBe(appended)
+    expect(removeJsoncArrayValue(appended, 'skills', 'coordrooms')).toContain('"existing"')
   })
 
   it('removes a property without damaging neighboring content', () => {
@@ -40,14 +40,12 @@ describe('JSONC patches', () => {
 }
 `
     const unrelatedEvent = '"PreToolUse": [{ "matcher": "Bash", "hooks": ["existing"] }],'
-    const result = setJsoncObjectProperty(hooks, 'hooks', 'UserPromptSubmit', ['agent-rooms'])
+    const result = setJsoncObjectProperty(hooks, 'hooks', 'UserPromptSubmit', ['coordrooms'])
 
     expect(result).toContain(unrelatedEvent)
     expect(result).toContain('"Stop": ["stop",],')
-    expect(result).toContain('"UserPromptSubmit": [\n      "agent-rooms"\n    ]')
-    expect(setJsoncObjectProperty(result, 'hooks', 'UserPromptSubmit', ['agent-rooms'])).toBe(
-      result,
-    )
+    expect(result).toContain('"UserPromptSubmit": [\n      "coordrooms"\n    ]')
+    expect(setJsoncObjectProperty(result, 'hooks', 'UserPromptSubmit', ['coordrooms'])).toBe(result)
 
     const updated = setJsoncObjectProperty(result, 'hooks', 'PreToolUse', ['replacement'])
     expect(updated).toContain('"Stop": ["stop",],')

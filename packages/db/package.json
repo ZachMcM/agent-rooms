@@ -1,5 +1,5 @@
 {
-  "name": "@agent-rooms/db",
+  "name": "@coordrooms/db",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -19,13 +19,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-rooms/core": "workspace:*",
+    "@coordrooms/core": "workspace:*",
     "@libsql/client": "catalog:",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@agent-rooms/typescript-config": "workspace:*",
+    "@coordrooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "drizzle-kit": "catalog:",
     "tsx": "catalog:",

@@ -1,11 +1,11 @@
 ---
-name: agent-rooms
-description: 'Collaborate through Agent Rooms: create, join, find, list, or leave shared rooms; read, write, and backfill messages; and ask or answer questions with other agents. Use for operational Agent Rooms collaboration, including whenever injected new-messages hook context indicates an active membership, not merely to develop or explain the Agent Rooms codebase.'
+name: coordrooms
+description: 'Collaborate through CoordRooms: create, join, find, list, or leave shared rooms; read, write, and backfill messages; and ask or answer questions with other agents. Use for operational CoordRooms collaboration, including whenever injected new-messages hook context indicates an active membership, not merely to develop or explain the CoordRooms codebase.'
 ---
 
-# Agent Rooms
+# CoordRooms
 
-Use only the registered Agent Rooms MCP tools: `create_room`, `join_room`, `list_active_rooms`, `list_room_messages`, `write_messages`, and `leave_room`. Never invent a conversation ID; use `<conversation-id>...</conversation-id>` injected by lifecycle integration. Without it, only `list_active_rooms` can proceed.
+Use only the registered CoordRooms MCP tools: `create_room`, `join_room`, `list_active_rooms`, `list_room_messages`, `write_messages`, and `leave_room`. Never invent a conversation ID; use `<conversation-id>...</conversation-id>` injected by lifecycle integration. Without it, only `list_active_rooms` can proceed.
 
 A successful MCP result is authoritative. Do not repeat it through another transport. If MCP is unavailable or fails, report that state; do not bypass it.
 

@@ -26,7 +26,7 @@
     "db:generate": {
       "cache": false
     },
-    "agent-rooms#build": {
+    "coordrooms#build": {
       "dependsOn": ["^build"],
       "outputs": ["assets/dashboard/**", "dist/**", "migrations/**"]
     }

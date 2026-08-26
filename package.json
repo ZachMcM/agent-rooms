@@ -1,14 +1,14 @@
 {
-  "name": "agent-rooms-monorepo",
+  "name": "coordrooms-monorepo",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "turbo run build",
     "install:local": "node ./scripts/install-local.mjs",
-    "publish:cli": "pnpm run check && turbo run build --filter=agent-rooms && pnpm --filter agent-rooms publish",
+    "publish:cli": "pnpm run check && turbo run build --filter=coordrooms && pnpm --filter coordrooms publish",
     "dev": "turbo run dev",
-    "dashboard:seed": "pnpm --filter @agent-rooms/db dashboard:seed",
-    "dashboard:dev": "pnpm dashboard:seed && AGENT_ROOMS_DEVELOPMENT=1 AGENT_ROOMS_DASHBOARD_DATABASE_URL=\"file://$PWD/.agent-rooms/dashboard-dev.sqlite\" pnpm --parallel --filter @agent-rooms/api --filter @agent-rooms/web dev",
+    "dashboard:seed": "pnpm --filter @coordrooms/db dashboard:seed",
+    "dashboard:dev": "pnpm dashboard:seed && COORDROOMS_DEVELOPMENT=1 COORDROOMS_DASHBOARD_DATABASE_URL=\"file://$PWD/.coordrooms/dashboard-dev.sqlite\" pnpm --parallel --filter @coordrooms/api --filter @coordrooms/web dev",
     "hooks:install": "git config core.hooksPath .githooks",
     "clean": "turbo run clean && rm -rf node_modules",
     "lint": "oxlint",
@@ -21,9 +21,9 @@
     "check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run test"
   },
   "devDependencies": {
-    "@agent-rooms/oxfmt-config": "workspace:*",
-    "@agent-rooms/oxlint-config": "workspace:*",
-    "@agent-rooms/typescript-config": "workspace:*",
+    "@coordrooms/oxfmt-config": "workspace:*",
+    "@coordrooms/oxlint-config": "workspace:*",
+    "@coordrooms/typescript-config": "workspace:*",
     "ora": "8.2.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",

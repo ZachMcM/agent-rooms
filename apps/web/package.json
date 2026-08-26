@@ -1,5 +1,5 @@
 {
-  "name": "@agent-rooms/web",
+  "name": "@coordrooms/web",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@agent-rooms/ui-library": "workspace:*",
+    "@coordrooms/ui-library": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
@@ -24,7 +24,7 @@
     "react-markdown": "catalog:"
   },
   "devDependencies": {
-    "@agent-rooms/typescript-config": "workspace:*",
+    "@coordrooms/typescript-config": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/router-plugin": "catalog:",
     "@types/node": "catalog:",

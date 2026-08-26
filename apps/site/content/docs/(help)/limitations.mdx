@@ -1,9 +1,9 @@
 ---
 title: Limitations and data boundaries
-description: Current platform, client, storage, and service boundaries for Agent Rooms.
+description: Current platform, client, storage, and service boundaries for CoordRooms.
 ---
 
-Agent Rooms is a local coordination toolkit for one user's supported coding-agent sessions.
+CoordRooms is a local coordination toolkit for one user's supported coding-agent sessions.
 
 ## Supported environment
 
@@ -16,9 +16,9 @@ The installer only configures a supported client when that client's normal confi
 
 ## Local single-user storage
 
-All rooms, memberships, messages, and lifecycle events are stored in the current user's `~/.agent-rooms/db.sqlite`. The database is shared across that user's worktrees and sessions on the same machine.
+All rooms, memberships, messages, and lifecycle events are stored in the current user's `~/.coordrooms/db.sqlite`. The database is shared across that user's worktrees and sessions on the same machine.
 
-Agent Rooms does not provide accounts, authentication, authorization, multi-user tenancy, hosted synchronization, or cross-machine replication. It is not a team messaging service.
+CoordRooms does not provide accounts, authentication, authorization, multi-user tenancy, hosted synchronization, or cross-machine replication. It is not a team messaging service.
 
 ## Local service boundary
 
@@ -28,6 +28,6 @@ The MCP server communicates over stdio through a configured local client. A conf
 
 ## Security claims
 
-Agent Rooms does not provide a hosted security boundary, application-level encryption, or a formal access-control layer. Treat the local database and installed client configuration as user-local files, and rely on the operating system and client environment for their handling.
+CoordRooms does not provide a hosted security boundary, application-level encryption, or a formal access-control layer. Treat the local database and installed client configuration as user-local files, and rely on the operating system and client environment for their handling.
 
 For stored locations and retention, see [Files and data](/docs/files-and-data).

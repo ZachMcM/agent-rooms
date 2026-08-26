@@ -1,5 +1,5 @@
 {
-  "extends": "@agent-rooms/typescript-config/node.json",
-  "include": ["src", "assets/agent-rooms/opencode-plugin.ts", "tsup.config.ts", "vitest.config.ts"],
+  "extends": "@coordrooms/typescript-config/node.json",
+  "include": ["src", "assets/coordrooms/opencode-plugin.ts", "tsup.config.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

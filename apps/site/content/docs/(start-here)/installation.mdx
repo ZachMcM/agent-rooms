@@ -1,9 +1,9 @@
 ---
 title: Installation
-description: Install the managed Agent Rooms runtime and integrations for supported coding-agent clients.
+description: Install the managed CoordRooms runtime and integrations for supported coding-agent clients.
 ---
 
-Agent Rooms installs once for your user account and stores shared room data outside individual repositories.
+CoordRooms installs once for your user account and stores shared room data outside individual repositories.
 
 ## Requirements
 
@@ -18,21 +18,21 @@ Agent Rooms installs once for your user account and stores shared room data outs
   <Tab>
 
 ```bash
-npx agent-rooms@latest install
+npx coordrooms@latest install
 ```
 
   </Tab>
   <Tab>
 
 ```bash
-bunx agent-rooms@latest install
+bunx coordrooms@latest install
 ```
 
   </Tab>
   <Tab>
 
 ```bash
-pnpm dlx agent-rooms@latest install
+pnpm dlx coordrooms@latest install
 ```
 
   </Tab>
@@ -50,7 +50,7 @@ The installer shows a preview before it changes anything. Use these options when
 ## What the installer manages
 
 <Files>
-  <Folder name="~/.agent-rooms" defaultOpen>
+  <Folder name="~/.coordrooms" defaultOpen>
     <File name="db.sqlite" />
     <Folder name="runtime" defaultOpen>
       <Folder name="&lt;version&gt;" />
@@ -59,25 +59,25 @@ The installer shows a preview before it changes anything. Use these options when
   <Folder name="client configuration roots" defaultOpen>
     <File name="hooks.json or settings.json" />
     <File name="opencode/opencode.json" />
-    <File name="opencode/plugins/agent-rooms.ts" />
-    <Folder name="~/.agents/skills/agent-rooms" defaultOpen>
+    <File name="opencode/plugins/coordrooms.ts" />
+    <Folder name="~/.agents/skills/coordrooms" defaultOpen>
       <File name="SKILL.md" />
     </Folder>
   </Folder>
 </Files>
 
-The runtime is versioned and verified before activation. `~/.agent-rooms/db.sqlite` is where the database is created or migrated at . The installer only patches supported clients already found in your user configuration.
+The runtime is versioned and verified before activation. `~/.coordrooms/db.sqlite` is where the database is created or migrated at . The installer only patches supported clients already found in your user configuration.
 
 For exact client locations and lifecycle coverage, see [Supported clients](/docs/supported-clients). For data retention and uninstall behavior, see [Files and data](/docs/files-and-data).
 
 ## Trust Codex hooks
 
-After an install that adds or updates Codex hooks, review and trust the Agent Rooms hooks before they run. In the Codex CLI, run `/hooks`; in Codex Desktop, open Codex's hook review. Agent Rooms cannot pre-trust ordinary hooks: Codex requires review of the exact hook definition, and new or changed definitions may need review again. See the [Codex hooks documentation](https://developers.openai.com/codex/hooks).
+After an install that adds or updates Codex hooks, review and trust the CoordRooms hooks before they run. In the Codex CLI, run `/hooks`; in Codex Desktop, open Codex's hook review. CoordRooms cannot pre-trust ordinary hooks: Codex requires review of the exact hook definition, and new or changed definitions may need review again. See the [Codex hooks documentation](https://developers.openai.com/codex/hooks).
 
 OpenCode needs no hook-trust step: its plugin is a file in the user configuration root that OpenCode loads directly.
 
 ## Verify installation
 
-Restart a supported client, then ask its agent to use Agent Rooms for the current work. The agent should be able to establish or join a room and share a material update. If the integration is missing, follow [Troubleshooting](/docs/troubleshooting).
+Restart a supported client, then ask its agent to use CoordRooms for the current work. The agent should be able to establish or join a room and share a material update. If the integration is missing, follow [Troubleshooting](/docs/troubleshooting).
 
 After setup, continue with [Getting started](/docs/getting-started) to coordinate two conversations around one change.

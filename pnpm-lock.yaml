@@ -125,13 +125,13 @@ importers:
 
   .:
     devDependencies:
-      '@agent-rooms/oxfmt-config':
+      '@coordrooms/oxfmt-config':
         specifier: workspace:*
         version: link:packages/oxfmt-config
-      '@agent-rooms/oxlint-config':
+      '@coordrooms/oxlint-config':
         specifier: workspace:*
         version: link:packages/oxlint-config
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:packages/typescript-config
       ora:
@@ -162,16 +162,16 @@ importers:
         specifier: 'catalog:'
         version: 5.2.1
     devDependencies:
-      '@agent-rooms/core':
+      '@coordrooms/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agent-rooms/db':
+      '@coordrooms/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
-      '@agent-rooms/web':
+      '@coordrooms/web':
         specifier: workspace:*
         version: link:../web
       '@types/express':
@@ -226,16 +226,16 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@agent-rooms/api':
+      '@coordrooms/api':
         specifier: workspace:*
         version: link:../api
-      '@agent-rooms/core':
+      '@coordrooms/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@agent-rooms/db':
+      '@coordrooms/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
@@ -256,7 +256,7 @@ importers:
 
   apps/site:
     dependencies:
-      '@agent-rooms/ui-library':
+      '@coordrooms/ui-library':
         specifier: workspace:*
         version: link:../../packages/ui-library
       fumadocs-core:
@@ -284,7 +284,7 @@ importers:
         specifier: 'catalog:'
         version: 5.7.0(react@19.2.8)
     devDependencies:
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@tailwindcss/postcss':
@@ -311,7 +311,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@agent-rooms/ui-library':
+      '@coordrooms/ui-library':
         specifier: workspace:*
         version: link:../../packages/ui-library
       '@tanstack/react-query':
@@ -333,7 +333,7 @@ importers:
         specifier: 'catalog:'
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)
     devDependencies:
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@tailwindcss/vite':
@@ -369,7 +369,7 @@ importers:
 
   packages/core:
     devDependencies:
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -384,7 +384,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@agent-rooms/core':
+      '@coordrooms/core':
         specifier: workspace:*
         version: link:../core
       '@libsql/client':
@@ -397,7 +397,7 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
@@ -471,7 +471,7 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
     devDependencies:
-      '@agent-rooms/typescript-config':
+      '@coordrooms/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@tailwindcss/postcss':

@@ -1,5 +1,5 @@
 {
-  "extends": "@agent-rooms/typescript-config/vite.json",
+  "extends": "@coordrooms/typescript-config/vite.json",
   "compilerOptions": {
     "paths": {
       "#/*": ["./src/*"],

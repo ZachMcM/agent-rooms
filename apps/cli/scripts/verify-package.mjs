@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const requiredFiles = [
-  'assets/agent-rooms/SKILL.md',
+  'assets/coordrooms/SKILL.md',
   'assets/dashboard/server/index.mjs',
   'dist/index.js',
 ]

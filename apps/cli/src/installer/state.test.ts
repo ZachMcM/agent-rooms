@@ -18,7 +18,7 @@ describe('install state', () => {
     expect(
       parseInstallState({
         version: 1,
-        package: { name: 'agent-rooms', version: '1.2.3' },
+        package: { name: 'coordrooms', version: '1.2.3' },
         installedAt: '2026-08-16T00:00:00.000Z',
         current: '1.2.3',
         previous: '1.2.2',
@@ -30,7 +30,7 @@ describe('install state', () => {
     expect(() =>
       parseInstallState({
         version: 1,
-        package: { name: 'agent-rooms', version: '1.2.3' },
+        package: { name: 'coordrooms', version: '1.2.3' },
         installedAt: '2026-08-16T00:00:00.000Z',
         current: '../outside',
       }),

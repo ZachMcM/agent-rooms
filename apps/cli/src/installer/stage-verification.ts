@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { assertOwnedPathComponents, assertOwnedRegularFile, readOwnedFile } from './filesystem'
 
-const packageName = 'agent-rooms'
+const packageName = 'coordrooms'
 
 export type Spawn = (
   command: string,
@@ -36,7 +36,7 @@ export async function verifyRuntimeTree(
     packageJson.version !== version ||
     !hasBin(packageJson.bin)
   ) {
-    throw new Error('Staged package does not match the requested agent-rooms version.')
+    throw new Error('Staged package does not match the requested coordrooms version.')
   }
 
   const executable = binFile(packageJson.bin)
@@ -50,14 +50,14 @@ export async function verifyRuntimeTree(
   await assertLoadableLibsqlClient(runtimeRoot, packageRoot, trustedBase, run)
   await assertMigrationTree(join(packageRoot, 'migrations'), trustedBase)
   await assertNonEmptyFile(
-    join(packageRoot, 'assets', 'agent-rooms', 'SKILL.md'),
+    join(packageRoot, 'assets', 'coordrooms', 'SKILL.md'),
     trustedBase,
-    'agent-rooms skill',
+    'coordrooms skill',
   )
   await assertNonEmptyFile(
-    join(packageRoot, 'assets', 'agent-rooms', 'opencode-plugin.ts'),
+    join(packageRoot, 'assets', 'coordrooms', 'opencode-plugin.ts'),
     trustedBase,
-    'agent-rooms opencode plugin',
+    'coordrooms opencode plugin',
   )
   await assertDashboardAssets(join(packageRoot, 'assets', 'dashboard'), trustedBase)
 
@@ -88,12 +88,12 @@ function hasBin(value: unknown): value is string | Record<string, string> {
     typeof value === 'string' ||
     (typeof value === 'object' &&
       value !== null &&
-      typeof (value as Record<string, unknown>)['agent-rooms'] === 'string')
+      typeof (value as Record<string, unknown>)['coordrooms'] === 'string')
   )
 }
 
 function binFile(value: string | Record<string, string>): string {
-  return typeof value === 'string' ? value : value['agent-rooms']!
+  return typeof value === 'string' ? value : value['coordrooms']!
 }
 
 async function assertLoadableLibsqlClient(
@@ -118,7 +118,7 @@ async function assertLoadableLibsqlClient(
       [
         '--input-type=module',
         '--eval',
-        'const resolved=import.meta.resolve("@libsql/client");const {createClient}=await import(resolved);const client=createClient({url:process.argv[1]});try{await client.execute("CREATE TABLE agent_rooms_verify (value INTEGER NOT NULL)");const result=await client.execute("SELECT 1");if(String(result.rows[0]?.[0])!=="1")throw new Error("Unexpected SELECT 1 result");process.stdout.write(resolved)}finally{await client.close()}',
+        'const resolved=import.meta.resolve("@libsql/client");const {createClient}=await import(resolved);const client=createClient({url:process.argv[1]});try{await client.execute("CREATE TABLE coordrooms_verify (value INTEGER NOT NULL)");const result=await client.execute("SELECT 1");if(String(result.rows[0]?.[0])!=="1")throw new Error("Unexpected SELECT 1 result");process.stdout.write(resolved)}finally{await client.close()}',
         pathToFileURL(databasePath).href,
       ],
       { cwd: packageRoot },

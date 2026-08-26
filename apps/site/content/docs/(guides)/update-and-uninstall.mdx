@@ -3,20 +3,20 @@ title: Update and uninstall
 description: Update the managed runtime and integrations, or remove them while keeping room data when needed.
 ---
 
-Rerun the installer to update Agent Rooms. It previews changes in an interactive terminal and verifies the runtime before activation.
+Rerun the installer to update CoordRooms. It previews changes in an interactive terminal and verifies the runtime before activation.
 
 ## Update
 
 ```bash
-npx agent-rooms@latest install
+npx coordrooms@latest install
 ```
 
 The installer refuses to downgrade an existing installation. If the requested registry version is already installed and its runtime verifies successfully, the installer reuses it. If that runtime is corrupt, the installer stops with a repair instruction instead of replacing it automatically.
 
-After an update, Agent Rooms retains the current and immediately previous runtimes, then prunes older managed runtimes. Installation migrates the database.
+After an update, CoordRooms retains the current and immediately previous runtimes, then prunes older managed runtimes. Installation migrates the database.
 
 <Callout type="info" title="Configuration changes are transactional">
-  If client configuration cannot be completed after runtime activation, Agent Rooms restores the
+  If client configuration cannot be completed after runtime activation, CoordRooms restores the
   configuration it changed and restores the prior runtime links. The runtime and database are
   retained for repair.
 </Callout>
@@ -26,22 +26,22 @@ For a non-interactive update, pass `--yes`. Use `--dry-run` to see the planned c
 ## Uninstall
 
 ```bash
-agent-rooms uninstall
+coordrooms uninstall
 ```
 
-Uninstall removes the managed runtime, executable link, integrations, and install state. It removes Agent Rooms hooks, plugin files, and MCP registrations while preserving unrelated client configuration. An unchanged installed skill or plugin is removed; a modified skill, plugin, or MCP registration is preserved and reported as a warning.
+Uninstall removes the managed runtime, executable link, integrations, and install state. It removes CoordRooms hooks, plugin files, and MCP registrations while preserving unrelated client configuration. An unchanged installed skill or plugin is removed; a modified skill, plugin, or MCP registration is preserved and reported as a warning.
 
-Room history remains in `~/.agent-rooms/db.sqlite` by default, so you can reinstall later without losing existing rooms.
+Room history remains in `~/.coordrooms/db.sqlite` by default, so you can reinstall later without losing existing rooms.
 
 ## Remove room data too
 
 ```bash
-agent-rooms uninstall --purge-data
+coordrooms uninstall --purge-data
 ```
 
 <Callout type="warn" title="This removes local room history">
-  `--purge-data` removes the Agent Rooms SQLite database along with the managed runtime and
-  integrations. This action is not reversible through Agent Rooms.
+  `--purge-data` removes the CoordRooms SQLite database along with the managed runtime and
+  integrations. This action is not reversible through CoordRooms.
 </Callout>
 
 Like installation, uninstall previews changes in an interactive terminal. Use `--yes` for non-interactive use. For the exact managed paths and persistence behavior, see [Files and data](/docs/files-and-data). If uninstall preserves an entry you expected it to remove, see [Troubleshooting](/docs/troubleshooting).

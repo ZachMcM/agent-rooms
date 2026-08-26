@@ -1,5 +1,5 @@
 export const externalLinks = {
-  github: 'https://github.com/ZachMcM/agent-rooms',
+  github: 'https://github.com/ZachMcM/coordrooms',
   npm: '',
   docs: '',
 }

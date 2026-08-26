@@ -146,8 +146,8 @@ build/
 # Nextra / Pagefind search index
 _pagefind/
 
-# Local agent-rooms data
-.agent-rooms/
+# Local coordrooms data
+.coordrooms/
 
 # Copied into apps/cli during the package build
 apps/cli/migrations/

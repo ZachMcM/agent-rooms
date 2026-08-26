@@ -22,8 +22,8 @@ import type { ManagedFile, ManagedHook, ManagedMcp } from './manifest'
 import { removeManagedPathBlock, upsertManagedPathBlock } from './path'
 import type { ClientRoot } from './preflight'
 
-const skillName = 'agent-rooms'
-const managedBlockPattern = /(^|\n)# >>> agent-rooms >>>\n[\s\S]*?\n# <<< agent-rooms <<</g
+const skillName = 'coordrooms'
+const managedBlockPattern = /(^|\n)# >>> coordrooms >>>\n[\s\S]*?\n# <<< coordrooms <<</g
 
 type PatchResult = { content: string; hooks: ManagedHook[] }
 type McpPatchResult = { content: string; mcp?: ManagedMcp }
@@ -209,7 +209,7 @@ export function mcpConfigPath(
 }
 
 export function opencodePluginPath(root: Pick<ClientRoot, 'client' | 'path'>): string {
-  return join(root.path, 'plugins', 'agent-rooms.ts')
+  return join(root.path, 'plugins', 'coordrooms.ts')
 }
 
 export function skillPath(
@@ -328,7 +328,7 @@ function patchMcp(
   const desired = { command: bin, args: ['mcp'] }
   const current = source === undefined ? undefined : readMcp(source, client)
   if (current !== undefined && !equal(current, desired)) {
-    throw new Error(`Refusing to overwrite existing Agent Rooms MCP server: ${path}.`)
+    throw new Error(`Refusing to overwrite existing CoordRooms MCP server: ${path}.`)
   }
   if (current !== undefined) {
     const owned = priorMcps.find((mcp) => mcp.path === path)
@@ -347,12 +347,12 @@ function readMcp(source: string, client: ClientRoot['client']): unknown {
   if (client === 'codex') {
     const parsed = parseToml(source) as Record<string, unknown>
     const servers = parsed.mcp_servers
-    return isRecord(servers) ? servers['agent-rooms'] : undefined
+    return isRecord(servers) ? servers['coordrooms'] : undefined
   }
   const parsed = parseJsonc(source) as Record<string, unknown>
   if (client === 'opencode') {
     const servers = parsed.mcp
-    const value = isRecord(servers) ? servers['agent-rooms'] : undefined
+    const value = isRecord(servers) ? servers['coordrooms'] : undefined
     if (!isRecord(value)) return undefined
     const command = value.command
     return {
@@ -360,15 +360,15 @@ function readMcp(source: string, client: ClientRoot['client']): unknown {
       args: Array.isArray(command) ? command.slice(1) : [],
     }
   }
-  return isRecord(parsed.mcpServers) ? parsed.mcpServers['agent-rooms'] : undefined
+  return isRecord(parsed.mcpServers) ? parsed.mcpServers['coordrooms'] : undefined
 }
 
 function addJsonMcp(source: string, desired: { command: string; args: string[] }): string {
-  return setJsoncObjectProperty(source, 'mcpServers', 'agent-rooms', desired)
+  return setJsoncObjectProperty(source, 'mcpServers', 'coordrooms', desired)
 }
 
 function addOpencodeMcp(source: string, bin: string): string {
-  return setJsoncObjectProperty(source, 'mcp', 'agent-rooms', {
+  return setJsoncObjectProperty(source, 'mcp', 'coordrooms', {
     type: 'local',
     command: [bin, 'mcp'],
     enabled: true,
@@ -378,13 +378,13 @@ function addOpencodeMcp(source: string, bin: string): string {
 function addTomlMcp(source: string, desired: { command: string; args: string[] }): string {
   parseToml(source)
   const separator = source && !source.endsWith('\n') ? '\n\n' : source ? '\n' : ''
-  return `${source}${separator}[mcp_servers.agent-rooms]\ncommand = ${JSON.stringify(desired.command)}\nargs = [${desired.args.map((arg) => JSON.stringify(arg)).join(', ')}]\n`
+  return `${source}${separator}[mcp_servers.coordrooms]\ncommand = ${JSON.stringify(desired.command)}\nargs = [${desired.args.map((arg) => JSON.stringify(arg)).join(', ')}]\n`
 }
 
 function removeMcp(source: string, client: ClientRoot['client']): string {
-  if (client === 'opencode') return removeJsoncObjectProperty(source, 'mcp', 'agent-rooms')
-  if (client !== 'codex') return removeJsoncObjectProperty(source, 'mcpServers', 'agent-rooms')
-  const expression = /(?:^|\n)\[mcp_servers\.agent-rooms\][\s\S]*?(?=\n\[|$)/
+  if (client === 'opencode') return removeJsoncObjectProperty(source, 'mcp', 'coordrooms')
+  if (client !== 'codex') return removeJsoncObjectProperty(source, 'mcpServers', 'coordrooms')
+  const expression = /(?:^|\n)\[mcp_servers\.coordrooms\][\s\S]*?(?=\n\[|$)/
   return source.replace(expression, '').replace(/^\n+/, '')
 }
 
@@ -462,7 +462,7 @@ function removeManagedHooks(source: string, entries: ManagedHook[]): string {
 function renderProfile(content: string, bin: string, shell: string): string {
   if (basename(shell) !== 'fish') return upsertManagedPathBlock(content, bin)
   const stripped = content.replace(managedBlockPattern, '$1')
-  return `${stripped}${stripped && !stripped.endsWith('\n') ? '\n' : ''}# >>> agent-rooms >>>\nfish_add_path ${quoteFish(bin)}\n# <<< agent-rooms <<<\n`
+  return `${stripped}${stripped && !stripped.endsWith('\n') ? '\n' : ''}# >>> coordrooms >>>\nfish_add_path ${quoteFish(bin)}\n# <<< coordrooms <<<\n`
 }
 
 function quoteFish(value: string): string {

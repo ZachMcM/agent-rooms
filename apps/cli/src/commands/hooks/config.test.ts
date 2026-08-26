@@ -4,17 +4,17 @@ import { providerHookConfig } from './config'
 
 describe('providerHookConfig', () => {
   it('quotes executable paths for shell-based hook runners', () => {
-    const config = providerHookConfig("/Users/Test User/it's/bin/agent-rooms") as {
+    const config = providerHookConfig("/Users/Test User/it's/bin/coordrooms") as {
       cursor: { hooks: { sessionStart: { command: string }[] } }
     }
 
     expect(config.cursor.hooks.sessionStart[0]?.command).toBe(
-      `'${`/Users/Test User/it's/bin/agent-rooms`.replaceAll("'", `'"'"'`)}' hooks log-conversation-id --provider cursor --event sessionStart`,
+      `'${`/Users/Test User/it's/bin/coordrooms`.replaceAll("'", `'"'"'`)}' hooks log-conversation-id --provider cursor --event sessionStart`,
     )
   })
 
   it('creates the exact owned lifecycle matrix without leave hooks', () => {
-    expect(providerHookConfig('/Users/test/.agent-rooms/bin/agent-rooms')).toEqual({
+    expect(providerHookConfig('/Users/test/.coordrooms/bin/coordrooms')).toEqual({
       claude: {
         hooks: {
           SessionStart: [
@@ -24,7 +24,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider claude --event SessionStart',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks log-conversation-id --provider claude --event SessionStart',
                 },
               ],
             },
@@ -34,7 +34,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event SessionStart --include-conversation-id',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider claude --event SessionStart --include-conversation-id',
                 },
               ],
             },
@@ -45,7 +45,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event UserPromptSubmit',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider claude --event UserPromptSubmit',
                 },
               ],
             },
@@ -56,7 +56,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event PostToolUse',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider claude --event PostToolUse',
                 },
               ],
             },
@@ -67,7 +67,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider claude --event Stop',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider claude --event Stop',
                 },
               ],
             },
@@ -83,7 +83,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider codex --event SessionStart',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks log-conversation-id --provider codex --event SessionStart',
                 },
               ],
             },
@@ -93,7 +93,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event SessionStart --include-conversation-id',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider codex --event SessionStart --include-conversation-id',
                 },
               ],
             },
@@ -104,7 +104,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event UserPromptSubmit',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider codex --event UserPromptSubmit',
                 },
               ],
             },
@@ -115,7 +115,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event PostToolUse',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider codex --event PostToolUse',
                 },
               ],
             },
@@ -126,7 +126,7 @@ describe('providerHookConfig', () => {
                 {
                   type: 'command',
                   command:
-                    '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider codex --event Stop',
+                    '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider codex --event Stop',
                 },
               ],
             },
@@ -138,19 +138,19 @@ describe('providerHookConfig', () => {
           sessionStart: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks log-conversation-id --provider cursor --event sessionStart',
+                '/Users/test/.coordrooms/bin/coordrooms hooks log-conversation-id --provider cursor --event sessionStart',
             },
           ],
           postToolUse: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider cursor --event postToolUse',
+                '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider cursor --event postToolUse',
             },
           ],
           stop: [
             {
               command:
-                '/Users/test/.agent-rooms/bin/agent-rooms hooks consume-new-messages --provider cursor --event stop',
+                '/Users/test/.coordrooms/bin/coordrooms hooks consume-new-messages --provider cursor --event stop',
             },
           ],
         },

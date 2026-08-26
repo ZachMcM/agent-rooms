@@ -34,7 +34,7 @@ async function executeStatements(db: Database, statements: string[]) {
 
 describe('migrations', () => {
   it('backfills a join event for memberships created before lifecycle events existed', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-migration-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-migration-'))
     directories.push(directory)
     const db = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
 

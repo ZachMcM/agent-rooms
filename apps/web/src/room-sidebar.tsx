@@ -1,4 +1,4 @@
-import { Button } from '@agent-rooms/ui-library/components/button'
+import { Button } from '@coordrooms/ui-library/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@agent-rooms/ui-library/components/dropdown-menu'
-import { Kbd } from '@agent-rooms/ui-library/components/kbd'
+} from '@coordrooms/ui-library/components/dropdown-menu'
+import { Kbd } from '@coordrooms/ui-library/components/kbd'
 import {
   Sidebar,
   SidebarContent,
@@ -24,10 +24,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from '@agent-rooms/ui-library/components/sidebar'
-import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
-import { useTheme } from '@agent-rooms/ui-library/components/theme-provider'
-import { Monitor, Moon, Search, Settings2, Sun } from '@agent-rooms/ui-library/icons'
+} from '@coordrooms/ui-library/components/sidebar'
+import { Skeleton } from '@coordrooms/ui-library/components/skeleton'
+import { useTheme } from '@coordrooms/ui-library/components/theme-provider'
+import { Monitor, Moon, Search, Settings2, Sun } from '@coordrooms/ui-library/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
@@ -98,7 +98,7 @@ export function RoomSidebar() {
       <SidebarHeader className="gap-3 px-3 py-4">
         <div className="flex items-center justify-between px-2">
           <Link to="/" className="text-sm font-semibold tracking-tight">
-            Agent Rooms
+            CoordRooms
           </Link>
           <RoomFilters
             filters={filters}

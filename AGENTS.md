@@ -1,25 +1,25 @@
-# agent-rooms
+# coordrooms
 
 A CLI and lifecycle hooks that share decisions between parallel coding agents in real time,
 so they don't drift on adjacent work. Targets Claude Code, Codex, and Cursor.
 
-One person, one SQLite database at `~/.agent-rooms/db.sqlite`. No accounts, no auth, no server.
+One person, one SQLite database at `~/.coordrooms/db.sqlite`. No accounts, no auth, no server.
 
 ## Commands
 
 Run from the repo root.
 
-| Command                                     | What it does                                           |
-| ------------------------------------------- | ------------------------------------------------------ |
-| `pnpm install`                              | Install everything                                     |
-| `pnpm dev`                                  | All dev servers (`api` 61937, `site` 3001, `web` 3000) |
-| `pnpm build`                                | Full build, ordered by the turbo graph                 |
-| `pnpm lint` / `pnpm lint:fix`               | oxlint over the whole repo                             |
-| `pnpm format` / `pnpm format:check`         | oxfmt over the whole repo                              |
-| `pnpm typecheck`                            | `tsc --noEmit` per package                             |
-| `pnpm test`                                 | Vitest per package                                     |
-| `pnpm check`                                | lint + format:check + typecheck + test                 |
-| `pnpm --filter @agent-rooms/db db:generate` | Generate a migration from `schema.ts`                  |
+| Command                                    | What it does                                           |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `pnpm install`                             | Install everything                                     |
+| `pnpm dev`                                 | All dev servers (`api` 61937, `site` 3001, `web` 3000) |
+| `pnpm build`                               | Full build, ordered by the turbo graph                 |
+| `pnpm lint` / `pnpm lint:fix`              | oxlint over the whole repo                             |
+| `pnpm format` / `pnpm format:check`        | oxfmt over the whole repo                              |
+| `pnpm typecheck`                           | `tsc --noEmit` per package                             |
+| `pnpm test`                                | Vitest per package                                     |
+| `pnpm check`                               | lint + format:check + typecheck + test                 |
+| `pnpm --filter @coordrooms/db db:generate` | Generate a migration from `schema.ts`                  |
 
 oxlint and oxfmt run once over the whole tree from the root. Only `typecheck`, `test`, and `build`
 go through turbo.
@@ -39,7 +39,7 @@ packages/
   oxlint-config / oxfmt-config / typescript-config
 ```
 
-Import alias is `@agent-rooms`. Internal packages are just-in-time — their `exports` point at
+Import alias is `@coordrooms`. Internal packages are just-in-time — their `exports` point at
 TypeScript source, so `packages/*` need no build step.
 
 ## Guardrails
@@ -85,4 +85,4 @@ mistakes and aren't:
   `external`.
 - **`drizzle-kit` is dev-time only.** End users don't have it, so shipped migrations are applied
   in-process by `packages/db/src/migrator.ts`. `drizzle.config.ts` resolves its url through
-  `@agent-rooms/core`, not `process.env`, so drizzle-kit and the app open the same file.
+  `@coordrooms/core`, not `process.env`, so drizzle-kit and the app open the same file.

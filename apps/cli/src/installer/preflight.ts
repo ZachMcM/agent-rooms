@@ -25,19 +25,19 @@ export function assertInstallPreflight(
   const uid = environment.uid ?? process.getuid?.()
 
   if (platform !== 'darwin' && platform !== 'linux') {
-    throw new Error('Agent Rooms installation is supported only on macOS and Linux.')
+    throw new Error('CoordRooms installation is supported only on macOS and Linux.')
   }
 
   if (uid === 0) {
-    throw new Error('Refusing to install Agent Rooms as root.')
+    throw new Error('Refusing to install CoordRooms as root.')
   }
 
   if (!isNodeVersionAtLeast(nodeVersion, 22, 12, 0)) {
-    throw new Error('Agent Rooms installation requires Node.js 22.12.0 or newer.')
+    throw new Error('CoordRooms installation requires Node.js 22.12.0 or newer.')
   }
 
   if (!isStrictVersion(packageVersion)) {
-    throw new Error('Agent Rooms package version must be strict semver.')
+    throw new Error('CoordRooms package version must be strict semver.')
   }
 
   assertSafeAbsolutePath(environment.homeDirectory ?? homedir(), 'Home directory')

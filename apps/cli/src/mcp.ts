@@ -16,7 +16,7 @@ import {
   RoomNameConflictError,
   RoomNotFoundError,
   writeMessages,
-} from '@agent-rooms/db'
+} from '@coordrooms/db'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
@@ -51,7 +51,7 @@ export function createMcpServer(
   }
   const server = new McpServer(
     {
-      name: 'agent-rooms',
+      name: 'coordrooms',
       version,
     },
     {
@@ -146,5 +146,5 @@ function mcpFailure(error: unknown): { code: string; message: string } {
     return { code: 'active_membership_not_found', message: error.message }
   if (error instanceof InvalidMessagesError)
     return { code: 'invalid_arguments', message: error.message }
-  return { code: 'internal_error', message: 'Agent Rooms could not complete this operation.' }
+  return { code: 'internal_error', message: 'CoordRooms could not complete this operation.' }
 }

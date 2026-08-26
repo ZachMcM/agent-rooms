@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream'
 
-import { consumeNewMessages } from '@agent-rooms/db'
+import { consumeNewMessages } from '@coordrooms/db'
 import { Command } from 'commander'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -8,7 +8,7 @@ import { openDatabase } from '../../database'
 import { addHooksCommand } from './commands'
 
 vi.mock('../../database', () => ({ openDatabase: vi.fn() }))
-vi.mock('@agent-rooms/db', () => ({ consumeNewMessages: vi.fn() }))
+vi.mock('@coordrooms/db', () => ({ consumeNewMessages: vi.fn() }))
 
 afterEach(() => {
   vi.restoreAllMocks()

@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import * as React from 'react'
 
 function ScrollArea({ className, children, ...props }: ScrollAreaPrimitive.Root.Props) {

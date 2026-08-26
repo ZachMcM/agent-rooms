@@ -11,11 +11,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@agent-rooms/ui-library/components",
-    "hooks": "@agent-rooms/ui-library/hooks",
-    "lib": "@agent-rooms/ui-library/lib",
-    "utils": "@agent-rooms/ui-library/lib/utils",
-    "ui": "@agent-rooms/ui-library/components"
+    "components": "@coordrooms/ui-library/components",
+    "hooks": "@coordrooms/ui-library/hooks",
+    "lib": "@coordrooms/ui-library/lib",
+    "utils": "@coordrooms/ui-library/lib/utils",
+    "ui": "@coordrooms/ui-library/components"
   },
   "rtl": false,
   "menuColor": "default",

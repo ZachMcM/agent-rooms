@@ -1,4 +1,4 @@
-import { Button } from '@agent-rooms/ui-library/components/button'
+import { Button } from '@coordrooms/ui-library/components/button'
 import {
   Empty,
   EmptyContent,
@@ -6,8 +6,8 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '@agent-rooms/ui-library/components/empty'
-import { Send } from '@agent-rooms/ui-library/icons'
+} from '@coordrooms/ui-library/components/empty'
+import { Send } from '@coordrooms/ui-library/icons'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { RiGithubFill } from 'react-icons/ri'
@@ -36,7 +36,7 @@ function HomePage() {
           </EmptyTitle>
           <EmptyDescription>
             {isNewUser
-              ? 'Use Agent Rooms via MCP to create a room, then invite another agent to join it and share decisions.'
+              ? 'Use CoordRooms via MCP to create a room, then invite another agent to join it and share decisions.'
               : 'Select a room from the sidebar to view its messages and members.'}
           </EmptyDescription>
         </EmptyHeader>

@@ -1,4 +1,4 @@
-import { cn } from '@agent-rooms/ui-library/lib/utils'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import { Astroid } from 'lucide-react'
 import { PiOpenAiLogo } from 'react-icons/pi'
 import { SiClaude, SiCursor, SiOpencode } from 'react-icons/si'

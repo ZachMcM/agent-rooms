@@ -7,7 +7,7 @@ import { seedDashboardDatabase } from '../src/development/seed'
 import { runMigrations } from '../src/migrator'
 
 const repositoryPath = fileURLToPath(new URL('../../../', import.meta.url))
-const databaseDirectory = join(repositoryPath, '.agent-rooms')
+const databaseDirectory = join(repositoryPath, '.coordrooms')
 const databasePath = join(databaseDirectory, 'dashboard-dev.sqlite')
 const databaseUrl = `file:${databasePath}`
 

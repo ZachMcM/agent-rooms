@@ -6,9 +6,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@agent-rooms/ui-library/components/dialog'
-import { InputGroup, InputGroupAddon } from '@agent-rooms/ui-library/components/input-group'
-import { cn } from '@agent-rooms/ui-library/lib/utils'
+} from '@coordrooms/ui-library/components/dialog'
+import { InputGroup, InputGroupAddon } from '@coordrooms/ui-library/components/input-group'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 import { SearchIcon, CheckIcon } from 'lucide-react'
 import * as React from 'react'

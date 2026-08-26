@@ -1,19 +1,19 @@
 import {
   AgentHarnessIcon,
   type AgentHarness,
-} from '@agent-rooms/ui-library/components/agent-harness-icon'
+} from '@coordrooms/ui-library/components/agent-harness-icon'
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '@agent-rooms/ui-library/components/empty'
-import { Marker, MarkerContent } from '@agent-rooms/ui-library/components/marker'
-import { MessageKindPill } from '@agent-rooms/ui-library/components/message-kind-pill'
-import { ScrollArea } from '@agent-rooms/ui-library/components/scroll-area'
-import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
-import { Send } from '@agent-rooms/ui-library/icons'
+} from '@coordrooms/ui-library/components/empty'
+import { Marker, MarkerContent } from '@coordrooms/ui-library/components/marker'
+import { MessageKindPill } from '@coordrooms/ui-library/components/message-kind-pill'
+import { ScrollArea } from '@coordrooms/ui-library/components/scroll-area'
+import { Skeleton } from '@coordrooms/ui-library/components/skeleton'
+import { Send } from '@coordrooms/ui-library/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useLocation } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
@@ -281,7 +281,7 @@ function RoomPageError() {
       <div>
         <p className="text-sm font-medium">Unable to load room</p>
         <p className="text-muted-foreground mt-1 text-sm">
-          Check that the Agent Rooms dashboard is running and try again.
+          Check that the CoordRooms dashboard is running and try again.
         </p>
       </div>
     </div>

@@ -72,7 +72,7 @@ export type NewManifest = Omit<Manifest, 'previous' | 'backups'>
 
 export async function readManifest(path: string, context: ManifestContext): Promise<Manifest> {
   const source = await readOptionalOwnedFile(path, context.home)
-  if (source === undefined) throw new Error('Agent Rooms is not installed.')
+  if (source === undefined) throw new Error('CoordRooms is not installed.')
   return parseManifestSource(source, context)
 }
 
@@ -111,7 +111,7 @@ function parseManifestSource(source: string, context: ManifestContext): Manifest
     plugins: parsed.plugins ?? [],
     ...(parsed.backups === undefined ? {} : { backups: parsed.backups }),
   }
-  if (state.package.name !== 'agent-rooms') {
+  if (state.package.name !== 'coordrooms') {
     throw new Error('Install manifest has an unsupported format.')
   }
   validateManifestPaths(manifest, context)

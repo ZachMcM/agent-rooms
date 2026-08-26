@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@agent-rooms/ui-library/components/button'
-import { Input } from '@agent-rooms/ui-library/components/input'
-import { Textarea } from '@agent-rooms/ui-library/components/textarea'
-import { cn } from '@agent-rooms/ui-library/lib/utils'
+import { Button } from '@coordrooms/ui-library/components/button'
+import { Input } from '@coordrooms/ui-library/components/input'
+import { Textarea } from '@coordrooms/ui-library/components/textarea'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 

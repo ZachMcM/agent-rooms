@@ -7,7 +7,7 @@ import {
   listRoomOverviews,
   searchRoomsAndMessages,
   type Database,
-} from '@agent-rooms/db'
+} from '@coordrooms/db'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 
 import { getDatabase } from './database'

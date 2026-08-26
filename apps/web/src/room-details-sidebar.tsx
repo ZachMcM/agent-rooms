@@ -1,14 +1,14 @@
 import {
   AgentHarnessIcon,
   type AgentHarness,
-} from '@agent-rooms/ui-library/components/agent-harness-icon'
-import { Button } from '@agent-rooms/ui-library/components/button'
-import { Card, CardContent } from '@agent-rooms/ui-library/components/card'
+} from '@coordrooms/ui-library/components/agent-harness-icon'
+import { Button } from '@coordrooms/ui-library/components/button'
+import { Card, CardContent } from '@coordrooms/ui-library/components/card'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@agent-rooms/ui-library/components/collapsible'
+} from '@coordrooms/ui-library/components/collapsible'
 import {
   Dialog,
   DialogContent,
@@ -16,15 +16,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@agent-rooms/ui-library/components/dialog'
+} from '@coordrooms/ui-library/components/dialog'
 import {
   MessageKindPill,
   messageKindDetails,
   type MessageKind,
-} from '@agent-rooms/ui-library/components/message-kind-pill'
-import { Progress, ProgressLabel, ProgressValue } from '@agent-rooms/ui-library/components/progress'
-import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
-import { Activity, Archive, ChevronRight, Clock, Send, Users } from '@agent-rooms/ui-library/icons'
+} from '@coordrooms/ui-library/components/message-kind-pill'
+import { Progress, ProgressLabel, ProgressValue } from '@coordrooms/ui-library/components/progress'
+import { Skeleton } from '@coordrooms/ui-library/components/skeleton'
+import { Activity, Archive, ChevronRight, Clock, Send, Users } from '@coordrooms/ui-library/icons'
 import type { ReactNode } from 'react'
 
 import type { Room, RoomMember, RoomMessage } from './api'

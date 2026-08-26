@@ -1,12 +1,12 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
 import { RiGithubFill, RiNpmjsFill } from 'react-icons/ri'
 
-export const githubUrl = 'https://github.com/ZachMcM/agent-rooms'
-export const npmUrl = 'https://www.npmjs.com/package/agent-rooms'
+export const githubUrl = 'https://github.com/ZachMcM/coordrooms'
+export const npmUrl = 'https://www.npmjs.com/package/coordrooms'
 
 export function baseOptions(): BaseLayoutProps {
   return {
-    nav: { title: 'Agent Rooms', url: '/' },
+    nav: { title: 'CoordRooms', url: '/' },
     links: [
       { text: 'GitHub', url: githubUrl, external: true, on: 'nav' },
       {

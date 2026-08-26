@@ -56,19 +56,19 @@ export function createInstallerPresenter(): Presenter {
         for (const change of result.changes)
           process.stdout.write(`  - ${change.action}: ${change.path}\n`)
       } else {
-        status(`Installed Agent Rooms ${result.version}.`)
+        status(`Installed CoordRooms ${result.version}.`)
         const profile = result.changes.find((change) => change.action === 'add PATH block')?.path
         if (profile) {
           status(`Updated ${profile}.`)
           process.stdout.write(
-            `Run source ${shellQuote(profile)} to use agent-rooms in this terminal, or open a new terminal.\n`,
+            `Run source ${shellQuote(profile)} to use coordrooms in this terminal, or open a new terminal.\n`,
           )
         } else {
-          process.stdout.write('Agent Rooms is ready to use.\n')
+          process.stdout.write('CoordRooms is ready to use.\n')
         }
         if (result.changes.some((change) => change.action === 'patch codex hooks')) {
           process.stdout.write(
-            "Codex requires you to review and trust the Agent Rooms hooks before they run. In the Codex CLI, run /hooks; in Codex Desktop, open Codex's hook review.\n",
+            "Codex requires you to review and trust the CoordRooms hooks before they run. In the Codex CLI, run /hooks; in Codex Desktop, open Codex's hook review.\n",
           )
         }
       }
@@ -81,11 +81,9 @@ export function createInstallerPresenter(): Presenter {
     uninstall(result, purgeData) {
       spinner.stop()
       status(`Removed ${result.changes.length} managed changes.`)
-      process.stdout.write(
-        `${purgeData ? 'Removed Agent Rooms data.' : 'Kept Agent Rooms data.'}\n`,
-      )
+      process.stdout.write(`${purgeData ? 'Removed CoordRooms data.' : 'Kept CoordRooms data.'}\n`)
       if (!purgeData)
-        process.stdout.write('To remove it later, run agent-rooms uninstall --yes --purge-data.\n')
+        process.stdout.write('To remove it later, run coordrooms uninstall --yes --purge-data.\n')
       if (result.warnings.length)
         process.stdout.write(
           `Completed with ${result.warnings.length} warning${result.warnings.length === 1 ? '' : 's'}.\n`,

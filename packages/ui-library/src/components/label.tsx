@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@agent-rooms/ui-library/lib/utils'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import * as React from 'react'
 
 function Label({ className, ...props }: React.ComponentProps<'label'>) {

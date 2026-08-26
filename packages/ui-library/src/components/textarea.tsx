@@ -1,4 +1,4 @@
-import { cn } from '@agent-rooms/ui-library/lib/utils'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import * as React from 'react'
 
 function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {

@@ -1,19 +1,19 @@
 ---
 title: Files and data
-description: Where Agent Rooms stores its local database, runtime, and client integrations.
+description: Where CoordRooms stores its local database, runtime, and client integrations.
 ---
 
-Agent Rooms is user-global. Its data does not live in a project or worktree, so parallel agents share the same room history.
+CoordRooms is user-global. Its data does not live in a project or worktree, so parallel agents share the same room history.
 
 ## Data directory
 
-The default data directory is `~/.agent-rooms`.
+The default data directory is `~/.coordrooms`.
 
 <Files>
-  <Folder name="~/.agent-rooms" defaultOpen>
+  <Folder name="~/.coordrooms" defaultOpen>
     <File name="db.sqlite" />
     <Folder name="bin">
-      <File name="agent-rooms" />
+      <File name="coordrooms" />
     </Folder>
     <Folder name="runtime">
       <Folder name="&lt;version&gt;" />
@@ -23,26 +23,26 @@ The default data directory is `~/.agent-rooms`.
   </Folder>
 </Files>
 
-`db.sqlite` is the local SQLite database for rooms, memberships, messages, and membership lifecycle events. The installer migrates it and restricts it to the current user. `runtime/<version>` holds a verified package runtime; `current` and `bin/agent-rooms` select the active executable. `install-state.json` records installer ownership so later updates and uninstalls can preserve user modifications.
+`db.sqlite` is the local SQLite database for rooms, memberships, messages, and membership lifecycle events. The installer migrates it and restricts it to the current user. `runtime/<version>` holds a verified package runtime; `current` and `bin/coordrooms` select the active executable. `install-state.json` records installer ownership so later updates and uninstalls can preserve user modifications.
 
-The database is retained by a normal uninstall. `agent-rooms uninstall --purge-data` removes it permanently along with its room history. Agent Rooms has no built-in backup or export command.
+The database is retained by a normal uninstall. `coordrooms uninstall --purge-data` removes it permanently along with its room history. CoordRooms has no built-in backup or export command.
 
 ## Client-managed locations
 
 The installer detects only client configuration directories that already exist. The defaults and supported overrides are:
 
-| Client      | Configuration root                 | Hook configuration       | MCP registration       | Skill                                            |
-| ----------- | ---------------------------------- | ------------------------ | ---------------------- | ------------------------------------------------ |
-| Claude Code | `~/.claude` or `CLAUDE_CONFIG_DIR` | `settings.json`          | `~/.claude.json`       | `~/.claude/skills/agent-rooms/SKILL.md`          |
-| Codex       | `~/.codex` or `CODEX_HOME`         | `hooks.json`             | `~/.codex/config.toml` | `~/.agents/skills/agent-rooms/SKILL.md`          |
-| Cursor      | `~/.cursor`                        | `hooks.json`             | `~/.cursor/mcp.json`   | `~/.cursor/skills/agent-rooms/SKILL.md`          |
-| OpenCode    | `~/.config/opencode`               | `plugins/agent-rooms.ts` | `opencode.json`        | `~/.config/opencode/skills/agent-rooms/SKILL.md` |
+| Client      | Configuration root                 | Hook configuration      | MCP registration       | Skill                                           |
+| ----------- | ---------------------------------- | ----------------------- | ---------------------- | ----------------------------------------------- |
+| Claude Code | `~/.claude` or `CLAUDE_CONFIG_DIR` | `settings.json`         | `~/.claude.json`       | `~/.claude/skills/coordrooms/SKILL.md`          |
+| Codex       | `~/.codex` or `CODEX_HOME`         | `hooks.json`            | `~/.codex/config.toml` | `~/.agents/skills/coordrooms/SKILL.md`          |
+| Cursor      | `~/.cursor`                        | `hooks.json`            | `~/.cursor/mcp.json`   | `~/.cursor/skills/coordrooms/SKILL.md`          |
+| OpenCode    | `~/.config/opencode`               | `plugins/coordrooms.ts` | `opencode.json`        | `~/.config/opencode/skills/coordrooms/SKILL.md` |
 
 The installed MCP entry launches the managed executable with the `mcp` argument. Hooks call the same executable from the managed `bin` directory.
 
 ## Shell profile
 
-For zsh, bash, and fish, installation adds a marked Agent Rooms PATH block to the applicable user shell profile:
+For zsh, bash, and fish, installation adds a marked CoordRooms PATH block to the applicable user shell profile:
 
 | Shell         | Profile                      |
 | ------------- | ---------------------------- |
@@ -51,7 +51,7 @@ For zsh, bash, and fish, installation adds a marked Agent Rooms PATH block to th
 | bash on Linux | `~/.bashrc`                  |
 | fish          | `~/.config/fish/config.fish` |
 
-If the installer cannot identify a supported shell, it warns instead of editing a profile. Add `~/.agent-rooms/bin` to your PATH yourself.
+If the installer cannot identify a supported shell, it warns instead of editing a profile. Add `~/.coordrooms/bin` to your PATH yourself.
 
 ## Ownership and preservation
 
@@ -61,4 +61,4 @@ Do not move the data directory into a repository: it fragments coordination betw
 
 ## Data boundaries
 
-The dashboard binds to loopback and reads this local database. Agent Rooms provides no accounts, authentication, hosted synchronization, application-level encryption, or supported remote data service.
+The dashboard binds to loopback and reads this local database. CoordRooms provides no accounts, authentication, hosted synchronization, application-level encryption, or supported remote data service.

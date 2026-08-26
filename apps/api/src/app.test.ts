@@ -3,8 +3,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { InvalidSearchLimitError, type Database } from '@agent-rooms/db'
-import type * as AgentRoomsDatabase from '@agent-rooms/db'
+import { InvalidSearchLimitError, type Database } from '@coordrooms/db'
+import type * as CoordRoomsDatabase from '@coordrooms/db'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createApp } from './app'
@@ -16,8 +16,8 @@ const { getRoomDetail, listRoomOverviews, searchRoomsAndMessages } = vi.hoisted(
   searchRoomsAndMessages: vi.fn(),
 }))
 
-vi.mock('@agent-rooms/db', async (importOriginal) => {
-  const original = await importOriginal<typeof AgentRoomsDatabase>()
+vi.mock('@coordrooms/db', async (importOriginal) => {
+  const original = await importOriginal<typeof CoordRoomsDatabase>()
   return { ...original, getRoomDetail, listRoomOverviews, searchRoomsAndMessages }
 })
 
@@ -96,8 +96,8 @@ describe('API server', () => {
   })
 
   it('serves SPA history requests without swallowing unknown API routes', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-api-'))
-    await writeFile(join(directory, 'index.html'), '<h1>Agent Rooms</h1>')
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-api-'))
+    await writeFile(join(directory, 'index.html'), '<h1>CoordRooms</h1>')
     const staticApp = createApp({
       getDatabase: vi.fn(async () => database),
       publicDirectory: directory,
@@ -106,7 +106,7 @@ describe('API server', () => {
     try {
       await expect(requestFrom(staticApp, '/rooms/room-1')).resolves.toMatchObject({
         status: 200,
-        body: '<h1>Agent Rooms</h1>',
+        body: '<h1>CoordRooms</h1>',
       })
       await expect(requestFrom(staticApp, '/api/missing')).resolves.toMatchObject({
         status: 404,

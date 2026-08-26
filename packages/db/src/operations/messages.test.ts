@@ -25,7 +25,7 @@ afterEach(async () => {
 })
 
 async function createTestDatabase() {
-  const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-db-'))
+  const directory = await mkdtemp(join(tmpdir(), 'coordrooms-db-'))
   directories.push(directory)
   const url = `file:${join(directory, 'db.sqlite')}`
   const db = await createDatabase(url)

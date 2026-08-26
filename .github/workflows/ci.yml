@@ -48,23 +48,23 @@ jobs:
           set -euo pipefail
           cd "$(mktemp -d)"
           npm init -y > /dev/null
-          npm install "$RUNNER_TEMP"/agent-rooms-*.tgz
-          ./node_modules/.bin/agent-rooms --version
-          ./node_modules/.bin/agent-rooms --help
-          test -d node_modules/agent-rooms/migrations
-          test -f node_modules/agent-rooms/assets/agent-rooms/SKILL.md
-          test -f node_modules/agent-rooms/assets/dashboard/server/index.mjs
-          test -d node_modules/agent-rooms/assets/dashboard/migrations
-          test -d node_modules/agent-rooms/assets/dashboard/public/assets
+          npm install "$RUNNER_TEMP"/coordrooms-*.tgz
+          ./node_modules/.bin/coordrooms --version
+          ./node_modules/.bin/coordrooms --help
+          test -d node_modules/coordrooms/migrations
+          test -f node_modules/coordrooms/assets/coordrooms/SKILL.md
+          test -f node_modules/coordrooms/assets/dashboard/server/index.mjs
+          test -d node_modules/coordrooms/assets/dashboard/migrations
+          test -d node_modules/coordrooms/assets/dashboard/public/assets
           node -e "require('@libsql/client')"
       - name: Smoke test the packaged dashboard
         run: |
           set -euo pipefail
           cd "$(mktemp -d)"
           npm init -y > /dev/null
-          npm install "$RUNNER_TEMP"/agent-rooms-*.tgz
+          npm install "$RUNNER_TEMP"/coordrooms-*.tgz
           test_home="$(mktemp -d)"
-          HOME="$test_home" ./node_modules/.bin/agent-rooms dashboard --port 61937 > dashboard.log 2> dashboard.err &
+          HOME="$test_home" ./node_modules/.bin/coordrooms dashboard --port 61937 > dashboard.log 2> dashboard.err &
           dashboard_pid=$!
           trap 'kill "$dashboard_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 20); do
@@ -73,8 +73,8 @@ jobs:
             fi
             sleep 0.25
           done
-          grep -q 'Agent Rooms' dashboard.html
-          if HOME="$test_home" ./node_modules/.bin/agent-rooms dashboard --port 61937 2> collision.err; then
+          grep -q 'CoordRooms' dashboard.html
+          if HOME="$test_home" ./node_modules/.bin/coordrooms dashboard --port 61937 2> collision.err; then
             exit 1
           fi
           grep -q 'port_in_use' collision.err

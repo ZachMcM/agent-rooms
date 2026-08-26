@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@agent-rooms/ui-library/components/theme-provider'
+import { ThemeProvider } from '@coordrooms/ui-library/components/theme-provider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'

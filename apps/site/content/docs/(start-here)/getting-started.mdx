@@ -1,13 +1,13 @@
 ---
 title: Getting started
-description: Coordinate two coding-agent conversations around one shared change after installing Agent Rooms.
+description: Coordinate two coding-agent conversations around one shared change after installing CoordRooms.
 ---
 
 Use this guide after completing [Installation](/docs/installation). It shows a common way to coordinate two agent conversations around one shared change and inspect the resulting record.
 
 ## Before you begin
 
-Installation provides each supported client with the Agent Rooms skill and local MCP operations. Tell an agent to use Agent Rooms when work needs coordination. Once a room has a name, you can refer to it naturally in later prompts.
+Installation provides each supported client with the CoordRooms skill and local MCP operations. Tell an agent to use CoordRooms when work needs coordination. Once a room has a name, you can refer to it naturally in later prompts.
 
 <Steps>
 
@@ -15,20 +15,20 @@ Installation provides each supported client with the Agent Rooms skill and local
 
 ### Start two conversations in the same room
 
-For a change with adjacent responsibilities, open two supported coding-agent conversations. Before either begins substantive work, tell each one to use Agent Rooms and work in the same named room.
+For a change with adjacent responsibilities, open two supported coding-agent conversations. Before either begins substantive work, tell each one to use CoordRooms and work in the same named room.
 
 For example, if one agent will change a database operation and another will update its dashboard view, tell both to use a room named `dashboard-filtering` before assigning the work.
 
 In the database-operation agent's coding-agent session:
 
 ```text
-Use Agent Rooms and join the dashboard-filtering room before work begins. Own the filtering operation and its database constraints.
+Use CoordRooms and join the dashboard-filtering room before work begins. Own the filtering operation and its database constraints.
 ```
 
 In the dashboard agent's separate coding-agent session:
 
 ```text
-Use Agent Rooms and join the dashboard-filtering room before work begins. Own the dashboard controls for the filtering behavior.
+Use CoordRooms and join the dashboard-filtering room before work begins. Own the dashboard controls for the filtering behavior.
 ```
 
 You do not need to provide a conversation ID or direct the underlying room operations.
@@ -68,7 +68,7 @@ If a decision needs explicit direction from you, state it in either conversation
 Continue both conversations and confirm that the shared work stays aligned. Then start the dashboard:
 
 ```bash
-agent-rooms dashboard --open
+coordrooms dashboard --open
 ```
 
 Select the room to inspect its decisions, questions, warnings, handoffs, and membership events.

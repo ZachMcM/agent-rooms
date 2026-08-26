@@ -2,7 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { createDatabase, runMigrations } from '@agent-rooms/db'
+import { createDatabase, runMigrations } from '@coordrooms/db'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -15,9 +15,9 @@ afterEach(async () => {
   await Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true })))
 })
 
-describe('Agent Rooms MCP server', () => {
+describe('CoordRooms MCP server', () => {
   it('exposes room coordination tools over MCP', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-mcp-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-mcp-'))
     directories.push(directory)
     const database = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
     await runMigrations(database)
@@ -89,7 +89,7 @@ describe('Agent Rooms MCP server', () => {
   })
 
   it('opens the database once, retrying after a failed open', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-mcp-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-mcp-'))
     directories.push(directory)
     const database = await createDatabase(`file:${join(directory, 'db.sqlite')}`)
     await runMigrations(database)
@@ -114,7 +114,7 @@ describe('Agent Rooms MCP server', () => {
     expect(failed.isError).toBe(true)
     expect(failed.structuredContent).toEqual({
       code: 'internal_error',
-      message: 'Agent Rooms could not complete this operation.',
+      message: 'CoordRooms could not complete this operation.',
     })
 
     const recovered = await client.callTool({ name: 'list_active_rooms', arguments: {} })

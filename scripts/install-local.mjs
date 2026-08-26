@@ -68,17 +68,17 @@ export function forwardedInstallArguments(arguments_) {
 
 export async function main(arguments_ = process.argv.slice(2)) {
   const forwardedArguments = forwardedInstallArguments(arguments_)
-  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'agent-rooms-'))
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'coordrooms-'))
 
   try {
-    await run('pnpm', ['exec', 'turbo', 'run', 'build', '--filter=agent-rooms'], {
-      label: 'Building Agent Rooms...',
+    await run('pnpm', ['exec', 'turbo', 'run', 'build', '--filter=coordrooms'], {
+      label: 'Building CoordRooms...',
     })
     await run(
       'pnpm',
-      ['--filter', 'agent-rooms', 'pack', '--pack-destination', temporaryDirectory],
+      ['--filter', 'coordrooms', 'pack', '--pack-destination', temporaryDirectory],
       {
-        label: 'Packing Agent Rooms...',
+        label: 'Packing CoordRooms...',
       },
     )
 
@@ -98,7 +98,7 @@ export async function main(arguments_ = process.argv.slice(2)) {
         '--package',
         tarballs[0],
         '--',
-        'agent-rooms',
+        'coordrooms',
         'install',
         '--package',
         tarballs[0],

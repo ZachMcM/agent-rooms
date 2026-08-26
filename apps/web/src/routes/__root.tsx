@@ -1,4 +1,4 @@
-import { Button } from '@agent-rooms/ui-library/components/button'
+import { Button } from '@coordrooms/ui-library/components/button'
 import {
   Empty,
   EmptyContent,
@@ -6,15 +6,15 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '@agent-rooms/ui-library/components/empty'
-import { Separator } from '@agent-rooms/ui-library/components/separator'
+} from '@coordrooms/ui-library/components/empty'
+import { Separator } from '@coordrooms/ui-library/components/separator'
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from '@agent-rooms/ui-library/components/sidebar'
-import { TooltipProvider } from '@agent-rooms/ui-library/components/tooltip'
-import { Search } from '@agent-rooms/ui-library/icons'
+} from '@coordrooms/ui-library/components/sidebar'
+import { TooltipProvider } from '@coordrooms/ui-library/components/tooltip'
+import { Search } from '@coordrooms/ui-library/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, Outlet, createRootRoute, useMatch } from '@tanstack/react-router'
 
@@ -71,7 +71,7 @@ function HeaderTitle() {
   const match = useMatch({ from: '/rooms/$roomId', shouldThrow: false })
 
   if (!match) {
-    return <span className="ml-2 text-sm font-medium md:hidden">Agent Rooms</span>
+    return <span className="ml-2 text-sm font-medium md:hidden">CoordRooms</span>
   }
 
   return <RoomName roomId={match.params.roomId} />

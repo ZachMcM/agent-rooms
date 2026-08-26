@@ -1,21 +1,21 @@
 'use client'
 
-import { Button } from '@agent-rooms/ui-library/components/button'
-import { Input } from '@agent-rooms/ui-library/components/input'
-import { Separator } from '@agent-rooms/ui-library/components/separator'
+import { mergeProps } from '@base-ui/react/merge-props'
+import { useRender } from '@base-ui/react/use-render'
+import { Button } from '@coordrooms/ui-library/components/button'
+import { Input } from '@coordrooms/ui-library/components/input'
+import { Separator } from '@coordrooms/ui-library/components/separator'
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@agent-rooms/ui-library/components/sheet'
-import { Skeleton } from '@agent-rooms/ui-library/components/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@agent-rooms/ui-library/components/tooltip'
-import { useIsMobile } from '@agent-rooms/ui-library/hooks/use-mobile'
-import { cn } from '@agent-rooms/ui-library/lib/utils'
-import { mergeProps } from '@base-ui/react/merge-props'
-import { useRender } from '@base-ui/react/use-render'
+} from '@coordrooms/ui-library/components/sheet'
+import { Skeleton } from '@coordrooms/ui-library/components/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@coordrooms/ui-library/components/tooltip'
+import { useIsMobile } from '@coordrooms/ui-library/hooks/use-mobile'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 import * as React from 'react'

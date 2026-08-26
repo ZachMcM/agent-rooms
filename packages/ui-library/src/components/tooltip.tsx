@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 
 function TooltipProvider({ delay = 0, ...props }: TooltipPrimitive.Provider.Props) {
   return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />

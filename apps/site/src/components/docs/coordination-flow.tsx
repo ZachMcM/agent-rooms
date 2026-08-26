@@ -21,7 +21,7 @@ export function CoordinationFlow() {
   return (
     <ol
       className="not-prose my-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-      aria-label="How Agent Rooms coordinates agents"
+      aria-label="How CoordRooms coordinates agents"
     >
       {stages.map((stage, index) => (
         <li key={stage.title} className="bg-fd-card relative rounded-lg border p-4 shadow-sm">

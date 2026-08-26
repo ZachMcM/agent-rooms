@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Separator as SeparatorPrimitive } from '@base-ui/react/separator'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 
 function Separator({ className, orientation = 'horizontal', ...props }: SeparatorPrimitive.Props) {
   return (

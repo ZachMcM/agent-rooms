@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Progress as ProgressPrimitive } from '@base-ui/react/progress'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 
 function Progress({
   className,

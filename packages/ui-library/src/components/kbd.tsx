@@ -1,4 +1,4 @@
-import { cn } from '@agent-rooms/ui-library/lib/utils'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 
 function Kbd({ className, ...props }: React.ComponentProps<'kbd'>) {
   return (

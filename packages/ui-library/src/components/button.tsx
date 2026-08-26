@@ -1,5 +1,5 @@
-import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const buttonVariants = cva(

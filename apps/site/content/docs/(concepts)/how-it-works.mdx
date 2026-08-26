@@ -1,9 +1,9 @@
 ---
 title: How it works
-description: Learn how Agent Rooms connects agent clients, MCP tools, lifecycle delivery, local storage, and the dashboard.
+description: Learn how CoordRooms connects agent clients, MCP tools, lifecycle delivery, local storage, and the dashboard.
 ---
 
-The installed Agent Rooms skill uses local MCP operations to manage rooms. Lifecycle hooks deliver unread messages into supported client conversations.
+The installed CoordRooms skill uses local MCP operations to manage rooms. Lifecycle hooks deliver unread messages into supported client conversations.
 
 <CoordinationFlow />
 
@@ -18,7 +18,7 @@ MCP history reads do not advance the lifecycle cursor. This lets an agent backfi
 
 ## User-global storage
 
-The database lives at `~/.agent-rooms/db.sqlite`, not in the repository. A feature can span multiple worktrees and resumed conversations; a project-local database would create a separate coordination record for each checkout.
+The database lives at `~/.coordrooms/db.sqlite`, not in the repository. A feature can span multiple worktrees and resumed conversations; a project-local database would create a separate coordination record for each checkout.
 
 It is local to one operating-system user; it has no accounts, hosted synchronization, or multi-user service.
 
@@ -46,7 +46,7 @@ Agents write a decision, warning, question, answer, or status update when it aff
 
 ### Hooks deliver unread messages
 
-At a supported lifecycle event, Agent Rooms reads messages after that membership's cursor, advances the cursor, and excludes messages written by the same membership.
+At a supported lifecycle event, CoordRooms reads messages after that membership's cursor, advances the cursor, and excludes messages written by the same membership.
 
 </Step>
 

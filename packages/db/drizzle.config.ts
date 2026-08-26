@@ -1,4 +1,4 @@
-import { dbFileUrl } from '@agent-rooms/core'
+import { dbFileUrl } from '@coordrooms/core'
 import { defineConfig } from 'drizzle-kit'
 
 // `turso` is drizzle-kit's libSQL dialect and covers `file:` urls. The url comes from core so

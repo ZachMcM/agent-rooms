@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { assertOwnedRegularFile, removeOwnedPath } from './filesystem'
 import { assertSafeAbsolutePath } from './preflight'
 
-const packageName = 'agent-rooms'
+const packageName = 'coordrooms'
 
 type FileFingerprint = Pick<
   Stats,
@@ -41,7 +41,7 @@ export async function snapshotLocalPackage(
   stage: string,
   home: string,
 ): Promise<string> {
-  const snapshot = join(stage, '.agent-rooms-package.tgz')
+  const snapshot = join(stage, '.coordrooms-package.tgz')
   try {
     const sourceHandle = await open(source.path, constants.O_RDONLY | constants.O_NOFOLLOW)
     try {

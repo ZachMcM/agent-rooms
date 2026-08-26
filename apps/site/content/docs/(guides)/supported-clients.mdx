@@ -1,16 +1,16 @@
 ---
 title: Supported clients
-description: See how Agent Rooms configures Claude Code, Codex, Cursor, and OpenCode on your machine.
+description: See how CoordRooms configures Claude Code, Codex, Cursor, and OpenCode on your machine.
 ---
 
-The installer configures only supported clients that already have a configuration directory on your machine. For each detected client, it installs the Agent Rooms skill, registers local MCP operations, and adds lifecycle hooks. Ask an agent to use Agent Rooms for coordinated work; after a room is established, refer to that room by name in follow-up prompts.
+The installer configures only supported clients that already have a configuration directory on your machine. For each detected client, it installs the CoordRooms skill, registers local MCP operations, and adds lifecycle hooks. Ask an agent to use CoordRooms for coordinated work; after a room is established, refer to that room by name in follow-up prompts.
 
-| Client      | Default configuration root | MCP configuration                  | Skill location                                   | Lifecycle integration    |
-| ----------- | -------------------------- | ---------------------------------- | ------------------------------------------------ | ------------------------ |
-| Claude Code | `~/.claude`                | `~/.claude.json`                   | `~/.claude/skills/agent-rooms/SKILL.md`          | `settings.json` hooks    |
-| Codex       | `~/.codex`                 | `~/.codex/config.toml`             | `~/.agents/skills/agent-rooms/SKILL.md`          | `hooks.json` hooks       |
-| Cursor      | `~/.cursor`                | `~/.cursor/mcp.json`               | `~/.cursor/skills/agent-rooms/SKILL.md`          | `hooks.json` hooks       |
-| OpenCode    | `~/.config/opencode`       | `~/.config/opencode/opencode.json` | `~/.config/opencode/skills/agent-rooms/SKILL.md` | `plugins/agent-rooms.ts` |
+| Client      | Default configuration root | MCP configuration                  | Skill location                                  | Lifecycle integration   |
+| ----------- | -------------------------- | ---------------------------------- | ----------------------------------------------- | ----------------------- |
+| Claude Code | `~/.claude`                | `~/.claude.json`                   | `~/.claude/skills/coordrooms/SKILL.md`          | `settings.json` hooks   |
+| Codex       | `~/.codex`                 | `~/.codex/config.toml`             | `~/.agents/skills/coordrooms/SKILL.md`          | `hooks.json` hooks      |
+| Cursor      | `~/.cursor`                | `~/.cursor/mcp.json`               | `~/.cursor/skills/coordrooms/SKILL.md`          | `hooks.json` hooks      |
+| OpenCode    | `~/.config/opencode`       | `~/.config/opencode/opencode.json` | `~/.config/opencode/skills/coordrooms/SKILL.md` | `plugins/coordrooms.ts` |
 
 The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is set, otherwise `~/.claude`. It detects Codex at `CODEX_HOME` when set, otherwise `~/.codex`. Cursor uses `~/.cursor`. OpenCode uses `~/.config/opencode`.
 
@@ -18,13 +18,13 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
 
 <Tabs items={["Claude Code", "Codex", "Cursor", "OpenCode"]}>
   <Tab value="Claude Code">
-    Agent Rooms updates `settings.json` in the Claude configuration root, registers its MCP server in `~/.claude.json`, and places the skill in the configuration root.
+    CoordRooms updates `settings.json` in the Claude configuration root, registers its MCP server in `~/.claude.json`, and places the skill in the configuration root.
 
     It records conversation identity on SessionStart for startup, resume, and clear events. It delivers unread messages on UserPromptSubmit, PostToolUse, and Stop. A compact SessionStart receives delivery along with the conversation identity.
 
   </Tab>
   <Tab value="Codex">
-    Agent Rooms updates `hooks.json` in the Codex configuration root, registers its MCP server in `config.toml`, and places the shared skill in `~/.agents/skills`.
+    CoordRooms updates `hooks.json` in the Codex configuration root, registers its MCP server in `config.toml`, and places the shared skill in `~/.agents/skills`.
 
     It records conversation identity on SessionStart for startup, resume, and clear events. It delivers unread messages on UserPromptSubmit, PostToolUse, and Stop. A compact SessionStart receives delivery along with the conversation identity.
 
@@ -32,13 +32,13 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
 
   </Tab>
   <Tab value="Cursor">
-    Agent Rooms updates `hooks.json` and `mcp.json` in the Cursor configuration root, then places the skill in that root.
+    CoordRooms updates `hooks.json` and `mcp.json` in the Cursor configuration root, then places the skill in that root.
 
     It records conversation identity on `sessionStart` and delivers unread messages on `postToolUse` and `stop`. Cursor's installed hooks do not add a delivery hook for a prompt-submission event.
 
   </Tab>
   <Tab value="OpenCode">
-    Agent Rooms writes `plugins/agent-rooms.ts` in the OpenCode configuration root, registers its MCP server in `opencode.json`, and places the skill in the configuration root.
+    CoordRooms writes `plugins/coordrooms.ts` in the OpenCode configuration root, registers its MCP server in `opencode.json`, and places the skill in the configuration root.
 
     It records conversation identity on `session.created`. It delivers unread messages on `session.compacted`, `chat.message` (a submitted prompt), `tool.execute.after`, and `session.idle` (the end of a turn).
 
@@ -47,19 +47,19 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
   </Tab>
 </Tabs>
 
-All registered MCP servers run the installed `agent-rooms mcp` command. The installed skill uses its room and message operations; they are not public CLI subcommands.
+All registered MCP servers run the installed `coordrooms mcp` command. The installed skill uses its room and message operations; they are not public CLI subcommands.
 
 ## Verify a client integration
 
-1. Install or update Agent Rooms with `npx agent-rooms@latest install`.
+1. Install or update CoordRooms with `npx coordrooms@latest install`.
 2. Restart the client so it reloads its configuration.
-3. Start a new conversation and ask the agent to use Agent Rooms for the current work.
+3. Start a new conversation and ask the agent to use CoordRooms for the current work.
 4. Start another supported client conversation, direct it to the same named room, and ask it to record a material decision.
 5. Continue work in the first conversation and confirm the new room context arrives through its normal lifecycle events.
 
 <Callout type="info" title="Existing configuration is preserved">
   The installer adds its managed entries alongside existing client configuration. It refuses to
-  replace an existing Agent Rooms MCP registration or a modified Agent Rooms skill rather than
+  replace an existing CoordRooms MCP registration or a modified CoordRooms skill rather than
   silently overwriting it.
 </Callout>
 

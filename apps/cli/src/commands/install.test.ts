@@ -19,7 +19,7 @@ afterEach(() => {
 describe('install command', () => {
   it('passes a local package path to the installer source', async () => {
     const program = new Command()
-    const source = '/tmp/agent-rooms-1.2.3.tgz'
+    const source = '/tmp/coordrooms-1.2.3.tgz'
     installer.runInstall.mockResolvedValue({ version: '1.2.3', changes: [], warnings: [] })
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
     addInstallCommand(program, '1.2.3')
@@ -48,7 +48,7 @@ describe('install command', () => {
     await program.parseAsync(['install', '--yes'], { from: 'user' })
 
     expect(output.join('')).toBe(
-      "✔ Installed Agent Rooms 1.2.3.\n✔ Updated /tmp/home/.zshrc.\nRun source '/tmp/home/.zshrc' to use agent-rooms in this terminal, or open a new terminal.\n",
+      "✔ Installed CoordRooms 1.2.3.\n✔ Updated /tmp/home/.zshrc.\nRun source '/tmp/home/.zshrc' to use coordrooms in this terminal, or open a new terminal.\n",
     )
   })
 

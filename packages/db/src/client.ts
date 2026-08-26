@@ -1,4 +1,4 @@
-import { dbFileUrl } from '@agent-rooms/core'
+import { dbFileUrl } from '@coordrooms/core'
 import { createClient } from '@libsql/client'
 import { drizzle } from 'drizzle-orm/libsql'
 

@@ -5,8 +5,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@agent-rooms/ui-library/components/command'
-import { MessageKindPill } from '@agent-rooms/ui-library/components/message-kind-pill'
+} from '@coordrooms/ui-library/components/command'
+import { MessageKindPill } from '@coordrooms/ui-library/components/message-kind-pill'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'

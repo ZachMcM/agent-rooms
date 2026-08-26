@@ -1,5 +1,5 @@
-import { cn } from '@agent-rooms/ui-library/lib/utils'
 import { Input as InputPrimitive } from '@base-ui/react/input'
+import { cn } from '@coordrooms/ui-library/lib/utils'
 import * as React from 'react'
 
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {

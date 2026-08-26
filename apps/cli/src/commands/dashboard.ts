@@ -32,7 +32,7 @@ export function createDashboardPresenter(): DashboardPresenter {
 
   return {
     start() {
-      spinner.start('Starting Agent Rooms dashboard...')
+      spinner.start('Starting CoordRooms dashboard...')
     },
     ready(url) {
       spinner.stop()
@@ -42,7 +42,7 @@ export function createDashboardPresenter(): DashboardPresenter {
       }
 
       process.stdout.write(
-        `${colors.green('✔')} ${colors.bold('Agent Rooms dashboard is running')}\n` +
+        `${colors.green('✔')} ${colors.bold('CoordRooms dashboard is running')}\n` +
           `  ${colors.cyan(url)}\n` +
           `  Press ${colors.dim('Ctrl-C')} to stop.\n`,
       )
@@ -61,7 +61,7 @@ export function addDashboardCommand(program: Command): void {
     .option('--open')
     .exitOverride()
     .action(async (options: { port?: string; open?: boolean }) => {
-      const port = parseDashboardPort(options.port ?? process.env.AGENT_ROOMS_PORT)
+      const port = parseDashboardPort(options.port ?? process.env.COORDROOMS_PORT)
       await assertDashboardPortAvailable(port)
       const entrypoint = fileURLToPath(
         new URL('../assets/dashboard/server/index.mjs', import.meta.url),
@@ -101,8 +101,8 @@ function runDashboardServer(
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        AGENT_ROOMS_HOST: '127.0.0.1',
-        AGENT_ROOMS_PORT: String(port),
+        COORDROOMS_HOST: '127.0.0.1',
+        COORDROOMS_PORT: String(port),
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     })

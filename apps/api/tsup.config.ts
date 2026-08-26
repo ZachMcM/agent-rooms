@@ -10,6 +10,6 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   dts: false,
-  noExternal: [/^@agent-rooms\//],
+  noExternal: [/^@coordrooms\//],
   external: ['@libsql/client', 'express'],
 })

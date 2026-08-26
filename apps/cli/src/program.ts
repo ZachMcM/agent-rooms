@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url)
 const packageVersion = (require('../package.json') as { version: string }).version
 
 export function createProgram(): Command {
-  const program = new Command('agent-rooms')
+  const program = new Command('coordrooms')
     .description('Real-time decision sharing between parallel coding agents.')
     .version(packageVersion)
     .configureOutput({
@@ -26,7 +26,7 @@ export function createProgram(): Command {
   addInstallCommand(program, packageVersion)
   program
     .command('mcp')
-    .description('Runs the Agent Rooms stdio MCP server.')
+    .description('Runs the CoordRooms stdio MCP server.')
     .action(async () => runMcpServer())
 
   return program

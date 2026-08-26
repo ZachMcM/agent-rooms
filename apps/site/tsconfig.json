@@ -1,5 +1,5 @@
 {
-  "extends": "@agent-rooms/typescript-config/nextjs.json",
+  "extends": "@coordrooms/typescript-config/nextjs.json",
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]

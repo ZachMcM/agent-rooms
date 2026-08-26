@@ -1,5 +1,5 @@
 {
-  "name": "@agent-rooms/api",
+  "name": "@coordrooms/api",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -16,10 +16,10 @@
     "express": "catalog:"
   },
   "devDependencies": {
-    "@agent-rooms/core": "workspace:*",
-    "@agent-rooms/db": "workspace:*",
-    "@agent-rooms/typescript-config": "workspace:*",
-    "@agent-rooms/web": "workspace:*",
+    "@coordrooms/core": "workspace:*",
+    "@coordrooms/db": "workspace:*",
+    "@coordrooms/typescript-config": "workspace:*",
+    "@coordrooms/web": "workspace:*",
     "@types/express": "catalog:",
     "@types/node": "catalog:",
     "tsup": "catalog:",

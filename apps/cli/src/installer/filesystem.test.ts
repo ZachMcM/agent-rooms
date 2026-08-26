@@ -27,7 +27,7 @@ afterEach(async () => {
 
 describe('private filesystem operations', () => {
   it('writes private files atomically', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     const path = join(directory, 'nested', 'manifest.json')
 
@@ -38,7 +38,7 @@ describe('private filesystem operations', () => {
   })
 
   it('refuses to replace symlinks', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     const target = join(directory, 'target')
     const link = join(directory, 'link')
@@ -50,7 +50,7 @@ describe('private filesystem operations', () => {
   })
 
   it('refuses non-file paths', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     const child = join(directory, 'child')
     await mkdir(child)
@@ -58,7 +58,7 @@ describe('private filesystem operations', () => {
   })
 
   it('refuses symlinks in owned path components', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     await mkdir(join(directory, 'real'))
     await symlink(join(directory, 'real'), join(directory, 'linked'))
@@ -69,7 +69,7 @@ describe('private filesystem operations', () => {
   })
 
   it('refuses to create through an intermediate symlink', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     await mkdir(join(directory, 'real'))
     await symlink(join(directory, 'real'), join(directory, 'linked'))
@@ -80,7 +80,7 @@ describe('private filesystem operations', () => {
   })
 
   it('refuses an existing final directory reached through a symlinked parent', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     await mkdir(join(directory, 'real', 'existing'), { recursive: true })
     await symlink(join(directory, 'real'), join(directory, 'linked'))
@@ -94,7 +94,7 @@ describe('private filesystem operations', () => {
   })
 
   it('preserves modes of pre-existing parent directories', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     const existing = join(directory, 'existing')
     await mkdir(existing, { mode: 0o755 })
@@ -107,7 +107,7 @@ describe('private filesystem operations', () => {
   })
 
   it('preserves an existing configuration file mode', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     const path = join(directory, 'config.json')
     await writeFile(path, '{}')
@@ -119,7 +119,7 @@ describe('private filesystem operations', () => {
   })
 
   it('removes nested symlinks without touching their targets', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const directory = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(directory)
     const tree = join(directory, 'tree')
     const outside = join(directory, 'outside')

@@ -3,15 +3,15 @@ title: Introduction
 description: Coordinate parallel coding agents without losing decisions along the way.
 ---
 
-Agent Rooms is a local coordination toolkit for coding agents working on adjacent parts of a change. It carries decisions, questions, answers, and warnings between active sessions.
+CoordRooms is a local coordination toolkit for coding agents working on adjacent parts of a change. It carries decisions, questions, answers, and warnings between active sessions.
 
-It complements worktrees: worktrees isolate files; Agent Rooms keeps decisions aligned.
+It complements worktrees: worktrees isolate files; CoordRooms keeps decisions aligned.
 
 <CoordinationFlow />
 
 ## Built for local parallel work
 
-Agent Rooms stores rooms in one SQLite database on your machine. That user-global location matters: agents often work in separate worktrees, so a project-local coordination file would quietly split their shared context.
+CoordRooms stores rooms in one SQLite database on your machine. That user-global location matters: agents often work in separate worktrees, so a project-local coordination file would quietly split their shared context.
 
 The installer configures Claude Code, Codex, Cursor, and OpenCode where they already exist. It gives agents a skill that uses local MCP operations for rooms and history; lifecycle hooks deliver new messages. The dashboard is read-only.
 

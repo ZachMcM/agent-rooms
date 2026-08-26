@@ -55,8 +55,8 @@ describe('installer presenter', () => {
     )
 
     expect(stdout).toEqual([
-      '✔ Installed Agent Rooms 1.2.3.\n',
-      'Agent Rooms is ready to use.\n',
+      '✔ Installed CoordRooms 1.2.3.\n',
+      'CoordRooms is ready to use.\n',
       'Completed with 1 warning.\n',
     ])
     expect(stderr).toEqual(['Warning: Add /tmp/bin to PATH manually.\n'])
@@ -76,7 +76,7 @@ describe('installer presenter', () => {
     }) as typeof process.stdout.write
 
     const presenter = createInstallerPresenter()
-    presenter.start('Installing Agent Rooms...')
+    presenter.start('Installing CoordRooms...')
     presenter.install({ version: '1.2.3', changes: [], warnings: [] }, false)
 
     expect(ora).toHaveBeenCalledWith(
@@ -87,18 +87,18 @@ describe('installer presenter', () => {
         spinner: 'dots',
       }),
     )
-    expect(spinner.start).toHaveBeenCalledWith('Installing Agent Rooms...')
+    expect(spinner.start).toHaveBeenCalledWith('Installing CoordRooms...')
     expect(stdout.join('')).toContain('\u001B[32m✔\u001B[39m')
 
     ora.mockClear()
     process.env.CI = 'true'
-    createInstallerPresenter().start('Installing Agent Rooms...')
+    createInstallerPresenter().start('Installing CoordRooms...')
     expect(ora).toHaveBeenCalledWith(expect.objectContaining({ isEnabled: false }))
 
     ora.mockClear()
     delete process.env.CI
     process.env.NO_COLOR = '1'
-    createInstallerPresenter().start('Installing Agent Rooms...')
+    createInstallerPresenter().start('Installing CoordRooms...')
     expect(ora).toHaveBeenCalledWith(expect.objectContaining({ color: false, isEnabled: true }))
   })
 
@@ -113,7 +113,7 @@ describe('installer presenter', () => {
     delete process.env.TERM
     configure()
 
-    createInstallerPresenter().start('Installing Agent Rooms...')
+    createInstallerPresenter().start('Installing CoordRooms...')
 
     expect(ora).toHaveBeenCalledWith(expect.objectContaining({ color: false, isEnabled: true }))
   })
@@ -138,7 +138,7 @@ describe('installer presenter', () => {
     )
     presenter.uninstall(
       {
-        changes: [{ action: 'remove runtime and manifest', path: '/tmp/agent-rooms' }],
+        changes: [{ action: 'remove runtime and manifest', path: '/tmp/coordrooms' }],
         warnings: [],
       },
       false,
@@ -148,8 +148,8 @@ describe('installer presenter', () => {
       '✔ Previewed 1 changes; no files were modified.\n',
       '  - install verified runtime: /tmp/runtime/1.2.3\n',
       '✔ Removed 1 managed changes.\n',
-      'Kept Agent Rooms data.\n',
-      'To remove it later, run agent-rooms uninstall --yes --purge-data.\n',
+      'Kept CoordRooms data.\n',
+      'To remove it later, run coordrooms uninstall --yes --purge-data.\n',
     ])
   })
 
@@ -173,20 +173,20 @@ describe('installer presenter', () => {
     )
 
     expect(stdout).toContain(
-      "Codex requires you to review and trust the Agent Rooms hooks before they run. In the Codex CLI, run /hooks; in Codex Desktop, open Codex's hook review.\n",
+      "Codex requires you to review and trust the CoordRooms hooks before they run. In the Codex CLI, run /hooks; in Codex Desktop, open Codex's hook review.\n",
     )
 
     stdout.length = 0
     presenter.install(
       {
         version: '1.2.3',
-        changes: [{ action: 'install codex skill', path: '/tmp/.agents/skills/agent-rooms' }],
+        changes: [{ action: 'install codex skill', path: '/tmp/.agents/skills/coordrooms' }],
         warnings: [],
       },
       false,
     )
 
-    expect(stdout.join('')).not.toContain('review and trust the Agent Rooms hooks')
+    expect(stdout.join('')).not.toContain('review and trust the CoordRooms hooks')
 
     stdout.length = 0
     presenter.install(
@@ -198,6 +198,6 @@ describe('installer presenter', () => {
       true,
     )
 
-    expect(stdout.join('')).not.toContain('review and trust the Agent Rooms hooks')
+    expect(stdout.join('')).not.toContain('review and trust the CoordRooms hooks')
   })
 })

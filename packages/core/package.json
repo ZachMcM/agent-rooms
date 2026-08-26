@@ -1,5 +1,5 @@
 {
-  "name": "@agent-rooms/core",
+  "name": "@coordrooms/core",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@agent-rooms/typescript-config": "workspace:*",
+    "@coordrooms/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

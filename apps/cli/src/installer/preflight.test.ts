@@ -73,13 +73,13 @@ describe('preflight', () => {
   })
 
   it('requires exact resolved absolute paths', () => {
-    expect(() => assertSafeAbsolutePath('/tmp/../tmp/agent-rooms', 'Test path')).toThrow(
+    expect(() => assertSafeAbsolutePath('/tmp/../tmp/coordrooms', 'Test path')).toThrow(
       'normalized absolute path',
     )
   })
 
   it('returns existing client roots and rejects symlinks', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const home = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(home)
     await mkdir(join(home, '.claude'))
     await mkdir(join(home, '.cursor'))
@@ -96,7 +96,7 @@ describe('preflight', () => {
   })
 
   it('rejects symlinks in intermediate client path components', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'agent-rooms-installer-'))
+    const home = await mkdtemp(join(tmpdir(), 'coordrooms-installer-'))
     directories.push(home)
     await mkdir(join(home, 'real', '.claude'), { recursive: true })
     await symlink(join(home, 'real'), join(home, 'linked'))

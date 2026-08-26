@@ -45,10 +45,10 @@ describe('installer transaction', () => {
 
     expect(result.changes.map((change) => change.action)).toContain('patch codex hooks')
     expect(result.changes).toContainEqual({
-      path: join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
+      path: join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md'),
       action: 'install codex skill',
     })
-    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.coordrooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('uses exact registry npm argv, installs owned integrations, and uninstalls them', async () => {
@@ -78,26 +78,24 @@ describe('installer transaction', () => {
       'npm',
       'install',
       '--prefix',
-      join(home, '.agent-rooms', '.stage-1.2.3'),
+      join(home, '.coordrooms', '.stage-1.2.3'),
       '--omit=dev',
       '--ignore-scripts',
       '--no-audit',
       '--no-fund',
       '--package-lock=false',
-      'agent-rooms@1.2.3',
+      'coordrooms@1.2.3',
     ])
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('consume-new-messages')
-    expect(await readFile(join(codex, 'config.toml'), 'utf8')).toContain(
-      '[mcp_servers.agent-rooms]',
-    )
+    expect(await readFile(join(codex, 'config.toml'), 'utf8')).toContain('[mcp_servers.coordrooms]')
     expect(await readFile(join(codex, 'config.toml'), 'utf8')).toContain('args = ["mcp"]')
-    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    const skill = join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md')
     await expect(readFile(skill, 'utf8')).resolves.toBe('skill')
     await expect(lstat(join(codex, 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
-    expect(await readFile(join(home, '.zshrc'), 'utf8')).toContain('>>> agent-rooms >>>')
+    expect(await readFile(join(home, '.zshrc'), 'utf8')).toContain('>>> coordrooms >>>')
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as {
       previous?: string
       backups?: string[]
@@ -106,26 +104,26 @@ describe('installer transaction', () => {
     expect(manifest.previous).toBeUndefined()
     expect(manifest.backups).toBeUndefined()
     expect(manifest.skills).toEqual([{ path: skill, hash: expect.any(String) }])
-    await expect(lstat(join(home, '.agent-rooms', 'backups'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'backups'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
-    expect((await lstat(join(home, '.agent-rooms', 'current'))).isSymbolicLink()).toBe(true)
-    expect((await lstat(join(home, '.agent-rooms', 'db.sqlite'))).mode & 0o777).toBe(0o600)
+    expect((await lstat(join(home, '.coordrooms', 'current'))).isSymbolicLink()).toBe(true)
+    expect((await lstat(join(home, '.coordrooms', 'db.sqlite'))).mode & 0o777).toBe(0o600)
     expect(calls.some((call) => call.join(' ').includes('SELECT 1'))).toBe(true)
     expect(
       (
-        await readdir(join(home, '.agent-rooms', 'runtime', '1.2.3', 'node_modules', 'agent-rooms'))
+        await readdir(join(home, '.coordrooms', 'runtime', '1.2.3', 'node_modules', 'coordrooms'))
       ).some((name) => name.startsWith('.verify-libsql-')),
     ).toBe(false)
     await expect(
       readFile(
         join(
           home,
-          '.agent-rooms',
+          '.coordrooms',
           'runtime',
           '1.2.3',
           'node_modules',
-          'agent-rooms',
+          'coordrooms',
           'assets',
           'dashboard',
           'server',
@@ -138,11 +136,11 @@ describe('installer transaction', () => {
       readFile(
         join(
           home,
-          '.agent-rooms',
+          '.coordrooms',
           'runtime',
           '1.2.3',
           'node_modules',
-          'agent-rooms',
+          'coordrooms',
           'assets',
           'dashboard',
           'public',
@@ -163,21 +161,19 @@ describe('installer transaction', () => {
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).toContain('keep')
     expect(await readFile(join(codex, 'hooks.json'), 'utf8')).not.toContain('consume-new-messages')
     expect(await readFile(join(codex, 'config.toml'), 'utf8')).not.toContain(
-      '[mcp_servers.agent-rooms]',
+      '[mcp_servers.coordrooms]',
     )
-    expect(await readFile(join(home, '.zshrc'), 'utf8')).not.toContain('>>> agent-rooms >>>')
+    expect(await readFile(join(home, '.zshrc'), 'utf8')).not.toContain('>>> coordrooms >>>')
     await expect(lstat(skill)).rejects.toMatchObject({ code: 'ENOENT' })
     await expect(lstat(join(home, '.agents', 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
-    await expect(readFile(join(home, '.agent-rooms', 'db.sqlite'), 'utf8')).resolves.toBe(
-      'database',
-    )
+    await expect(readFile(join(home, '.coordrooms', 'db.sqlite'), 'utf8')).resolves.toBe('database')
   })
 
   it('installs and uninstalls the OpenCode plugin, MCP, and skill', async () => {
     const home = await temporaryHome()
     const opencode = join(home, '.config', 'opencode')
-    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
-    const skill = join(opencode, 'skills', 'agent-rooms', 'SKILL.md')
+    const plugin = join(opencode, 'plugins', 'coordrooms.ts')
+    const skill = join(opencode, 'skills', 'coordrooms', 'SKILL.md')
     await mkdir(opencode, { recursive: true })
     await writeFile(
       join(opencode, 'opencode.json'),
@@ -203,13 +199,13 @@ describe('installer transaction', () => {
     const config = parseJsonc(source) as {
       mcp: Record<string, { type: string; command: string[]; enabled: boolean }>
     }
-    expect(config.mcp['agent-rooms']).toEqual({
+    expect(config.mcp['coordrooms']).toEqual({
       type: 'local',
-      command: [join(home, '.agent-rooms', 'bin', 'agent-rooms'), 'mcp'],
+      command: [join(home, '.coordrooms', 'bin', 'coordrooms'), 'mcp'],
       enabled: true,
     })
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as {
       roots: Array<{ client: string; config: string }>
       plugins: Array<{ path: string }>
@@ -227,13 +223,13 @@ describe('installer transaction', () => {
     const uninstalled = await readFile(join(opencode, 'opencode.json'), 'utf8')
     expect(uninstalled).toContain('"theme": "dark"')
     expect(uninstalled).toContain('"other"')
-    expect(uninstalled).not.toContain('agent-rooms')
+    expect(uninstalled).not.toContain('coordrooms')
   })
 
   it('refuses to overwrite a modified OpenCode plugin before integration mutation', async () => {
     const home = await temporaryHome()
     const opencode = join(home, '.config', 'opencode')
-    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    const plugin = join(opencode, 'plugins', 'coordrooms.ts')
     await mkdir(dirname(plugin), { recursive: true })
     await writeFile(plugin, 'user plugin')
     const { calls, spawn } = packageSpawn('1.2.3')
@@ -255,7 +251,7 @@ describe('installer transaction', () => {
 
     expect(migrated).toBe(false)
     await expect(readFile(plugin, 'utf8')).resolves.toBe('user plugin')
-    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'current'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
     expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(1)
@@ -264,7 +260,7 @@ describe('installer transaction', () => {
   it('overwrites an installer-owned OpenCode plugin on update', async () => {
     const home = await temporaryHome()
     const opencode = join(home, '.config', 'opencode')
-    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    const plugin = join(opencode, 'plugins', 'coordrooms.ts')
     await mkdir(opencode, { recursive: true })
 
     await runInstall({
@@ -286,7 +282,7 @@ describe('installer transaction', () => {
       yes: true,
       spawn: packageSpawn('1.2.4', {
         mutate: async (root) =>
-          writeFile(join(root, 'assets', 'agent-rooms', 'opencode-plugin.ts'), 'plugin-v2'),
+          writeFile(join(root, 'assets', 'coordrooms', 'opencode-plugin.ts'), 'plugin-v2'),
       }).spawn,
       migrate: async (databasePath) => writeFile(databasePath, 'database'),
     })
@@ -297,7 +293,7 @@ describe('installer transaction', () => {
   it('refuses to overwrite a user-modified OpenCode plugin on update', async () => {
     const home = await temporaryHome()
     const opencode = join(home, '.config', 'opencode')
-    const plugin = join(opencode, 'plugins', 'agent-rooms.ts')
+    const plugin = join(opencode, 'plugins', 'coordrooms.ts')
     await mkdir(opencode, { recursive: true })
 
     await runInstall({
@@ -320,7 +316,7 @@ describe('installer transaction', () => {
         yes: true,
         spawn: packageSpawn('1.2.4', {
           mutate: async (root) =>
-            writeFile(join(root, 'assets', 'agent-rooms', 'opencode-plugin.ts'), 'plugin-v2'),
+            writeFile(join(root, 'assets', 'coordrooms', 'opencode-plugin.ts'), 'plugin-v2'),
         }).spawn,
         migrate: async (databasePath) => writeFile(databasePath, 'database'),
       }),
@@ -349,12 +345,12 @@ describe('installer transaction', () => {
       'consume-new-messages',
     )
     await expect(
-      readFile(join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'), 'utf8'),
+      readFile(join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md'), 'utf8'),
     ).resolves.toBe('skill')
     await expect(lstat(join(codex, 'skills'))).rejects.toMatchObject({ code: 'ENOENT' })
 
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as {
       roots: Array<{ client: string; path: string; config: string }>
       skills: Array<{ path: string }>
@@ -363,15 +359,15 @@ describe('installer transaction', () => {
       { client: 'codex', path: codex, config: join(codex, 'hooks.json') },
     ])
     expect(manifest.skills.map(({ path }) => path)).toEqual([
-      join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
+      join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md'),
     ])
   })
 
   it('uses a validated local tarball as the final npm install argument', async () => {
     const home = await temporaryHome()
-    const tarball = join(home, 'agent-rooms-1.2.3.tgz')
-    const stage = join(home, '.agent-rooms', '.stage-1.2.3')
-    const snapshot = join(stage, '.agent-rooms-package.tgz')
+    const tarball = join(home, 'coordrooms-1.2.3.tgz')
+    const stage = join(home, '.coordrooms', '.stage-1.2.3')
+    const snapshot = join(stage, '.coordrooms-package.tgz')
     await writeFile(tarball, 'package')
     const { calls, spawn } = packageSpawn('1.2.3')
 
@@ -399,14 +395,14 @@ describe('installer transaction', () => {
       snapshot,
     ])
     await expect(
-      lstat(join(home, '.agent-rooms', 'runtime', '1.2.3', '.agent-rooms-package.tgz')),
+      lstat(join(home, '.coordrooms', 'runtime', '1.2.3', '.coordrooms-package.tgz')),
     ).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it.each([
-    ['a relative path', 'agent-rooms-1.2.3.tgz'],
-    ['a URL', 'https://registry.example/agent-rooms-1.2.3.tgz'],
-    ['a package spec', 'agent-rooms@1.2.3'],
+    ['a relative path', 'coordrooms-1.2.3.tgz'],
+    ['a URL', 'https://registry.example/coordrooms-1.2.3.tgz'],
+    ['a package spec', 'coordrooms@1.2.3'],
   ])('rejects %s before mutation', async (_name, source) => {
     const home = await temporaryHome()
     const calls: string[] = []
@@ -427,23 +423,23 @@ describe('installer transaction', () => {
       }),
     ).rejects.toThrow('Local package must be a normalized absolute path')
     expect(calls).toEqual([])
-    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.coordrooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('rejects a non-normalized absolute package path before mutation', async () => {
     const home = await temporaryHome()
-    const source = `${home}/nested/../agent-rooms-1.2.3.tgz`
-    await writeFile(join(home, 'agent-rooms-1.2.3.tgz'), 'package')
+    const source = `${home}/nested/../coordrooms-1.2.3.tgz`
+    await writeFile(join(home, 'coordrooms-1.2.3.tgz'), 'package')
 
     await expect(
       runInstall({ version: '1.2.3', source, homeDirectory: home, roots: [], yes: true }),
     ).rejects.toThrow('Local package must be a normalized absolute path')
-    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.coordrooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('rejects a local package replaced after preflight validation', async () => {
     const home = await temporaryHome()
-    const source = join(home, 'agent-rooms-1.2.3.tgz')
+    const source = join(home, 'coordrooms-1.2.3.tgz')
     const replacement = join(home, 'replacement.tgz')
     await writeFile(source, 'original package')
     await writeFile(replacement, 'replacement package')
@@ -465,20 +461,20 @@ describe('installer transaction', () => {
       }),
     ).rejects.toThrow(`Local package changed after validation: ${source}`)
     expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(0)
-    await expect(lstat(join(home, '.agent-rooms', '.stage-1.2.3'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', '.stage-1.2.3'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
 
   it('rejects a local package with another extension before mutation', async () => {
     const home = await temporaryHome()
-    const source = join(home, 'agent-rooms-1.2.3.tar.gz')
+    const source = join(home, 'coordrooms-1.2.3.tar.gz')
     await writeFile(source, 'package')
 
     await expect(
       runInstall({ version: '1.2.3', source, homeDirectory: home, roots: [], yes: true }),
     ).rejects.toThrow('Local package must be a .tgz tarball')
-    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.coordrooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('rejects local package directories and symlinks before mutation', async () => {
@@ -508,13 +504,13 @@ describe('installer transaction', () => {
         yes: true,
       }),
     ).rejects.toThrow('symbolic link')
-    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(lstat(join(home, '.coordrooms'))).rejects.toMatchObject({ code: 'ENOENT' })
   })
 
   it('refuses to reuse an existing same-version runtime for a local package', async () => {
     const home = await temporaryHome()
-    const tarball = join(home, 'agent-rooms-1.2.3.tgz')
-    const runtime = join(home, '.agent-rooms', 'runtime', '1.2.3')
+    const tarball = join(home, 'coordrooms-1.2.3.tgz')
+    const runtime = join(home, '.coordrooms', 'runtime', '1.2.3')
     await writeFile(tarball, 'package')
     await mkdir(runtime, { recursive: true })
     const calls: string[] = []
@@ -534,15 +530,15 @@ describe('installer transaction', () => {
         },
       }),
     ).rejects.toThrow(
-      'Local package install cannot reuse existing runtime 1.2.3. Run agent-rooms uninstall and retry.',
+      'Local package install cannot reuse existing runtime 1.2.3. Run coordrooms uninstall and retry.',
     )
     expect(calls).toEqual([])
   })
 
   it('refuses a local runtime destination created during staging', async () => {
     const home = await temporaryHome()
-    const tarball = join(home, 'agent-rooms-1.2.3.tgz')
-    const runtime = join(home, '.agent-rooms', 'runtime', '1.2.3')
+    const tarball = join(home, 'coordrooms-1.2.3.tgz')
+    const runtime = join(home, '.coordrooms', 'runtime', '1.2.3')
     await writeFile(tarball, 'package')
     const packageProcess = packageSpawn('1.2.3')
 
@@ -567,10 +563,10 @@ describe('installer transaction', () => {
 
     expect((await lstat(runtime)).isDirectory()).toBe(true)
     await expect(readdir(runtime)).resolves.toEqual([])
-    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'current'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
-    await expect(lstat(join(home, '.agent-rooms', '.stage-1.2.3'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', '.stage-1.2.3'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
@@ -580,7 +576,7 @@ describe('installer transaction', () => {
     const codex = join(home, '.codex')
     await mkdir(codex)
     const existing = (
-      providerHookConfig(join(home, '.agent-rooms', 'bin', 'agent-rooms')) as {
+      providerHookConfig(join(home, '.coordrooms', 'bin', 'coordrooms')) as {
         codex: { hooks: { UserPromptSubmit: unknown[] } }
       }
     ).codex.hooks.UserPromptSubmit[0]
@@ -601,7 +597,7 @@ describe('installer transaction', () => {
     })
 
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as { hooks: Array<{ event: string }> }
     expect(manifest.hooks.some((hook) => hook.event === 'UserPromptSubmit')).toBe(false)
 
@@ -623,7 +619,7 @@ describe('installer transaction', () => {
     const codex = join(home, '.codex')
     await mkdir(codex)
     const existing = (
-      providerHookConfig(join(home, '.agent-rooms', 'bin', 'agent-rooms')) as {
+      providerHookConfig(join(home, '.coordrooms', 'bin', 'coordrooms')) as {
         codex: { hooks: { UserPromptSubmit: unknown[] } }
       }
     ).codex.hooks.UserPromptSubmit[0]
@@ -644,7 +640,7 @@ describe('installer transaction', () => {
     })
 
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as { hooks: Array<{ event: string }> }
     const hooks = JSON.parse(await readFile(join(codex, 'hooks.json'), 'utf8')) as {
       hooks: { UserPromptSubmit: unknown[] }
@@ -670,7 +666,7 @@ describe('installer transaction', () => {
 
     await runInstall(install)
     const owned = (
-      providerHookConfig(join(home, '.agent-rooms', 'bin', 'agent-rooms')) as {
+      providerHookConfig(join(home, '.coordrooms', 'bin', 'coordrooms')) as {
         codex: { hooks: { UserPromptSubmit: unknown[] } }
       }
     ).codex.hooks.UserPromptSubmit[0]
@@ -773,22 +769,22 @@ describe('installer transaction', () => {
     for (const path of [join(home, '.claude.json'), join(cursor, 'mcp.json')]) {
       const source = await readFile(path, 'utf8')
       expect(source).toContain('"other": true')
-      expect(source).toContain('agent-rooms')
+      expect(source).toContain('coordrooms')
     }
 
     await runUninstall({ homeDirectory: home, yes: true })
-    await expect(readFile(join(home, '.claude.json'), 'utf8')).resolves.not.toContain('agent-rooms')
-    await expect(readFile(join(cursor, 'mcp.json'), 'utf8')).resolves.not.toContain('agent-rooms')
+    await expect(readFile(join(home, '.claude.json'), 'utf8')).resolves.not.toContain('coordrooms')
+    await expect(readFile(join(cursor, 'mcp.json'), 'utf8')).resolves.not.toContain('coordrooms')
   })
 
   it('preserves commented Codex TOML and leaves preexisting MCP descriptors alone', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
-    const bin = join(home, '.agent-rooms', 'bin', 'agent-rooms')
+    const bin = join(home, '.coordrooms', 'bin', 'coordrooms')
     await mkdir(codex)
     await writeFile(
       join(codex, 'config.toml'),
-      `# keep this comment\nmodel = "gpt-5"\n\n[mcp_servers.agent-rooms]\ncommand = ${JSON.stringify(bin)}\nargs = ["mcp"]\n`,
+      `# keep this comment\nmodel = "gpt-5"\n\n[mcp_servers.coordrooms]\ncommand = ${JSON.stringify(bin)}\nargs = ["mcp"]\n`,
     )
 
     await runInstall({
@@ -801,14 +797,14 @@ describe('installer transaction', () => {
       migrate: async (databasePath) => writeFile(databasePath, 'database'),
     })
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as { mcps: unknown[] }
     expect(manifest.mcps).toEqual([])
 
     await runUninstall({ homeDirectory: home, yes: true })
     const config = await readFile(join(codex, 'config.toml'), 'utf8')
     expect(config).toContain('# keep this comment')
-    expect(config).toContain('[mcp_servers.agent-rooms]')
+    expect(config).toContain('[mcp_servers.coordrooms]')
   })
 
   it('rejects conflicting MCP descriptors before install mutations', async () => {
@@ -817,7 +813,7 @@ describe('installer transaction', () => {
     await mkdir(codex)
     await writeFile(
       join(codex, 'config.toml'),
-      '[mcp_servers.agent-rooms]\ncommand = "/other/agent-rooms"\nargs = ["mcp"]\n',
+      '[mcp_servers.coordrooms]\ncommand = "/other/coordrooms"\nargs = ["mcp"]\n',
     )
 
     await expect(
@@ -830,8 +826,8 @@ describe('installer transaction', () => {
         spawn: packageSpawn('1.2.3').spawn,
         migrate: async (databasePath) => writeFile(databasePath, 'database'),
       }),
-    ).rejects.toThrow('Refusing to overwrite existing Agent Rooms MCP server')
-    await expect(lstat(join(home, '.agent-rooms'))).rejects.toMatchObject({ code: 'ENOENT' })
+    ).rejects.toThrow('Refusing to overwrite existing CoordRooms MCP server')
+    await expect(lstat(join(home, '.coordrooms'))).rejects.toMatchObject({ code: 'ENOENT' })
     await expect(readFile(join(codex, 'hooks.json'), 'utf8')).rejects.toMatchObject({
       code: 'ENOENT',
     })
@@ -852,7 +848,7 @@ describe('installer transaction', () => {
     })
     await writeFile(
       join(codex, 'config.toml'),
-      '[mcp_servers.agent-rooms]\ncommand = "/user/agent-rooms"\nargs = ["mcp"]\n',
+      '[mcp_servers.coordrooms]\ncommand = "/user/coordrooms"\nargs = ["mcp"]\n',
     )
 
     const result = await runUninstall({ homeDirectory: home, yes: true })
@@ -860,7 +856,7 @@ describe('installer transaction', () => {
       `Preserved modified MCP server: ${join(codex, 'config.toml')}`,
     )
     await expect(readFile(join(codex, 'config.toml'), 'utf8')).resolves.toContain(
-      '/user/agent-rooms',
+      '/user/coordrooms',
     )
   })
 
@@ -888,15 +884,15 @@ describe('installer transaction', () => {
     for (const path of [
       join(codex, 'hooks.json'),
       join(codex, 'config.toml'),
-      join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md'),
+      join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md'),
       join(home, '.zshrc'),
     ]) {
       await expect(lstat(path)).rejects.toMatchObject({ code: 'ENOENT' })
     }
-    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'current'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
-    await expect(lstat(join(home, '.agent-rooms', 'bin', 'agent-rooms'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'bin', 'coordrooms'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
@@ -923,8 +919,8 @@ describe('installer transaction', () => {
       spawn: packageSpawn('1.2.4').spawn,
       migrate: async (databasePath) => writeFile(databasePath, 'database'),
     })
-    const currentLink = join(home, '.agent-rooms', 'current')
-    const binLink = join(home, '.agent-rooms', 'bin', 'agent-rooms')
+    const currentLink = join(home, '.coordrooms', 'current')
+    const binLink = join(home, '.coordrooms', 'bin', 'coordrooms')
     const currentBefore = await readlink(currentLink)
     const binBefore = await readlink(binLink)
 
@@ -943,13 +939,13 @@ describe('installer transaction', () => {
       }),
     ).rejects.toThrow('configuration was restored')
 
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'))).resolves.toBeDefined()
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.5'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.3'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.5'))).resolves.toBeDefined()
     expect(await readlink(currentLink)).toBe(currentBefore)
     expect(await readlink(binLink)).toBe(binBefore)
     const manifest = JSON.parse(
-      await readFile(join(home, '.agent-rooms', 'install-state.json'), 'utf8'),
+      await readFile(join(home, '.coordrooms', 'install-state.json'), 'utf8'),
     ) as { current: string }
     expect(manifest.current).toBe('1.2.4')
   })
@@ -970,7 +966,7 @@ describe('installer transaction', () => {
     }
 
     await runInstall(install)
-    const runtime = join(home, '.agent-rooms', 'runtime', '1.2.3')
+    const runtime = join(home, '.coordrooms', 'runtime', '1.2.3')
     const runtimeInode = (await lstat(runtime, { bigint: true })).ino
     await runInstall(install)
 
@@ -980,14 +976,14 @@ describe('installer transaction', () => {
       2,
     )
     expect((await lstat(runtime, { bigint: true })).ino).toBe(runtimeInode)
-    await expect(lstat(join(home, '.agent-rooms', 'previous'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'previous'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
 
   it('refuses a corrupt existing same-version runtime with a repair instruction', async () => {
     const home = await temporaryHome()
-    const installRoot = join(home, '.agent-rooms')
+    const installRoot = join(home, '.coordrooms')
     const runtime = join(installRoot, 'runtime', '1.2.3')
     await mkdir(runtime, { recursive: true })
     await writeFile(join(runtime, 'corrupt'), 'runtime')
@@ -995,7 +991,7 @@ describe('installer transaction', () => {
       join(installRoot, 'install-state.json'),
       JSON.stringify({
         version: 1,
-        package: { name: 'agent-rooms', version: '1.2.3' },
+        package: { name: 'coordrooms', version: '1.2.3' },
         installedAt: '2026-08-16T00:00:00.000Z',
         current: '1.2.3',
       }),
@@ -1036,7 +1032,7 @@ describe('installer transaction', () => {
     })
 
     const runtimeNodeModulesInode = (
-      await lstat(join(home, '.agent-rooms', 'runtime', '1.2.3', 'node_modules'), {
+      await lstat(join(home, '.coordrooms', 'runtime', '1.2.3', 'node_modules'), {
         bigint: true,
       })
     ).ino
@@ -1045,7 +1041,7 @@ describe('installer transaction', () => {
 
   it('cleans legacy previous links and backup directories on successful install', async () => {
     const home = await temporaryHome()
-    const installRoot = join(home, '.agent-rooms')
+    const installRoot = join(home, '.coordrooms')
     const backups = join(installRoot, 'backups')
     await mkdir(join(installRoot, 'runtime', '1.2.2'), { recursive: true })
     await mkdir(backups)
@@ -1055,7 +1051,7 @@ describe('installer transaction', () => {
       join(installRoot, 'install-state.json'),
       JSON.stringify({
         version: 1,
-        package: { name: 'agent-rooms', version: '1.2.3' },
+        package: { name: 'coordrooms', version: '1.2.3' },
         installedAt: '2026-08-16T00:00:00.000Z',
         current: '1.2.3',
         previous: '1.2.2',
@@ -1110,8 +1106,8 @@ describe('installer transaction', () => {
       spawn: packageSpawn('1.2.4').spawn,
       migrate: async (databasePath) => writeFile(databasePath, 'database'),
     })
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'))).resolves.toBeDefined()
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.3'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
 
     await runInstall({
       version: '1.2.5',
@@ -1123,22 +1119,22 @@ describe('installer transaction', () => {
       migrate: async (databasePath) => writeFile(databasePath, 'database'),
     })
 
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.3'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.3'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
-    await expect(lstat(join(home, '.agent-rooms', 'runtime', '1.2.5'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.4'))).resolves.toBeDefined()
+    await expect(lstat(join(home, '.coordrooms', 'runtime', '1.2.5'))).resolves.toBeDefined()
   })
 
   it('rejects a downgrade before staging or migration', async () => {
     const home = await temporaryHome()
-    const installRoot = join(home, '.agent-rooms')
+    const installRoot = join(home, '.coordrooms')
     await mkdir(installRoot)
     await writeFile(
       join(installRoot, 'install-state.json'),
       JSON.stringify({
         version: 1,
-        package: { name: 'agent-rooms', version: '1.2.3' },
+        package: { name: 'coordrooms', version: '1.2.3' },
         installedAt: '2026-08-16T00:00:00.000Z',
         current: '1.2.3',
       }),
@@ -1170,9 +1166,9 @@ describe('installer transaction', () => {
         writeFile(
           join(root, 'package.json'),
           JSON.stringify({
-            name: 'agent-rooms',
+            name: 'coordrooms',
             version: '1.2.3',
-            bin: { 'agent-rooms': '../outside.js' },
+            bin: { coordrooms: '../outside.js' },
           }),
         ),
     },
@@ -1286,7 +1282,7 @@ describe('installer transaction', () => {
       }),
     ).rejects.toThrow('native smoke failed')
     expect(migrated).toBe(false)
-    await expect(lstat(join(home, '.agent-rooms', '.stage-1.2.3'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', '.stage-1.2.3'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
@@ -1294,7 +1290,7 @@ describe('installer transaction', () => {
   it('preserves modified skills and removes the managed block from modified profiles on uninstall', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
-    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    const skill = join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md')
     const profile = join(home, '.zshrc')
     await mkdir(codex)
     const { spawn } = packageSpawn('1.2.3')
@@ -1323,13 +1319,13 @@ describe('installer transaction', () => {
     ])
     await expect(readFile(skill, 'utf8')).resolves.toBe('user modified skill')
     await expect(readFile(profile, 'utf8')).resolves.toContain('export EDITOR=vim\n')
-    await expect(readFile(profile, 'utf8')).resolves.not.toContain('>>> agent-rooms >>>')
+    await expect(readFile(profile, 'utf8')).resolves.not.toContain('>>> coordrooms >>>')
   })
 
   it('refuses to overwrite a modified canonical Codex skill before integration mutation', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
-    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    const skill = join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md')
     await mkdir(codex)
     await mkdir(dirname(skill), { recursive: true })
     await writeFile(skill, 'user skill')
@@ -1353,7 +1349,7 @@ describe('installer transaction', () => {
     expect(migrated).toBe(false)
     await expect(readFile(skill, 'utf8')).resolves.toBe('user skill')
     await expect(lstat(join(codex, 'hooks.json'))).rejects.toMatchObject({ code: 'ENOENT' })
-    await expect(lstat(join(home, '.agent-rooms', 'current'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'current'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
     expect(calls.filter((call) => call[0] === 'npm' && call[1] === 'install')).toHaveLength(1)
@@ -1362,8 +1358,8 @@ describe('installer transaction', () => {
   it('rejects noncanonical Codex skill ownership in the manifest before uninstall mutation', async () => {
     const home = await temporaryHome()
     const codex = join(home, '.codex')
-    const installRoot = join(home, '.agent-rooms')
-    const skill = join(home, '.agents', 'skills', 'agent-rooms', 'SKILL.md')
+    const installRoot = join(home, '.coordrooms')
+    const skill = join(home, '.agents', 'skills', 'coordrooms', 'SKILL.md')
     await mkdir(codex)
 
     await runInstall({
@@ -1501,14 +1497,14 @@ describe('installer transaction', () => {
       else process.env.CODEX_HOME = original
     }
 
-    await expect(lstat(join(home, '.agent-rooms', 'install-state.json'))).rejects.toMatchObject({
+    await expect(lstat(join(home, '.coordrooms', 'install-state.json'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
 
   it('uninstalls a legacy manifest with previous and backups', async () => {
     const home = await temporaryHome()
-    const installRoot = join(home, '.agent-rooms')
+    const installRoot = join(home, '.coordrooms')
     const backups = join(installRoot, 'backups')
     await mkdir(join(installRoot, 'runtime', '1.2.2'), { recursive: true })
     await mkdir(join(installRoot, 'runtime', '1.2.3'), { recursive: true })
@@ -1520,7 +1516,7 @@ describe('installer transaction', () => {
       join(installRoot, 'install-state.json'),
       JSON.stringify({
         version: 1,
-        package: { name: 'agent-rooms', version: '1.2.3' },
+        package: { name: 'coordrooms', version: '1.2.3' },
         installedAt: '2026-08-16T00:00:00.000Z',
         current: '1.2.3',
         previous: '1.2.2',
@@ -1577,13 +1573,13 @@ describe('installer transaction', () => {
     })
 
     expect(result.warnings).toEqual([
-      `No supported shell was detected (nu); add ${join(home, '.agent-rooms', 'bin')} to PATH manually.`,
+      `No supported shell was detected (nu); add ${join(home, '.coordrooms', 'bin')} to PATH manually.`,
     ])
   })
 })
 
 async function temporaryHome(): Promise<string> {
-  const home = await mkdtemp(join(tmpdir(), 'agent-rooms-transaction-'))
+  const home = await mkdtemp(join(tmpdir(), 'coordrooms-transaction-'))
   directories.push(home)
   return home
 }
@@ -1638,12 +1634,12 @@ function packageSpawn(
 }
 
 async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<string> {
-  const root = join(stage, 'node_modules', 'agent-rooms')
+  const root = join(stage, 'node_modules', 'coordrooms')
   const client = join(stage, 'node_modules', '@libsql', 'client')
   await writeFile(join(stage, 'package.json'), JSON.stringify({ private: true }))
   await mkdir(client, { recursive: true })
   await mkdir(join(root, 'migrations'), { recursive: true })
-  await mkdir(join(root, 'assets', 'agent-rooms'), { recursive: true })
+  await mkdir(join(root, 'assets', 'coordrooms'), { recursive: true })
   await mkdir(join(root, 'assets', 'dashboard', 'server'), { recursive: true })
   await mkdir(join(root, 'assets', 'dashboard', 'migrations'), { recursive: true })
   await mkdir(join(root, 'assets', 'dashboard', 'public', 'assets'), { recursive: true })
@@ -1651,9 +1647,9 @@ async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<
   await writeFile(
     join(root, 'package.json'),
     JSON.stringify({
-      name: 'agent-rooms',
+      name: 'coordrooms',
       version,
-      bin: { 'agent-rooms': 'dist/index.js' },
+      bin: { coordrooms: 'dist/index.js' },
     }),
   )
   await writeFile(
@@ -1662,8 +1658,8 @@ async function stagedPackage(stage: string, version: string = '1.2.3'): Promise<
   )
   await writeFile(join(client, 'index.js'), 'export default {}')
   await writeFile(join(root, 'migrations', '0000.sql'), 'select 1;')
-  await writeFile(join(root, 'assets', 'agent-rooms', 'SKILL.md'), 'skill')
-  await writeFile(join(root, 'assets', 'agent-rooms', 'opencode-plugin.ts'), 'plugin')
+  await writeFile(join(root, 'assets', 'coordrooms', 'SKILL.md'), 'skill')
+  await writeFile(join(root, 'assets', 'coordrooms', 'opencode-plugin.ts'), 'plugin')
   await writeFile(join(root, 'assets', 'dashboard', 'server', 'index.mjs'), 'export default {}')
   await writeFile(join(root, 'assets', 'dashboard', 'migrations', '0000.sql'), 'select 1;')
   await writeFile(

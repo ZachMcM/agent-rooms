@@ -13,7 +13,7 @@ import {
 import type { Spawn } from './stage-verification'
 import { verifyRuntimeTree } from './stage-verification'
 
-const packageName = 'agent-rooms'
+const packageName = 'coordrooms'
 
 export async function prepareRuntime(
   context: RuntimeContext,
@@ -64,7 +64,7 @@ export async function existingRuntimePublication(
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown verification failure.'
     throw new Error(
-      `Existing Agent Rooms runtime ${version} failed verification; remove ${destination} and rerun install to repair it. ${message}`,
+      `Existing CoordRooms runtime ${version} failed verification; remove ${destination} and rerun install to repair it. ${message}`,
       { cause: error },
     )
   }

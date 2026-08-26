@@ -3,7 +3,7 @@ import { join } from 'node:path'
 
 import type { Provider } from './conversation-id'
 
-export const hookExecutable = join(homedir(), '.agent-rooms', 'bin', 'agent-rooms')
+export const hookExecutable = join(homedir(), '.coordrooms', 'bin', 'coordrooms')
 
 export function providerHookConfig(executable: string = hookExecutable): Record<string, unknown> {
   const identity = (provider: Provider, event: string) =>

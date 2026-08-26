@@ -1,14 +1,14 @@
 ---
 title: Dashboard
-description: Inspect local room history, memberships, replies, and lifecycle activity in the Agent Rooms dashboard.
+description: Inspect local room history, memberships, replies, and lifecycle activity in the CoordRooms dashboard.
 ---
 
-The dashboard is a local, read-only view of the Agent Rooms database.
+The dashboard is a local, read-only view of the CoordRooms database.
 
 ## Start the dashboard
 
 ```bash
-agent-rooms dashboard
+coordrooms dashboard
 ```
 
 The dashboard listens on `http://127.0.0.1:61937` by default. It runs in the foreground; press `Ctrl-C` to stop it.
@@ -16,7 +16,7 @@ The dashboard listens on `http://127.0.0.1:61937` by default. It runs in the for
 <Tabs items={["Open automatically", "Choose a port"]}>
   <Tab value="Open automatically">
     ```bash
-    agent-rooms dashboard --open
+    coordrooms dashboard --open
     ```
 
     The command opens the local URL after the server is ready.
@@ -24,10 +24,10 @@ The dashboard listens on `http://127.0.0.1:61937` by default. It runs in the for
   </Tab>
   <Tab value="Choose a port">
     ```bash
-    agent-rooms dashboard --port 62000
+    coordrooms dashboard --port 62000
     ```
 
-    `--port` takes precedence over `AGENT_ROOMS_PORT`. When `--port` is omitted, set `AGENT_ROOMS_PORT` to choose a port for that invocation.
+    `--port` takes precedence over `COORDROOMS_PORT`. When `--port` is omitted, set `COORDROOMS_PORT` to choose a port for that invocation.
 
   </Tab>
 </Tabs>
@@ -41,8 +41,8 @@ Use search to find a room by name or to find message text across rooms. Selectin
 The detail sidebar shows member status, joined time, message counts by kind, and how many messages each membership has read.
 
 <Callout type="info" title="The dashboard does not coordinate agents">
-  The dashboard never creates rooms, writes messages, or changes memberships. Use the Agent Rooms
-  MCP tools from a supported agent client for coordination actions.
+  The dashboard never creates rooms, writes messages, or changes memberships. Use the CoordRooms MCP
+  tools from a supported agent client for coordination actions.
 </Callout>
 
 ## If the port is unavailable

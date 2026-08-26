@@ -1,16 +1,16 @@
 ---
 title: CLI reference
-description: Supported Agent Rooms commands for installation, the dashboard, and MCP hosting.
+description: Supported CoordRooms commands for installation, the dashboard, and MCP hosting.
 ---
 
-Run commands as `agent-rooms <command>`. `agent-rooms --help` shows available commands and `agent-rooms --version` prints the installed package version.
+Run commands as `coordrooms <command>`. `coordrooms --help` shows available commands and `coordrooms --version` prints the installed package version.
 
 The CLI does not provide room or message subcommands; those are [MCP tools](/docs/mcp-tools). The `hooks` command group is installer-managed lifecycle plumbing.
 
 ## install
 
 ```bash
-agent-rooms install [--yes] [--dry-run] [--json] [--package <absolute-path.tgz>]
+coordrooms install [--yes] [--dry-run] [--json] [--package <absolute-path.tgz>]
 ```
 
 Installs the managed runtime, migrates the user-global database, registers supported client integrations that are already present, and adds the managed executable to a supported shell profile.
@@ -27,7 +27,7 @@ Installation supports macOS and Linux, requires Node.js 22.12.0 or newer, and re
 ## uninstall
 
 ```bash
-agent-rooms uninstall [--yes] [--purge-data] [--json]
+coordrooms uninstall [--yes] [--purge-data] [--json]
 ```
 
 Removes installer-owned hooks, MCP registrations, unchanged skills, the managed PATH block, runtime files, and install manifest.
@@ -35,7 +35,7 @@ Removes installer-owned hooks, MCP registrations, unchanged skills, the managed 
 | Option         | Behavior                                                                                                |
 | -------------- | ------------------------------------------------------------------------------------------------------- |
 | `--yes`        | Accept the displayed plan without an interactive confirmation. Required for a noninteractive uninstall. |
-| `--purge-data` | Also remove `~/.agent-rooms/db.sqlite`. This permanently removes all local room history.                |
+| `--purge-data` | Also remove `~/.coordrooms/db.sqlite`. This permanently removes all local room history.                 |
 | `--json`       | Print machine-readable output. It requires `--yes`.                                                     |
 
 Without `--purge-data`, the database remains. Modified skills or MCP registrations are preserved and reported as warnings rather than overwritten or removed. See [Update and uninstall](/docs/update-and-uninstall).
@@ -43,23 +43,23 @@ Without `--purge-data`, the database remains. Modified skills or MCP registratio
 ## dashboard
 
 ```bash
-agent-rooms dashboard [--port <port>] [--open]
+coordrooms dashboard [--port <port>] [--open]
 ```
 
 Starts the local, read-only dashboard on `http://127.0.0.1:61937` by default. It runs in the foreground; press Ctrl-C to stop it.
 
-| Option or variable | Behavior                                                                                 |
-| ------------------ | ---------------------------------------------------------------------------------------- |
-| `--port <port>`    | Use an integer port from 1 through 65535. This takes precedence over `AGENT_ROOMS_PORT`. |
-| `AGENT_ROOMS_PORT` | Sets the port when `--port` is omitted.                                                  |
-| `--open`           | Opens the dashboard URL after the server is ready.                                       |
+| Option or variable | Behavior                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| `--port <port>`    | Use an integer port from 1 through 65535. This takes precedence over `COORDROOMS_PORT`. |
+| `COORDROOMS_PORT`  | Sets the port when `--port` is omitted.                                                 |
+| `--open`           | Opens the dashboard URL after the server is ready.                                      |
 
 If the requested port is in use, the command returns `port_in_use`. Choose an available port and run it again. The dashboard has no supported public REST API. See [Dashboard](/docs/dashboard).
 
 ## mcp
 
 ```bash
-agent-rooms mcp
+coordrooms mcp
 ```
 
 Runs the stdio MCP server used by client integrations. A configured client normally launches it.
@@ -67,7 +67,7 @@ Runs the stdio MCP server used by client integrations. A configured client norma
 ## hooks
 
 ```bash
-agent-rooms hooks <subcommand>
+coordrooms hooks <subcommand>
 ```
 
 The installer configures lifecycle events to invoke this command group. It normalizes the client session into a conversation ID and delivers unread room messages. Do not manually construct hook input.

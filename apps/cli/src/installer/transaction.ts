@@ -2,8 +2,8 @@ import { spawn as spawnChild } from 'node:child_process'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 
-import { dataDir } from '@agent-rooms/core'
-import { createDatabase, runMigrations } from '@agent-rooms/db'
+import { dataDir } from '@coordrooms/core'
+import { createDatabase, runMigrations } from '@coordrooms/db'
 
 import {
   configPath,
@@ -57,7 +57,7 @@ import {
 } from './stage-verification'
 import { compareVersions } from './state'
 
-const packageName = 'agent-rooms'
+const packageName = 'coordrooms'
 
 type Prompt = (message: string) => Promise<boolean>
 
@@ -103,7 +103,7 @@ export async function runInstall(input: InstallInput): Promise<InstallResult> {
     (await ownedPathExists(join(context.root, 'runtime', input.version), context.home))
   ) {
     throw new Error(
-      `Local package install cannot reuse existing runtime ${input.version}. Run agent-rooms uninstall and retry.`,
+      `Local package install cannot reuse existing runtime ${input.version}. Run coordrooms uninstall and retry.`,
     )
   }
   const priorManifest = await readPriorManifest(context)
@@ -296,7 +296,7 @@ async function makeContext(dependencies: TransactionDependencies): Promise<Conte
   return {
     home,
     root: dataDir(home),
-    bin: join(dataDir(home), 'bin', 'agent-rooms'),
+    bin: join(dataDir(home), 'bin', 'coordrooms'),
     roots,
     shell: dependencies.shell ?? process.env.SHELL ?? '',
     platform: dependencies.platform ?? process.platform,
@@ -384,12 +384,12 @@ async function confirm(
 }
 
 async function readSkill(packageRoot: string, trustedBase: string): Promise<string> {
-  return await readOwnedFile(join(packageRoot, 'assets', 'agent-rooms', 'SKILL.md'), trustedBase)
+  return await readOwnedFile(join(packageRoot, 'assets', 'coordrooms', 'SKILL.md'), trustedBase)
 }
 
 async function readPlugin(packageRoot: string, trustedBase: string): Promise<string> {
   return await readOwnedFile(
-    join(packageRoot, 'assets', 'agent-rooms', 'opencode-plugin.ts'),
+    join(packageRoot, 'assets', 'coordrooms', 'opencode-plugin.ts'),
     trustedBase,
   )
 }
