@@ -31,7 +31,7 @@ import { Monitor, Moon, Search, Settings2, Sun } from '@coordrooms/ui-library/ic
 import { useQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { RiGithubFill, RiNpmjsFill } from 'react-icons/ri'
+import { RiGithubFill } from 'react-icons/ri'
 
 import { externalLinks } from './config'
 import { roomOverviewsQueryOptions } from './queries'
@@ -175,15 +175,6 @@ export function RoomSidebar() {
           aria-label="Open GitHub"
         >
           <RiGithubFill aria-hidden="true" />
-        </Button>
-        <Button
-          nativeButton={false}
-          render={<a href={externalLinks.npm} target="_blank" rel="noreferrer" />}
-          variant="outline"
-          size="icon-sm"
-          aria-label="Open npm"
-        >
-          <RiNpmjsFill aria-hidden="true" />
         </Button>
         <ThemeSelector />
       </SidebarFooter>
