@@ -9,6 +9,7 @@ import { Button } from '@coordrooms/ui-library/components/button'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
+import { AuditDashboardPreview } from '@/components/audit-dashboard-preview'
 import {
   LifecycleDeliveryDiagram,
   LocalHistoryDiagram,
@@ -177,6 +178,27 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="border-t" aria-labelledby="audit-dashboard">
+          <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+            <div className="flex max-w-2xl flex-col gap-4">
+              <h2
+                id="audit-dashboard"
+                className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl"
+              >
+                Audit every shared decision
+              </h2>
+              <p className="text-muted-foreground text-base leading-7 sm:text-lg">
+                Review room history, replies, and membership events in one read-only local
+                dashboard.
+              </p>
+            </div>
+
+            <div className="mt-12">
+              <AuditDashboardPreview />
+            </div>
           </div>
         </section>
 
