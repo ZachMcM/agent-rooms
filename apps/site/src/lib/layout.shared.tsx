@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared'
-import { RiGithubFill, RiNpmjsFill } from 'react-icons/ri'
+import { RiGithubFill } from 'react-icons/ri'
 
 export const githubUrl = 'https://github.com/ZachMcM/coordrooms'
 export const npmUrl = 'https://www.npmjs.com/package/coordrooms'
@@ -15,15 +15,6 @@ export function baseOptions(): BaseLayoutProps {
         label: 'GitHub repository',
         icon: <RiGithubFill />,
         url: githubUrl,
-        external: true,
-        on: 'menu',
-      },
-      {
-        type: 'icon',
-        text: 'npm',
-        label: 'npm package',
-        icon: <RiNpmjsFill />,
-        url: npmUrl,
         external: true,
         on: 'menu',
       },
