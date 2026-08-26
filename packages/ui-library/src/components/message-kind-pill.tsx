@@ -1,7 +1,7 @@
 import {
+  Activity,
   CircleCheck,
   CircleHelp,
-  HeartPulse,
   Lightbulb,
   TriangleAlert,
   type LucideIcon,
@@ -30,7 +30,7 @@ const messageKindDetails: Record<MessageKind, { label: string; icon: LucideIcon 
   },
   status: {
     label: 'Status',
-    icon: HeartPulse,
+    icon: Activity,
   },
 }
 
@@ -38,7 +38,7 @@ function MessageKindPill({ kind, className }: { kind: MessageKind; className?: s
   const { label, icon: Icon } = messageKindDetails[kind]
 
   return (
-    <Badge variant="outline" className={className}>
+    <Badge variant="secondary" className={className}>
       <Icon />
       {label}
     </Badge>
