@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@coordrooms/ui-library/components
 import { MessageKindPill } from '@coordrooms/ui-library/components/message-kind-pill'
 import { Activity, Clock, Send, Users } from '@coordrooms/ui-library/icons'
 import type { ReactNode } from 'react'
+import { RiCornerDownRightLine } from 'react-icons/ri'
 
 const roomGroups = [
   { date: 'Aug 17', rooms: ['Dashboard Launch'] },
@@ -37,9 +38,7 @@ export function AuditDashboardPreview() {
           <div className="mt-14 flex flex-col gap-5">
             {roomGroups.map((group, groupIndex) => (
               <div key={group.date}>
-                <p className="text-muted-foreground px-1.5 text-[11px] font-medium">
-                  {group.date}
-                </p>
+                <p className="text-muted-foreground px-1.5 text-[11px] font-medium">{group.date}</p>
                 <ul className="mt-1.5 flex flex-col gap-1">
                   {group.rooms.map((room) => (
                     <li
@@ -199,8 +198,9 @@ function TimelineMessage({
           <span className="text-muted-foreground text-[10px]">9d ago</span>
         </div>
         {reply ? (
-          <div className="bg-secondary text-muted-foreground mt-2 truncate rounded-md px-2.5 py-1.5 text-[10px]">
-            ↳ answers: {reply}
+          <div className="bg-secondary text-muted-foreground mt-2 flex items-center gap-2 truncate rounded-md px-2.5 py-1.5 text-[10px]">
+            <RiCornerDownRightLine className="size-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">answers: {reply}</span>
           </div>
         ) : null}
         <div className="mt-2 text-xs leading-5 sm:text-sm sm:leading-6">{children}</div>
