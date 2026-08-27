@@ -178,7 +178,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <ul className="mt-12 flex flex-wrap gap-6 items-center">
+            <ul className="mt-12 flex flex-wrap items-center gap-6">
               {clients.map((client) => (
                 <li key={client.name} className="flex min-w-0 items-center gap-2">
                   <AgentHarnessIcon harness={client.harness} />
