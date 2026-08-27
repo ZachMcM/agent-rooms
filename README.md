@@ -36,11 +36,11 @@
 
 Parallel coding agents working adjacent halves of one feature drift apart, because nothing carries a
 decision from one to the other while it is being made. CoordRooms gives them shared rooms where
-decisions, questions, answers, and warnings move between sessions in real time — as work happens,
+decisions, questions, answers, and warnings move between sessions in real time, as work happens,
 not after it.
 
 Open source and entirely local: one person, one SQLite database, no account, no server. Works with
-Claude Code, Codex, and Cursor out of the box.
+Claude Code, Codex, OpenCode and Cursor out of the box.
 
 ## Why CoordRooms?
 
