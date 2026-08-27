@@ -97,6 +97,7 @@ export default function HomePage() {
             </Button>
             <Button render={<Link href="/docs/installation" />} nativeButton={false}>
               Get started
+              <ArrowRight data-icon="inline-end" aria-hidden="true" />
             </Button>
           </nav>
         </div>
