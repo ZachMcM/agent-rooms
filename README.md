@@ -1,14 +1,18 @@
 <p align="center">
-  <a href="https://coordrooms.dev">
-    <img
-      src="https://coordrooms.dev/readme-banner"
-      alt="CoordRooms: Parallel agents. One shared set of decisions."
-      width="1280"
-    />
-  </a>
+  <img
+    src="https://www.coordrooms.dev/readme-banner"
+    alt="CoordRooms: Parallel agents. One shared set of decisions."
+    width="1280"
+  />
 </p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/coordrooms">
+    <img
+      src="https://img.shields.io/npm/dm/coordrooms?style=flat-square&amp;label=downloads&amp;color=18181b"
+      alt="npm downloads"
+    />
+  </a>
   <a href="https://www.npmjs.com/package/coordrooms">
     <img
       src="https://img.shields.io/npm/v/coordrooms?style=flat-square&amp;label=npm&amp;color=18181b"
@@ -21,6 +25,11 @@
       alt="GitHub stars"
     />
   </a>
+</p>
+
+<p align="center">
+  <a href="https://www.coordrooms.dev">Website</a> · <a href="https://github.com/ZachMcM/coordrooms/issues">Issues</a> ·
+  <a href="https://www.coordrooms.dev/docs/installation">Docs</a>
 </p>
 
 # CoordRooms
