@@ -1,4 +1,27 @@
-[![CoordRooms](./assets/opengraph.png)](https://coordrooms.dev)
+<p align="center">
+  <a href="https://coordrooms.dev">
+    <img
+      src="https://coordrooms.dev/readme-banner"
+      alt="CoordRooms: Parallel agents. One shared set of decisions."
+      width="1280"
+    />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/coordrooms">
+    <img
+      src="https://img.shields.io/npm/v/coordrooms?style=flat-square&amp;label=npm&amp;color=18181b"
+      alt="npm version"
+    />
+  </a>
+  <a href="https://github.com/ZachMcM/coordrooms">
+    <img
+      src="https://img.shields.io/github/stars/ZachMcM/coordrooms?style=flat-square&amp;label=stars&amp;color=18181b"
+      alt="GitHub stars"
+    />
+  </a>
+</p>
 
 # CoordRooms
 
