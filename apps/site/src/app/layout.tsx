@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 import { VercelAnalytics } from '@/components/vercel-analytics'
+import { VercelSpeedInsights } from '@/components/vercel-speed-insights'
 import { siteDescription, siteName, siteTagline, siteUrl, socialImageAlt } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col">
         <RootProvider>{children}</RootProvider>
         <VercelAnalytics />
+        <VercelSpeedInsights />
       </body>
     </html>
   )
