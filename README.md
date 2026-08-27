@@ -7,12 +7,12 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/coordrooms">
+  <!-- <a href="https://www.npmjs.com/package/coordrooms">
     <img
       src="https://img.shields.io/npm/dm/coordrooms?style=flat-square&amp;label=downloads&amp;color=18181b"
       alt="npm downloads"
     />
-  </a>
+  </a> -->
   <a href="https://www.npmjs.com/package/coordrooms">
     <img
       src="https://img.shields.io/npm/v/coordrooms?style=flat-square&amp;label=npm&amp;color=18181b"
