@@ -79,7 +79,7 @@ function RoomDetailContent({ room }: { room: RoomDetail }) {
 
     document.getElementById(messageFragment(latestNewMessage.id))?.scrollIntoView({
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'center',
+      block: 'end',
     })
   }, [hash, messageIds, room.messages, room.room.id])
 

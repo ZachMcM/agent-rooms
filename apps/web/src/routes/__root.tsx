@@ -1,4 +1,5 @@
 import { Button } from '@coordrooms/ui-library/components/button'
+import { CoordRoomsLogo } from '@coordrooms/ui-library/components/coordrooms-logo'
 import {
   Empty,
   EmptyContent,
@@ -71,7 +72,12 @@ function HeaderTitle() {
   const match = useMatch({ from: '/rooms/$roomId', shouldThrow: false })
 
   if (!match) {
-    return <span className="ml-2 text-sm font-medium md:hidden">CoordRooms</span>
+    return (
+      <span className="ml-2 flex items-center gap-2 text-sm font-medium md:hidden">
+        <CoordRoomsLogo className="size-4" />
+        CoordRooms
+      </span>
+    )
   }
 
   return <RoomName roomId={match.params.roomId} />

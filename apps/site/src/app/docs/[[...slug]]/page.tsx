@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { getMDXComponents } from '@/components/mdx'
+import { siteDescription, siteName, socialImageAlt } from '@/lib/site'
 import { source } from '@/lib/source'
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
@@ -34,5 +35,33 @@ export async function generateMetadata(props: {
   const page = source.getPage(params.slug)
   if (!page) notFound()
 
-  return { title: page.data.title, description: page.data.description }
+  const title = page.data.title
+  const description = page.data.description ?? siteDescription
+
+  return {
+    title,
+    description,
+    alternates: { canonical: page.url },
+    openGraph: {
+      type: 'article',
+      url: page.url,
+      siteName,
+      title: `${title} | ${siteName}`,
+      description,
+      images: [
+        {
+          url: '/opengraph-image',
+          width: 1200,
+          height: 630,
+          alt: socialImageAlt,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | ${siteName}`,
+      description,
+      images: [{ url: '/twitter-image', alt: socialImageAlt }],
+    },
+  }
 }

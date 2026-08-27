@@ -6,6 +6,7 @@ import {
 } from '@coordrooms/ui-library/components/accordion'
 import { AgentHarnessIcon } from '@coordrooms/ui-library/components/agent-harness-icon'
 import { Button } from '@coordrooms/ui-library/components/button'
+import { CoordRoomsLogo } from '@coordrooms/ui-library/components/coordrooms-logo'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
@@ -81,8 +82,12 @@ export default function HomePage() {
     <div className="bg-background text-foreground min-h-dvh">
       <header className="fixed inset-x-0 top-0 z-50 bg-transparent backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="font-heading text-base font-semibold tracking-tight">
-            CoordRooms
+          <Link
+            href="/"
+            className="font-heading flex items-center gap-2 text-base font-semibold tracking-tight"
+          >
+            <CoordRoomsLogo className="size-5" />
+            <span>CoordRooms</span>
           </Link>
 
           <nav className="flex items-center gap-1.5 sm:gap-3" aria-label="Primary navigation">
@@ -260,8 +265,9 @@ export default function HomePage() {
         </div>
         <div className="border-t">
           <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 text-sm sm:px-6 lg:px-8">
-            <Link href="/" className="font-heading font-semibold">
-              CoordRooms
+            <Link href="/" className="font-heading flex items-center gap-2 font-semibold">
+              <CoordRoomsLogo className="size-4" />
+              <span>CoordRooms</span>
             </Link>
             <span className="text-muted-foreground">Local coordination for parallel agents.</span>
           </div>

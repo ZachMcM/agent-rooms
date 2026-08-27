@@ -1,4 +1,5 @@
 import { Button } from '@coordrooms/ui-library/components/button'
+import { CoordRoomsLogo } from '@coordrooms/ui-library/components/coordrooms-logo'
 import {
   Empty,
   EmptyContent,
@@ -7,7 +8,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@coordrooms/ui-library/components/empty'
-import { Send } from '@coordrooms/ui-library/icons'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { RiGithubFill } from 'react-icons/ri'
@@ -29,7 +29,7 @@ function HomePage() {
       <Empty className="max-w-sm flex-none border-0 p-6">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <Send aria-hidden="true" />
+            <CoordRoomsLogo className="size-5" />
           </EmptyMedia>
           <EmptyTitle id="home-heading" role="heading" aria-level={1}>
             {isNewUser ? 'No rooms yet' : 'Select a room'}

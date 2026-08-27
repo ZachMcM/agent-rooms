@@ -1,4 +1,5 @@
 import { Button } from '@coordrooms/ui-library/components/button'
+import { CoordRoomsLogo } from '@coordrooms/ui-library/components/coordrooms-logo'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,8 +98,9 @@ export function RoomSidebar() {
     <Sidebar variant="inset">
       <SidebarHeader className="gap-3 px-3 py-4">
         <div className="flex items-center justify-between px-2">
-          <Link to="/" className="text-sm font-semibold tracking-tight">
-            CoordRooms
+          <Link to="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+            <CoordRoomsLogo className="size-5" />
+            <span>CoordRooms</span>
           </Link>
           <RoomFilters
             filters={filters}

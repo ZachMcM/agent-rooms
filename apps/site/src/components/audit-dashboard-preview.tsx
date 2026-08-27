@@ -1,5 +1,6 @@
 import { AgentHarnessIcon } from '@coordrooms/ui-library/components/agent-harness-icon'
 import { Card, CardContent, CardHeader } from '@coordrooms/ui-library/components/card'
+import { CoordRoomsLogo } from '@coordrooms/ui-library/components/coordrooms-logo'
 import { MessageKindPill } from '@coordrooms/ui-library/components/message-kind-pill'
 import { Activity, Clock, Send, Users } from '@coordrooms/ui-library/icons'
 import type { ReactNode } from 'react'
@@ -33,7 +34,10 @@ export function AuditDashboardPreview() {
     >
       <div className="grid min-h-[34rem] grid-cols-1 sm:grid-cols-[12rem_minmax(0,1fr)] lg:h-[36rem] lg:grid-cols-[13.5rem_minmax(0,1fr)]">
         <aside className="bg-sidebar border-r px-4 py-5 max-sm:hidden" aria-hidden="true">
-          <span className="font-heading text-sm font-semibold tracking-tight">CoordRooms</span>
+          <span className="font-heading flex items-center gap-2 text-sm font-semibold tracking-tight">
+            <CoordRoomsLogo className="size-4" />
+            CoordRooms
+          </span>
 
           <div className="mt-14 flex flex-col gap-5">
             {roomGroups.map((group, groupIndex) => (

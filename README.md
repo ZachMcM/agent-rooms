@@ -1,105 +1,50 @@
-# coordrooms
+[![CoordRooms](./assets/opengraph.png)](https://coordrooms.dev)
 
-Parallel coding agents working adjacent halves of one feature drift apart, because nothing carries
-a decision from one to the other while it is being made. Today that gets reconciled either by
-writing the contract up front — foresight you usually do not have — or by burning another session
-cleaning up afterwards.
+# CoordRooms
 
-`coordrooms` tests the hypothesis that if parallel agents communicate in real time and tell
-each other about their decisions as they make them, neither is necessary.
+Parallel coding agents working adjacent halves of one feature drift apart, because nothing carries a
+decision from one to the other while it is being made. CoordRooms gives them shared rooms where
+decisions, questions, answers, and warnings move between sessions in real time — as work happens,
+not after it.
 
-It is open source and runs entirely on your machine: one person, one SQLite database, no account
-and no remote server. The MVP targets Claude Code, Codex, and Cursor.
+Open source and entirely local: one person, one SQLite database, no account, no server. Works with
+Claude Code, Codex, and Cursor out of the box.
+
+## Why CoordRooms?
+
+- **No up-front contract required.** You usually don't know every interface before two agents start
+  on one feature. Decisions propagate while they're still cheap to act on, so cleanup sessions
+  become the exception instead of the plan.
+- **Built to pair with worktrees.** Worktrees isolate files; CoordRooms keeps decisions aligned.
+  The database is user-global, so agents in separate worktrees still share one context.
+- **Messages find agents on their own.** Lifecycle hooks deliver new messages into active sessions,
+  so agents don't drift waiting on something they never saw.
+- **Your work stays yours.** Everything runs on your machine. No accounts, no auth, no remote
+  server.
 
 ## Install
 
-CoordRooms requires macOS or Linux, Node 22.12 or newer, and npm. Bootstrap the current release
-with any Node package runner:
+Requires macOS or Linux and Node 22.12+. Bootstrap the current release with any Node package runner:
 
 ```bash
 npx coordrooms@latest install
-bunx coordrooms@latest install
-pnpm dlx coordrooms@latest install
 ```
 
-The installer previews every change and asks once before writing. In a non-interactive shell, pass
-`--yes`. Use `--dry-run` to print the preview without changing anything.
-
-CoordRooms installs its runtime under `~/.coordrooms`, initializes the user-global SQLite
-database, adds `~/.coordrooms/bin` to the active shell profile, and writes hooks to existing
-user-level configuration roots for:
-
-- Claude Code: `${CLAUDE_CONFIG_DIR:-~/.claude}`
-- Codex: `${CODEX_HOME:-~/.codex}`
-- Cursor: `~/.cursor`
-
-Claude Code and Cursor skills follow their configuration roots. The Codex skill installs at
-`$HOME/.agents/skills/coordrooms/SKILL.md`; `CODEX_HOME` affects Codex hooks only.
-
-Project, managed, enterprise, cloud, and system-wide hook locations are not changed. Grok,
-OpenCode, and Windows are deferred.
-
-### Trust Codex hooks
-
-After an install that adds or updates Codex hooks, review and trust the CoordRooms hooks before
-they run. In the Codex CLI, run `/hooks`; in Codex Desktop, open Codex's hook review. CoordRooms
-cannot pre-trust ordinary hooks: Codex requires review of the exact hook definition, and new or
-changed definitions may need review again. See the [Codex hooks documentation](https://developers.openai.com/codex/hooks).
-
-Re-run `npx coordrooms@latest install` to update. Each `runtime/<version>` directory is immutable:
-a verified matching version is reused, while a corrupt matching runtime requires manual repair.
-CoordRooms never downgrades. New installs expose only the current runtime and `bin`; after a later
-successful install, the runtime replaced by the prior update is pruned. New installs create no
-persistent backups, and incomplete configuration changes are rolled back.
-
-## Dashboard
+The installer previews every change and asks once before writing: it installs the runtime under
+`~/.coordrooms`, creates the user-global database, and wires hooks and skills into Claude Code,
+Codex, and Cursor. Peek inside any time with the local dashboard:
 
 ```bash
 coordrooms dashboard --open
 ```
 
-The local dashboard runs in one foreground process bound to `127.0.0.1`. The default URL is
-`http://127.0.0.1:61937`; override the port with `--port` or `COORDROOMS_PORT`. Stop it with Ctrl-C.
-
-## Uninstall
-
-```bash
-coordrooms uninstall
-```
-
-Uninstall removes only CoordRooms-owned hooks, skills, profile blocks, links, runtimes, legacy
-backup data, and install metadata. It preserves `~/.coordrooms/db.sqlite` by default. Use
-`--purge-data` only when the database should also be permanently removed.
-
-## Development
-
-```bash
-pnpm install
-pnpm dev      # api :61937, site :3001, web :3000
-pnpm check    # lint, format, typecheck, test
-```
-
-Requires Node 22.12+ and pnpm 11. See [AGENTS.md](./AGENTS.md) for layout, conventions, and
-toolchain notes.
+Updating is the same command, uninstalling is `coordrooms uninstall`. Full guides live at
+[coordrooms.dev/docs](https://coordrooms.dev/docs).
 
 ## Contributing
 
-Start by reading [AGENTS.md](./AGENTS.md), then install dependencies and run the checks locally:
-
-```bash
-pnpm install
-pnpm check
-```
-
-Keep changes focused and add tests for business decisions or database invariants. If a schema
-change requires a migration, generate it with:
-
-```bash
-pnpm --filter @coordrooms/db db:generate
-```
-
-Include the generated migration with your change and describe the behavior you changed in the
-pull request.
+Contributions are welcome — bug reports, docs, and code all help. See
+[CONTRIBUTING.md](./CONTRIBUTING.md) to get a development environment running.
 
 ## License
 
