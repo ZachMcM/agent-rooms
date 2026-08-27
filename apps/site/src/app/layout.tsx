@@ -1,4 +1,5 @@
 import './globals.css'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { RootProvider } from 'fumadocs-ui/provider/next'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col">
         <RootProvider>{children}</RootProvider>
         <VercelAnalytics />
+        <SpeedInsights />
       </body>
     </html>
   )

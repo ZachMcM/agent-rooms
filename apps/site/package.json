@@ -13,6 +13,7 @@
   "dependencies": {
     "@coordrooms/ui-library": "workspace:*",
     "@vercel/analytics": "catalog:",
+    "@vercel/speed-insights": "^2.0.0",
     "fumadocs-core": "catalog:",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
