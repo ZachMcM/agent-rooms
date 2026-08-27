@@ -91,15 +91,17 @@ export default function HomePage() {
           </Link>
 
           <nav className="flex items-center gap-1.5 sm:gap-3" aria-label="Primary navigation">
-            <ThemeToggle />
-            <Button
-              render={<a href={githubUrl} target="_blank" rel="noreferrer" />}
-              nativeButton={false}
-              variant="link"
-              size="sm"
-            >
-              GitHub
-            </Button>
+            <div className="hidden items-center gap-3 sm:flex">
+              <ThemeToggle />
+              <Button
+                render={<a href={githubUrl} target="_blank" rel="noreferrer" />}
+                nativeButton={false}
+                variant="link"
+                size="sm"
+              >
+                GitHub
+              </Button>
+            </div>
             <Button render={<Link href="/docs/installation" />} nativeButton={false}>
               Get started
               <ArrowRight data-icon="inline-end" aria-hidden="true" />
@@ -176,9 +178,9 @@ export default function HomePage() {
               </p>
             </div>
 
-            <ul className="mt-12 flex items-center gap-12">
+            <ul className="mt-12 flex flex-wrap gap-6 items-center">
               {clients.map((client) => (
-                <li key={client.name} className="flex min-w-0 items-center gap-3">
+                <li key={client.name} className="flex min-w-0 items-center gap-2">
                   <AgentHarnessIcon harness={client.harness} />
                   <span className="font-heading truncate text-base font-medium">{client.name}</span>
                 </li>
