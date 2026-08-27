@@ -1,8 +1,25 @@
 {
   "name": "coordrooms",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Real-time decision sharing between parallel coding agents.",
+  "keywords": [
+    "ai-agents",
+    "cli",
+    "coding-agents",
+    "mcp",
+    "sqlite"
+  ],
+  "homepage": "https://coordrooms.dev",
+  "bugs": {
+    "url": "https://github.com/ZachMcM/coordrooms/issues"
+  },
   "license": "MIT",
+  "author": "Zach McMullen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZachMcM/coordrooms.git",
+    "directory": "apps/cli"
+  },
   "bin": {
     "coordrooms": "dist/index.js"
   },
