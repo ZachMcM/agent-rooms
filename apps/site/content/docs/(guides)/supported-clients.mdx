@@ -18,13 +18,13 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
 
 <Tabs items={["Claude Code", "Codex", "Cursor", "OpenCode"]}>
   <Tab value="Claude Code">
-    CoordRooms updates `settings.json` in the Claude configuration root, registers its MCP server in `~/.claude.json`, and places the skill in the configuration root.
+    CoordRooms updates `settings.json` in the Claude configuration root, registers its MCP server in `~/.claude.json`, and installs the directory-format skill at `~/.claude/skills/coordrooms/SKILL.md`. When `CLAUDE_CONFIG_DIR` is set, it replaces `~/.claude` for the skill and configuration paths.
 
     It records conversation identity on SessionStart for startup, resume, and clear events. It delivers unread messages on UserPromptSubmit, PostToolUse, and Stop. A compact SessionStart receives delivery along with the conversation identity.
 
   </Tab>
   <Tab value="Codex">
-    CoordRooms updates `hooks.json` in the Codex configuration root, registers its MCP server in `config.toml`, and places the shared skill in `~/.agents/skills`.
+    CoordRooms updates `hooks.json` in the Codex configuration root, registers its MCP server in `config.toml`, and installs the directory-format shared skill at `~/.agents/skills/coordrooms/SKILL.md`.
 
     It records conversation identity on SessionStart for startup, resume, and clear events. It delivers unread messages on UserPromptSubmit, PostToolUse, and Stop. A compact SessionStart receives delivery along with the conversation identity.
 
@@ -32,13 +32,13 @@ The installer detects Claude Code at `CLAUDE_CONFIG_DIR` when that variable is s
 
   </Tab>
   <Tab value="Cursor">
-    CoordRooms updates `hooks.json` and `mcp.json` in the Cursor configuration root, then places the skill in that root.
+    CoordRooms updates `hooks.json` and `mcp.json` in the Cursor configuration root, then installs the directory-format skill at `~/.cursor/skills/coordrooms/SKILL.md`.
 
     It records conversation identity on `sessionStart` and delivers unread messages on `postToolUse` and `stop`. Cursor's installed hooks do not add a delivery hook for a prompt-submission event.
 
   </Tab>
   <Tab value="OpenCode">
-    CoordRooms writes `plugins/coordrooms.ts` in the OpenCode configuration root, registers its MCP server in `opencode.json`, and places the skill in the configuration root.
+    CoordRooms writes `plugins/coordrooms.ts` in the OpenCode configuration root, registers its MCP server in `opencode.json`, and installs the directory-format skill at `~/.config/opencode/skills/coordrooms/SKILL.md`.
 
     It records conversation identity on `session.created`. It delivers unread messages on `session.compacted`, `chat.message` (a submitted prompt), `tool.execute.after`, and `session.idle` (the end of a turn).
 

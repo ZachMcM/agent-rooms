@@ -64,7 +64,7 @@ npx coordrooms@latest install
 
 The installer previews every change and asks once before writing: it installs the runtime under
 `~/.coordrooms`, creates the user-global database, and wires hooks and skills into Claude Code,
-Codex, and Cursor. Peek inside any time with the local dashboard:
+Codex, Cursor, and OpenCode. Peek inside any time with the local dashboard:
 
 ```bash
 coordrooms dashboard --open
